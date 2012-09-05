@@ -1,0 +1,70 @@
+.lava_lamp_menu {
+    position: relative;
+    margin: 0px;
+    padding: 0px;
+    margin-left: 10px;
+    top: -6px;
+}
+
+.lava_lamp_menu li {
+    position: relative;
+    float: left;
+    margin: 0px;
+    padding: 0px;
+    list-style: none;
+}
+
+.lava_lamp_menu div.backLava {
+    position: absolute;
+    clear: both;
+    margin-top: 2px;
+    min-width: 61px;
+}
+
+.lava_lamp_menu div.backLava div.centerLava {
+    background-image: url(../images/center_lholder.png);
+    background-repeat: repeat-x;
+    height: 30px;
+    margin-left: 53px;
+    margin-right: 8px;
+}
+
+.lava_lamp_menu div.backLava div.leftLava {
+    background-image: url(../images/left_lholder.png);
+    background-repeat: no-repeat;
+    height: 30px;
+    width: 100%;
+}
+
+.lava_lamp_menu div.backLava div.rightLava {
+    background-image: url(../images/right_lholder.png);
+    background-repeat: no-repeat;
+    background-position: 100% 0;
+    height: 30px;
+    width: 100%;
+}
+
+.lava_lamp_menu li a {
+    font-weight: bold;
+    font-size: 10pt;
+    text-decoration: none;
+    color: #fff;
+    outline: none;
+    text-align: center;
+    top: 5px;
+    letter-spacing: 0;
+    z-index: 10;
+    display: block;
+    float: left;
+    height: 30px;
+    position: relative;
+    overflow: hidden;
+    margin: auto;
+    margin-right: 10px;
+    margin-left: 10px;
+}
+
+.lava_lamp_menu li a:hover,.lava_lamp_menu li a:active,.lava_lamp_menu li a:visited
+{
+    border: none;
+}

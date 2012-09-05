@@ -1,0 +1,38 @@
+<?php
+
+$languages = array(
+    "languages_title" => "Языковые пакеты",
+    "languages_language_name" => "Язык",
+    "languages_language_by_default" => "По-умолчанию?",
+    "languages_language_rewritable" => "Перезаписываемый?",
+    "languages_language_copy" => 'Копировать языковой пакет',
+    'languages_part_rewritable' => '<font color="red">Частично</font>',
+    'languages_enter_new_name' => "Введите новое имя языка: ",
+    'languages_invalid_new_name' => "Неверное имя языка",
+    'languages_add_title' => "Добавление файла в пакет '%s'",
+    'languages_edit_title' => "Редактирование файла '%s' в пакете '%s'",
+    'languages_change_fieldtype' => 'Увеличить/уменьшить поле',
+    'languages_newline_notice' => '*Примечание: для однострочных полей знак \\n 
+        означает перенос на новую линию',
+    'languages_category' => "Категория: ",
+    'languages_sort' => 'Отсортировать',
+    'languages_filename' => 'Имя файла',
+    'languages_is_writable' => 'Перезаписываемый?',
+    'languages_add_category' => 'Добавить категорию',
+    'languages_wrong_filename' => "Неверное имя файла!",
+    'languages_file_exists' => 'Файл уже существует!',
+    'languages_no_values' => 'Нет значений!',
+    'languages_search' => "Поиск по языковым пакетам",
+    'languages_search_id' => "Языковой пакет",
+    'languages_search_what' => "Строка поиска",
+    'languages_search_where' => "Искать в...",
+    'languages_search_in_values' => 'Значениях',
+    'languages_search_in_keys' => 'Ключах',
+    'languages_search_in_all' => 'Ключах и значениях',
+    'languages_search_regexp' => 'Регулярное выражение?',
+    'languages_search_results' => 'Результаты поиска',
+    'languages_search_file' => 'Файл: <b>%s</b>&nbsp;&nbsp;&bull;&nbsp;&nbsp;Языковой пакет: <b>%s</b>',
+    'languages_search_nothing_found' => 'Ничего не найдено',
+    'languages_search_replace_selected' => "Заменить выбранный",
+    'languages_search_replace_with' => "Заменить на...");
+?>

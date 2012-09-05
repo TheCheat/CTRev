@@ -1,0 +1,21 @@
+span.menu_ucp_selected {
+    font-style: italic;
+    text-decoration: underline;
+}
+
+#usercp_status_icon {
+    position: relative;
+    float: left;
+    top: -20px;
+    margin-bottom: -16px;
+    left: 5px;
+}
+
+.usercp_friends_content {
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.usercp_friends_content_bordered {
+    border-top: 1px gray dashed;
+}

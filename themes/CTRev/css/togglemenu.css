@@ -1,0 +1,81 @@
+div.toggleMenu {
+    position: relative;
+    margin: 0px;
+    padding: 0px;
+    display: block;
+}
+
+div.toggleMenu ul,div.toggleSubMenu div.menu {
+    display: none;
+}
+
+ul.toggledMenu {
+    position: absolute;
+    z-index: 15;
+    display: none;
+    border: 1px solid black;
+    padding: 0px;
+    margin: 0px;
+    min-width: 150px;
+}
+
+ul.toggledMenu li {
+    position: relative;
+    list-style: none;
+    background-color: #24304b;
+    color: white;
+    padding: 0px;
+    margin: 0px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    text-align: left;
+    padding-left: 3px;
+    border-top: 1px solid #fff;
+}
+
+ul.toggledMenu li a {
+    color: #fff;
+}
+
+div.toggleSubMenu {
+    position: relative;
+    margin: 0px;
+    padding: 0px;
+    display: block;
+}
+
+div.toggledMenu {
+    position: absolute;
+    z-index: 15;
+    left: 100%;
+    top: 100%;
+    display: none;
+    border: 0px;
+    padding: 0px;
+    margin: 0px;
+    min-width: 150px;
+    background-color: transparent;
+}
+
+div.dropdown {
+    position: absolute;
+    z-index: 15;
+    width: 320px;
+    color: white;
+    margin-top: 1px;
+    display: block;
+    margin: 0px;
+    margin-left: -70px;
+    padding: 0px;
+}
+
+div.dropdown div.cornerText {
+    background-color: #580000;
+}
+
+div.dropdown div.close_block {
+    position: relative;
+    z-index: 20;
+    top: -8px;
+    left: -2px;
+}

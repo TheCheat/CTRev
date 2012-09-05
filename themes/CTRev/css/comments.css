@@ -1,0 +1,34 @@
+.comment .title {
+    font-size: 15px;
+    font-weight: bold;
+    padding-left: 15px;
+    border-bottom: 1px solid black;
+    margin-bottom: 4px;
+}
+
+.comment .title .author {
+    position: relative;
+    float: right;
+    font-size: 12px;
+    bottom: -3px
+}
+
+.bbcode_comments {
+    position: relative;
+    margin: auto;
+    max-width: 900px;
+}
+
+.add_comment_title {
+    position: relative;
+    float: left;
+}
+.cavatar_field {
+    position: relative;
+    float: right;
+    padding: 5px;
+    padding-right: 25px;
+}
+.cpadded_body {
+    padding-right: 150px;
+}

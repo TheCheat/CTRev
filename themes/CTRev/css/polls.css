@@ -1,0 +1,59 @@
+td.votes_column {
+    width: 50%;
+}
+
+td.percent_column {
+    width: 10%;
+}
+
+td.big_column {
+    width: 90%;
+}
+
+.votes {
+    width: 1px;
+    height: 16px;
+}
+
+.gray_votes {
+    background-color: gray;
+    border: 1px solid gray;
+}
+
+.blue_votes {
+    background-color: teal;
+    border: 1px solid gray;
+}
+
+.orange_votes {
+    background-color: orange;
+    border: 1px solid gray;
+}
+
+div.polls_si {
+    position: relative;
+    float: left;
+    margin-bottom:-16px;
+    left:-17px;
+    top:-23px;
+}
+
+table.short_votes_table {
+    margin: 0px;
+    padding: 0px;
+    border: 1px solid #CDCDCD;
+}
+
+table.short_votes_table tr td {
+    margin: 0px;
+    border: 1px solid #CDCDCD;
+    padding: 1px;
+}
+
+table.short_votes_table tr.first td {
+    border-left: 0px;
+}
+
+table.short_votes_table tr.first td.first {
+    border-right: 0px;
+}

@@ -1,0 +1,45 @@
+table.chat_itable {
+    width: 100%;
+}
+
+div.chat_box {
+    overflow: auto;
+    height: 200px;
+    border-top: 1px dashed #CCCCCC;
+}
+
+td.chat_input {
+    padding: 0;
+    padding-top: 3px;
+}
+
+td.chat_input input {
+    width: 100%;
+}
+
+td.chat_buttons {
+    width: 175px;
+    text-align: right;
+}
+
+div.chat_message {
+    position: relative;
+    width: 100%;
+    clear: both;
+    padding: 2px 0;
+    border-bottom: 1px dashed #CCCCCC;
+}
+
+div.chat_message_editing span.chat_message {
+    background-color: #ffe56d;
+}
+
+span.chat_edit_row {
+    position: absolute;
+    right: 5px;
+}
+
+#chat_loader img {
+    height: 14px;
+    margin-bottom: -2px;
+}

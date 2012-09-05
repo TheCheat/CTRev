@@ -1,0 +1,46 @@
+.syntaxhighlighter pre {
+	font-family: "Consolas", "Bitstream Vera Sans Mono", "Courier New",
+		Courier, monospace !important;
+	font-size: 1em !important;
+	background-color: #fefefe !important;
+	position: relative !important;
+	display: block !important;
+	margin: 0px !important;
+	padding: 0px !important;
+	top: -6px !important;
+}
+
+.syntaxhighlighter pre li {
+	border-left: #90EE90 3px solid;
+	padding-left: 5px;
+	background-color: #fefefe;
+}
+
+.syntaxhighlighter pre li.second_line {
+	background-color: #fafafa;
+}
+
+.syntaxhighlighter pre ol {
+	background-color: #eaeaea;
+}
+
+.syntaxhighlighter {
+	position: relative;
+	max-height: 200px;
+	overflow: auto;
+	margin: 0px !important;
+	padding: 0px !important;
+	border-top: 1px #cecece solid;
+}
+
+.shl_div_top {
+	padding: 3px;
+	border: 1px #cecece solid;
+}
+
+.shl_div_top .shl_title {
+	text-transform: uppercase;
+	font-weight: bold;
+	font-size: 10px;
+	font-family: "Times New Roman", Times, monospace;
+}

@@ -1,0 +1,500 @@
+body {
+    background-color: #ffe56d;
+    font-size: 11px;
+    font-family: Calibri, Geneva, Arial, Helvetica;
+}
+
+div.install_container {
+    margin-left: 50px;
+    margin-right: 50px;
+    margin-top: 50px;
+    height: 100%;
+    background: whitesmoke;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+}
+
+div.left_column {
+    width: 250px;
+    border-right: 1px solid #dfdfdf;
+}
+
+div.left_column ul {
+    list-style: circle outside;
+    padding: 5px;
+    margin: 4px;
+}
+
+div.left_column ul li {
+    padding: 2px;
+    margin: 0px;
+}
+
+div.left_column ul li span {
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+pre.license {
+    width: 500px;
+    height: 350px;
+    overflow: auto;
+    background: white;
+    padding: 10px;
+    text-align: left;
+    border: 1px solid lightsalmon;
+}
+
+
+div.progress_bar {
+    background-color: white;
+    border: 1px solid gray;
+    width: 350px;
+    height: 20px;
+    padding: 0px;
+    margin: 0px;
+}
+
+div.progress_bar div.progress {
+    background-color: gray;
+    height: 20px;
+}
+
+div.progress_bar div.percent {
+    padding-left: 10px;
+    padding-top: 3px;
+}
+
+legend.title {
+    font-size: 13px;
+}
+
+ul.check_rewritable {
+    list-style: none;
+    padding: 3px;
+    margin: 0px;
+}
+ul.check_rewritable li {
+    padding: 2px;
+    margin: 0px;
+}
+ul.check_rewritable li span {
+    display: inline-block;
+    width: 250px;
+    font-weight: bold;
+}
+div.import_window {
+    width: 500px;
+    height: 350px;
+    background: white;
+    border: 1px solid gray;
+    margin: auto;
+    overflow: auto;
+    padding-bottom: 20px;
+}
+
+div.import_loading {
+    position: relative;
+    background: url(images/loading.gif) no-repeat;
+    width: 43px;
+    height: 11px;
+    margin-bottom: -11px;
+    margin: auto;
+    top: -20px;
+}
+
+
+
+
+.hidden {
+    display: none;
+}
+
+.white_color {
+    background-color: #ffffff;
+}
+
+.gold_border {
+    border: 2px solid goldenrod;
+}
+.contact_admin {
+    font-size: .9em;
+    padding: 5px;
+    padding-bottom: 0px;
+}
+
+p.copyright {
+    text-align: center;
+}
+
+hr {
+    border: 0px;
+    padding: 0px;
+    margin: 0px;
+    border-bottom: 1px solid #800b14;
+    height: 1px;
+}
+
+div {
+    display: block;
+}
+
+div.br {
+    margin: 3px;
+}
+
+.cornerText {
+    border: 2px solid lightgray;
+    padding: 5px;
+}
+img.cornerImg {
+    border: 2px solid lightgray;
+}
+
+.sub_text {
+    font-weight: normal;
+    font-size: .8em;
+    font-family: Tahoma, Verdana, Arial, Helvetica;
+}
+
+select {
+    font-size: 1.1em;
+    font-family: Arial, Helvetica;
+}
+
+input[type=text],input[type=password],textarea {
+    background-color: white;
+    border-color: #b2b3b3;
+    border-width: 1px;
+    border-style: solid;
+    font-size: 1.1em;
+    font-family: Arial, Helvetica;
+}
+
+input[type=text]:hover,input[type=password]:hover,textarea:hover {
+    border-color: #84878d;
+}
+
+input[type=text]:focus,input[type=password]:focus,textarea:focus {
+    border-color: #ae3500;
+}
+
+fieldset legend {
+    color: #800b14;
+    font-weight: bold;
+    padding: 2px;
+    margin-bottom: 5px;
+}
+
+fieldset {
+    border: 1px solid #e1e1e1;
+    padding: 10px;
+    padding-top: 5px;
+}
+
+.float_left {
+    position: relative;
+    float: left;
+}
+
+.float_right {
+    position: relative;
+    float: right;
+}
+
+div.content {
+    display: table;
+    width: 100%;
+    min-width: 100%;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+div.content div.tr {
+    display: table-row;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+div.content div.tr div.td {
+    display: table-cell;
+    margin: 0;
+    padding: 0;
+    vertical-align: top;
+}
+
+div.content div.tr div.td_padded_left {
+    padding-left: 3px;
+}
+
+div.content div.tr div.td_padded_right {
+    padding-right: 3px;
+}
+
+.gray_color {
+    background-color: #efefef;
+}
+
+.gray_color2 {
+    background-color: #f9f9f9;
+}
+
+.lgray_color {
+    background-color: #f0efef;
+}
+
+.white_color {
+    background-color: white;
+}
+
+.styled_color {
+    background-color: #800b14;
+    border-color: #800b14;
+    color: white;
+}
+
+.blue_border {
+    border: 2px solid #265b8d;
+}
+
+.gray_border {
+    border: 2px solid #e2e2e1;
+}
+
+.gray_border2 {
+    border: 2px solid darkgray;
+}
+
+
+hr.gray_border, hr.gray_border2 {
+    border-width: 0 0 1px 0;
+}
+
+.white_place {
+    border: 1px solid gray;
+    background-color: white;
+    width: 700px;
+    padding: 5px;
+    text-align: left;
+}
+
+a {
+    color: #800b14;
+    text-decoration: none;
+    border: 0px;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+a.white_link {
+    color: white;
+}
+
+.padding_left {
+    padding-left: 20px;
+}
+.padding_right {
+    padding-right: 20px;
+}
+
+.spadding_left {
+    padding-left: 5px;
+}
+.spadding_right {
+    padding-right: 5px;
+}
+
+.clickable {
+    cursor: pointer;
+}
+
+.nobordered {
+    border: 0px !important;
+}
+
+.clear_both {
+    clear: both;
+}
+
+.margin_auto {
+    margin: auto;
+    width: 450px;
+}
+
+dl.info_text {
+    width: 100%;
+    min-width: 200px;
+}
+
+dl.info_text dt {
+    display: block;
+    position: relative;
+    float: left;
+    color: #434343;
+    font-weight: bold;
+    text-align: right;
+    padding-right: 5px;
+    width: 30%;
+    clear: both;
+}
+
+dl.info_text dt.white_text {
+    color: white;
+}
+
+dl.info_text dt.white_text:hover,dl.info_text dt[class~="white_text"][class~="hovered"]
+{
+    color: lightgray !important;
+    font-weight: bold;
+}
+
+dl.info_text dt.white_text:hover+dd {
+    border-left: 1px solid lightgray;
+}
+
+dl.info_text dt.white_text+dd:hover {
+    border-left: 1px solid lightgray;
+}
+
+dl.info_text dt.white_text+dd {
+    border-left: 1px solid white;
+}
+
+dl.info_text dt:hover,dl.info_text dt.hovered {
+    color: black;
+    font-weight: bold;
+}
+
+dl.info_text dt:hover+dd {
+    border-left: 1px solid black;
+}
+
+dl.info_text dd:hover {
+    border-left: 1px solid black;
+}
+
+dl.info_text dt span {
+    color: #434343;
+    font-weight: normal;
+}
+
+dl.info_text dd {
+    display: table;
+    text-align: left;
+    padding-left: 5px;
+    margin-bottom: 5px;
+    clear: right;
+    border-left: 1px solid gray;
+}
+
+
+
+div.m_message {
+    width: 80%;
+    margin: auto;
+}
+
+div.m_message_content {
+    padding-top: 5px;
+}
+
+div.m_message_table {
+    padding: 4px;
+    margin: 4px;
+}
+
+div.m_message_image {
+    /*position: relative;
+    float: left;*/
+    width: 30px;
+    height: 24px;
+    margin: 5px;
+    margin-top: 3px;
+}
+
+.error {
+    color: #990000;
+    background-color: #FFF0F0;
+    border: 1px dashed #990000;
+}
+
+.error b {
+    color: #990000;
+    background: inherit;
+}
+
+.error_image {
+    background: url(images/error2.png) no-repeat;
+}
+
+
+.info {
+    color: #000;
+    background-color: #e1eafa;
+    border: 1px dashed #146ca6;
+}
+
+.info b {
+    color: #146ca6;
+    background: inherit;
+}
+
+.info_image {
+    background: url(images/information.png) no-repeat;
+}
+
+.error_title,.info_title {
+    position: relative;
+    font-weight: bold;
+    padding-left: 25px;
+    margin-bottom: 5px;
+}
+
+
+div.status_icon {
+    background-image: none;
+    background-repeat: no-repeat;
+    font-size: 10px;
+    /*width: 200px;*/
+    width: 16px;
+    height: 16px;
+    display: none;
+    float: left;
+    padding-left: 5px;
+}
+
+div.status_icon_loading {
+    display: block;
+    background-image: url(images/white_loading.gif);
+}
+
+div.status_icon_error {
+    display: block;
+    background-image: url(images/error.png);
+}
+
+div.status_icon_success {
+    display: block;
+    background-image: url(images/success.png);
+}
+
+input[type="button"],input[type="submit"] {
+    background: url(images/button.png) repeat-x 0 0;
+    font-family: Times;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 3px 10px;
+    height: 25px;
+    border: 1px outset #740000;
+    outline: 0px;
+    color: white;
+    margin: 5px;
+}
+
+input[type="button"]:hover,input[type="submit"]:hover {
+    background-position: 0 -25px;
+    border-color: #960000;
+}

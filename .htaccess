@@ -1,0 +1,99 @@
+allow from all
+# Нач. Присваиваем свои документы ошибок
+# ErrorDocument 401 /errors/401.html
+# ErrorDocument 403 /errors/403.html
+# ErrorDocument 404 /errors/404.html
+# ErrorDocument 500 /errors/500.html
+# Кон.
+
+# Главная страница
+DirectoryIndex index.php
+
+# Кодировка по-умолчанию
+AddDefaultCharset UTF-8
+# Чтобы апач не решал что-либо за меня
+Options SymLinksIfOwnerMatch
+
+# Нач. Настраиваем PHP
+
+<IfModule mod_php5.c>
+
+php_flag "register_globals" off
+php_flag "short_open_tag" on
+php_flag "display_errors" on
+
+# Максимальный размер загружаемого файла, размер POST-данных(по 50 мегабайт)
+
+php_value "upload_max_filesize" 50M
+php_value "post_max_size" 50M
+php_value "error_reporting" 30711
+
+</IfModule>
+# Кон.
+
+# Нач. Настрока rewrite
+<IfModule mod_rewrite.c>
+
+SetEnv HTTP_FURL_AVALIABLE 1
+
+RewriteEngine on
+
+RewriteRule ^static/([a-z0-9\-\_]+)\.(html|php)$                                ./index.php?module=statics&page=$1 [NC,L]
+
+RewriteRule ^users/([^/]+)/?$                                                   ./index.php?module=user&user=$1 [NC,L]
+RewriteRule ^users/([^/]+)/cid([0-9]+)\.(html|php)$                             ./index.php?module=user&user=$1&cid=$2 [NC,L]
+RewriteRule ^users/([^/]+)/index(?:\-cid([0-9]+))?\.(html|php)$                 ./index.php?module=user&user=$1&cid=$2 [NC,L]
+RewriteRule ^users/([^/]+)/([^/]+)(?:\-cid([0-9]+))?\.(html|php)$               ./index.php?module=user&user=$1&act=$2&cid=$3 [NC,L]
+
+RewriteRule ^polls/(?:id([0-9]+)\-|)(edit|add|view)\.(html|php)$                ./index.php?module=polls_manage&id=$1&act=$2 [NC,L]
+RewriteRule ^polls(/?|/index\.(html|php))$                                      ./index.php?module=polls_manage [NC,L]
+
+RewriteRule ^search/auto\-(author|query|tag)\-(.+)\.(html|php)$                 ./index.php?module=search_module&$1=$2&auto=1 [NC,L]
+RewriteRule ^search/(author|query|tag)\-(.+)\.(html|php)$                       ./index.php?module=search_module&$1=$2 [NC,L]
+RewriteRule ^search/(user|email)\-([^/]+)\.(html|php)$                          ./index.php?module=search_module&$1=$2 [NC,L]
+RewriteRule ^search/users\.(html|php)$                                          ./index.php?module=search_module&act=user [NC,L]
+RewriteRule ^search(|/|/index\.(html|php))$                                     ./index.php?module=search_module [NC,L]
+
+RewriteRule ^torrents(/?|/index\.(html|php))$                                   ./index.php?module=torrents [NC,L]
+RewriteRule ^torrents/(rss|atom)\.(html|php)$                                   ./index.php?module=torrents&act=$1 [NC,L]
+RewriteRule ^torrents/(.+)/new\.(html|php)$                                     ./index.php?module=torrents&act=new&cat=$1 [NC,L]
+RewriteRule ^torrents/new\.(html|php)$                                          ./index.php?module=torrents&act=new [NC,L]
+RewriteRule ^torrents/([0-9]{4})/([0-9]{1,2})/([0-9]{1,2})(|/|/index\.(html|php))$  ./index.php?module=torrents&year=$1&month=$2&day=$3 [NC,L]
+RewriteRule ^torrents/([0-9]{4})/([0-9]{1,2})(|/|/index\.(html|php))$           ./index.php?module=torrents&year=$1&month=$2 [NC,L]
+RewriteRule ^torrents/([0-9]{4})(|/|/index\.(html|php))$                        ./index.php?module=torrents&year=$1 [NC,L]
+RewriteRule ^torrents/page([0-9]+)\.(html|php)$                                 ./index.php?module=torrents&page=$1 [NC,L]
+RewriteRule ^torrents/(.+)-id([0-9]+)-page([0-9]+)\.(html|php)$                 ./index.php?module=torrents&id=$2&comments_page=$3 [NC,L]
+RewriteRule ^torrents/(.+)-id([0-9]+)-cid([0-9]+)\.(html|php)$                  ./index.php?module=torrents&id=$2&cid=$3 [NC,L]
+RewriteRule ^torrents/(add|edit\-id([0-9]+))\.(html|php)$                       ./index.php?module=torrents&act=add&id=$2 [NC,L]
+RewriteRule ^torrents/(.+)-id([0-9]+)\.(html|php)$                              ./index.php?module=torrents&id=$2 [L,QSA]
+RewriteRule ^torrents/(.+)/page([0-9]+)\.(html|php)$                            ./index.php?module=torrents&cat=$1&page=$2 [NC,L]
+RewriteRule ^torrents/(.+)/add\.(html|php)$                                     ./index.php?module=torrents&act=add&cat=$1 [NC,L]
+RewriteRule ^torrents/(.+)/(rss|atom)\.(html|php)$                              ./index.php?module=torrents&act=$2&cat=$1 [NC,L]
+RewriteRule ^torrents/(.+)(/?|/index\.(html|php))$                              ./index.php?module=torrents&cat=$1 [NC,L]
+
+RewriteRule ^login/recover\-([^/]+)/email-([^/]+)\.(html|php)$                  ./index.php?module=login&act=recover&key=$1&email=$2 [NC,L]
+RewriteRule ^login/recover\.(html|php)$                                         ./index.php?module=login&act=recover [NC,L]
+RewriteRule ^login/out\.(html|php)$                                             ./index.php?module=login&act=out [NC,L]
+RewriteRule ^login/ref\-(.+)\.(html|php)$                                       ./index.php?module=login&ref=$1 [NC,L]
+RewriteRule ^login(|/|/index\.(html|php))$                                      ./index.php?module=login [NC,L]
+
+RewriteRule ^registration(|/|/index\.(html|php))$                               ./index.php?module=registration [NC,L]
+RewriteRule ^registration/main\.(html|php)$                                     ./index.php?module=registration&act=main [NC,L]
+RewriteRule ^registration/ckey\-([^/]+)\.(html|php)$                            ./index.php?module=registration&ckey=$2 [NC,L]
+
+RewriteRule ^pm/(read|resend)\-id([0-9]+)\.(html|php)$                          ./index.php?module=messages&act=read&id=$1 [NC,L]
+RewriteRule ^pm/(output|sended|send)\.(html|php)$                               ./index.php?module=messages&act=$1 [NC,L]
+RewriteRule ^pm(/?|/index\.(html|php))$                                         ./index.php?module=messages [NC,L]
+RewriteRule ^pm/([^/]+)(/(index|send)\.(html|php))?$                            ./index.php?module=messages&act=send&to=$1 [NC,L,QSA]
+
+RewriteRule ^usercp(|/|/index\.(html|php))$                                     ./index.php?module=usercp [NC,L]
+RewriteRule ^usercp/([^/]+)\.(html|php)$                                        ./index.php?module=usercp&act=$1 [NC,L]
+
+RewriteRule ^news/(?:id([0-9]+)\-|)(edit|add)\.(html|php)$                      ./index.php?module=news&id=$1&act=$2 [NC,L]
+
+RewriteRule ^download/id([0-9]+)\.torrent$                                      ./index.php?module=torrents&act=download&id=$1 [NC,L]
+
+RewriteRule ^announce/p([a-z0-9]+)$                                             ./announce.php?passkey=$1 [NC,L,QSA]
+RewriteRule ^scrape/p([a-z0-9]+)$                                               ./scrape.php [NC,L,QSA]
+</IfModule>
+# Кон.

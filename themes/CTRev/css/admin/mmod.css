@@ -1,0 +1,57 @@
+.config_element {
+    border-bottom: 1px solid #CCCCCC;
+    padding: 5px;
+}
+
+div.group_colorpicker {
+    display: inline-block;
+}
+
+#accordion_rules {
+    width: 90% !important;
+}
+
+dt.accordion_rdt {
+    width: 50% !important;
+}
+
+div.pattern_element {
+    width: 500px; 
+    margin: auto;
+}
+
+p.pattern_support {
+    width: 450px;
+    margin: auto;
+    padding-bottom: 10px;
+}
+
+div.pattern_delete {
+    float: right;
+    margin-bottom: -16px;
+}
+
+div.langfield_input {
+    display: inline-block;
+}
+
+div.lang_buttons, a.remove_lang_catfield {
+    position: relative;
+    top: 2px;
+}
+div.lang_buttons {
+    float: right;
+}
+img.preview_smilie {
+    min-width: 16px;
+    min-height: 16px;
+    border: 1px solid gray;
+    padding: 1px;
+    background-color: white;
+}
+#plugins_status_icon {
+    padding-left:18px;
+    padding-top:3px;
+    width: 65px;
+    margin-right: 15px;
+}

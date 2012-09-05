@@ -1,0 +1,30 @@
+@import "jTip.css";
+
+div.news_element {
+    /*background: url(../images/news_image.jpg) no-repeat 20px 0px;*/
+    padding: 2px 3px;
+    padding-bottom: 10px;
+    font-size: 13px;
+}
+
+a.news_bold {
+    font-weight: bold;
+    color: #800b14;
+}
+
+a.news_simple {
+    color: #222222;
+}
+
+div.news_element span {
+    background-color: #EEEEEE;
+    border: 1px solid gray;
+    padding: 2px;
+    padding-top: 1px;
+    margin-right: 5px;
+    color: #666666;
+}
+div.news_edit_row {
+    float: right;
+    padding-right: 5px;
+}

@@ -1,0 +1,35 @@
+.receivers_right {
+    position: relative;
+    float: right;
+}
+
+.receivers_left {
+    position: relative;
+    float: left;
+}
+
+.receivers_pm {
+    margin-left: 100px;
+    width: 500px;
+}
+
+#pm_status_icon {
+    position: relative;
+    float: left;
+    top: 7px;
+    margin-left: -25px;
+}
+
+.pm_subinfo {
+    padding-top: 8px;
+}
+
+.pm_content {
+    position: relative;
+    margin-top: 10px;
+    margin-left: 3px;
+    z-index: 5;
+}
+div.pm_content_single {
+    min-height: 80px;
+}

@@ -1,0 +1,51 @@
+/** 
+ * Slideshow style rules.
+*/
+.slideshow {
+    margin: 0 auto;
+    position: relative;
+}
+
+.slideshow .slidesContainer {
+    display: block;
+    height: 24px;
+    margin: 0 auto;
+    overflow: auto; /* allow scrollbar */
+    position: relative;
+    clear: both;
+}
+
+.slideshow .slidesContainer .slide {
+    position: relative;
+    margin: 0 auto;
+    float: left;
+}
+
+/** 
+ * Slideshow controls style rules.
+*/
+.slideshow .control {
+    display: block;
+    width: 16px;
+    height: 16px;
+    text-indent: -10000px;
+    position: absolute;
+    cursor: pointer;
+    background: transparent url(../images/bbcode_icons.png) no-repeat;
+}
+
+.slideshow .leftControl {
+    top: 0;
+    left: -2px;
+    /*left: -16px;*/
+    z-index: 10;
+    background-position: 0 -320px;
+}
+
+.slideshow .rightControl {
+    top: 0;
+    right: -2px;
+    z-index: 10;
+    /*right: -16px;*/
+    background-position: 0 -304px;
+}

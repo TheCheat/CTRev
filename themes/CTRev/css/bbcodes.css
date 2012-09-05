@@ -1,0 +1,245 @@
+@import "trackbar.css";
+
+@import "colorpicker.css";
+
+a.bbcodes {
+    position: relative;
+    float: left;
+    background-image: url(../images/bbcode_icons.png);
+    background-repeat: no-repeat;
+    height: 16px;
+    width: 16px;
+    padding-right: 1px;
+    padding-left: 1px;
+}
+
+a.bbcodes_border {
+    border-right: 1px solid #dbdbdb;
+    margin-right: 2px;
+    padding-left: 2px;
+}
+
+div.bbcodes {
+    height: 20px;
+    padding-top: 2px;
+    border-bottom: 1px solid #dbdbdb;
+    padding-left: 15px;
+}
+
+div.textinput_box {
+    background-color: white;
+    width: 440px;
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    border: 1px solid #dbdbdb;
+}
+
+div.textinput_box textarea, div.wysiwyg_editor iframe {
+    margin-top: 2px;
+    margin-left: 5px;
+    border: 0px;
+    width: 435px;
+    height: 150px;
+}
+
+div.wysiwyg_editor iframe {
+    font-size: 13px;
+    font-family: Calibri, Geneva, Arial, Helvetica;
+    padding: 2px 3px;
+    margin: 0px;
+}
+
+div.bbcodes_slides {
+    width: 440px;
+    text-align: left;
+}
+
+a.bbcode_left {
+    background-position: 0 0px;
+}
+
+a.bbcode_center {
+    background-position: 0 -16px;
+}
+
+a.bbcode_right {
+    background-position: 0 -32px;
+}
+
+a.bbcode_justify {
+    background-position: 0 -48px;
+}
+
+a.bbcode_paragraf {
+    background-position: 0 -64px;
+}
+
+a.bbcode_b {
+    background-position: 0 -80px;
+}
+
+a.bbcode_i {
+    background-position: 0 -96px;
+}
+
+a.bbcode_s {
+    background-position: 0 -112px;
+}
+
+a.bbcode_u {
+    background-position: 0 -128px;
+}
+
+a.bbcode_xd {
+    background-position: 0 -144px;
+}
+
+a.bbcode_xt {
+    background-position: 0 -160px;
+}
+
+a.bbcode_lin {
+    background-position: 0 -176px;
+}
+
+a.bbcode_lil {
+    background-position: 0 -192px;
+}
+
+a.bbcode_url {
+    background-position: 0 -208px;
+}
+
+a.bbcode_size {
+    background-position: 0 -224px;
+}
+
+a.bbcode_img {
+    background-position: 0 -240px;
+}
+
+a.bbcode_color {
+    background-position: 0 -256px;
+}
+
+a.bbcode_smilie {
+    background-position: 0 -272px;
+}
+
+a.bbcode_quote {
+    background-position: 0 -288px;
+}
+
+a.bbcode_hide {
+    background-position: 0 -336px;
+}
+
+a.bbcode_spoiler {
+    background-position: 0 -352px;
+}
+
+a.bbcode_code {
+    background-position: 0 -368px;
+}
+
+a.bbcode_code_php {
+    background-position: 0 -384px;
+}
+
+a.bbcode_code_html {
+    background-position: 0 -400px;
+}
+
+a.bbcode_code_js {
+    background-position: 0 -416px;
+}
+
+a.bbcode_code_css {
+    background-position: 0 -432px;
+}
+
+a.bbcode_type {
+    background-position: 0 -448px;
+}
+
+a.wysiwyg_type {
+    background-position: 0 -464px;
+}
+
+div.bbcodeMenu div.menu,div.toggledMenu {
+    min-width: 100px !important;
+}
+
+div.menu div.cornerText {
+    background-color: #ebecef;
+    border-color: #bfc4ce;
+}
+
+div.fixed_height_menu {
+    height: 100px;
+    overflow: auto;
+}
+
+div.quote {
+    background-color: #e4e4ed;
+    padding: 5px;
+    border: 1px solid #adadff;
+}
+
+div.quote div.quote_title {
+    background-image: url(../images/quote-right.png);
+    background-repeat: no-repeat;
+    background-position: left top;
+    padding-left: 18px;
+    border-bottom: 1px solid gray;
+    font-weight: bold;
+    margin-bottom: 2px;
+}
+
+div.quote div.quote_title span {
+    font-style: italic;
+}
+
+div.quote div.quote_content {
+    background-image: url(../images/quote-left.png);
+    background-repeat: no-repeat;
+    background-position: right bottom;
+    padding-bottom: 12px;
+}
+
+div.spoiler {
+    padding: 5px;
+}
+
+div.spoiler div.spoiler_content {
+    border: 1px solid #c3cbd1;
+    border-left-width: 2px;
+    border-top: 0px;
+    background-color: #f5f5f5;
+    padding-left: 10px;
+    display: none;
+}
+
+div.spoiler div.spoiler_title {
+    border: 1px solid #c3cbd1;
+    border-left-width: 2px;
+    background: #e9e9e6;
+    cursor: pointer;
+    padding: 2px;
+    display: block;
+    font-weight: bold;
+    clear: both;
+}
+
+div.spoiler div.spoiler_title div.spoiler_icon,a.spoiler_icon {
+    position: relative;
+    float: left;
+    background: url(../engine_images/sp_plus.gif) no-repeat;
+    width: 9px;
+    height: 9px;
+    padding-left: 3px;
+    top: 2px;
+    left: 2px;
+}

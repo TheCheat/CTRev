@@ -1,0 +1,56 @@
+ul.sortable, ol.sortable *, ul.sortable_header {
+    list-style-type: none;
+}
+ul.sortable td, ol.sortable td , ul.sortable_header td {
+    text-align: center;
+}
+
+ul.sortable, ol.sortable, ol.sortable ol, ul.sortable_header {
+    padding: 0px;
+    margin: 0px;
+}
+
+ol.sortable ol {
+    margin-left: 20px;
+}
+
+
+ul.sortable li:not(.unstyled), ol.sortable li > div, ul.sortable_header li {
+    background-image: url(../../images/admin/sortable_item.png);
+    background-color: #E6E6E6;
+    background-repeat: repeat-x;
+    background-position: 50% 50%;
+    border: 1px solid #D3D3D3;
+    color: #555555;    
+    padding: 5px;
+    margin: 4px;
+}
+
+li.sortable_disabled {    
+    background: #F0F0F0 !important;;
+    border: 1px solid #E6E6E6 !important;
+    color: #AAAAAA !important;
+}
+
+li.sortable_thin {    
+    padding: 4px !important;
+    margin: 2px !important;
+}
+li.sortable_thin dl.info_text, li.sortable_thin dl.info_text dd {    
+    padding-top: 0px !important; 
+    padding-bottom: 0px !important;
+    margin-top: 0px !important; 
+    margin-bottom: 0px !important;
+}
+span.sortable_icon {
+    background-image: url(../../engine_images/sortable.png);
+    background-repeat: no-repeat;
+    height: 16px;
+    padding-left: 16px;
+    margin-left: -5px;
+}
+
+.sortable_placeholder {
+    background: #fbfbfb !important;
+    border: 1px solid #ffec8c !important;
+}

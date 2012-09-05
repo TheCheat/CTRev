@@ -1,0 +1,165 @@
+<?php
+
+/**
+ * Project:            	CTRev
+ * File:                class.getpeers.php
+ *
+ * @link 	  	http://ctrev.cyber-tm.ru/
+ * @copyright         	(c) 2008-2012, Cyber-Team
+ * @author 	  	The Cheat <cybertmdev@gmail.com>
+ * @name		Класс, содержащий методы для получения "левых" пиров
+ * @version           	1.00
+ */
+if (!defined('INSITE'))
+    die('Remote access denied!');
+
+class getpeers {
+
+    /**
+     * Параметры, отсылаемые аннонсеру
+     * @var string
+     */
+    protected $announce_url = "";
+
+    /**
+     * Ограничение на запрос по времени в секундах
+     * @const int time_limit
+     */
+
+    const time_limit = 15;
+
+    /**
+     * Конструктор запроса для аннонсеров
+     * @return null
+     */
+    public function __construct() {
+        $peer_id = "-UT1820-z8%ea%e9gt%eb%ad~v%0f%0b";
+        $port = rand(40000, 50000);
+        $uploaded = 0;
+        $downloaded = 0;
+        $left = 1024; // Килобайт остался, ага
+        $corrupt = 0;
+        $key = "79202A30";
+        $numwant = 200; // Кол-во пиров, которое мы хотим получить
+        $compact = 1; // Чтобы быстрее. И некоторые движки не поддерживают др. режим.
+        $no_peer_id = 1;
+        $event = "started";
+        $announce_url = "peer_id=" . $peer_id;
+        $announce_url .= "&port=" . $port;
+        $announce_url .= "&uploaded=" . $uploaded;
+        $announce_url .= "&downloaded=" . $downloaded;
+        $announce_url .= "&left=" . $left;
+        $announce_url .= "&corrupt=" . $corrupt;
+        $announce_url .= "&key=" . $key;
+        $announce_url .= "&numwant=" . $numwant;
+        $announce_url .= "&compact=" . $compact;
+        $announce_url .= "&no_peer_id=" . $no_peer_id;
+        $announce_url .= "&event=" . $event;
+        $this->announce_url = $announce_url;
+        ini_set('default_socket_timeout', self::time_limit);
+    }
+
+    /**
+     * Посылка запроса по URL и получение результата
+     * @param string $url URL
+     * @param string $infohash инфохеш торрента
+     * @return string контент
+     */
+    protected function send_request($url, $infohash) {
+        $url = $url . (strpos($url, "?") ? "&" : "?") . $this->announce_url . '&info_hash=' . $infohash;
+        $ua = "uTorrent/1820";
+        if (function_exists("curl_init")) {
+            $ch = curl_init();
+
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_HEADER, false);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, self::time_limit);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_USERAGENT, $ua);
+
+            @$r = curl_exec($ch);
+
+            curl_close($ch);
+        } else
+            $r = @file_get_contents($url, null, stream_context_create(array(
+                                'http' => array(
+                                    'method' => "GET",
+                                    'timeout' => self::time_limit,
+                                    'header' => "User-Agent: " . $ua . "\r\n"
+                                    ))));
+        return $r;
+    }
+
+    /**
+     * Получение списка пиров
+     * @global db $db
+     * @param int $tid ID торрента
+     * @param string $announces сериализованный массив аннонсеров
+     * @param string $infohash инфохеш торрента
+     * @param bool $update обновить?
+     * @return array массив полученной статистики по трекерам
+     */
+    public function get_peers($tid, $announces, $infohash, $update = true) {
+        global $db;
+        $announces = unserialize($announces);
+        $tid = (int) $tid;
+        if (!$announces || !is_array($announces))
+            return;
+        $peers = null;
+        $infohash = urlencode(pack("H*", $infohash));
+        $stat = array();
+        foreach ($announces as $announce) {
+            $peers = 0;
+            $scrape = str_replace('/announce', '/scrape', $announce);
+            $c = '';
+            if ($scrape != $announce && $c = $this->send_request($scrape, $infohash))
+                $peers = $this->parse_scrape($c);
+            if (!$peers) {
+                $c = $this->send_request($announce, $infohash);
+                $peers = $this->parse_announcer($c);
+            }
+            $stat[$announce] = $peers;
+        }
+        $stat['last_update'] = time();
+        if ($update)
+            $db->update(array('announce_stat' => serialize($stat)), 'torrents', 'WHERE id=' . $tid . ' LIMIT 1');
+        return $stat;
+    }
+
+    /**
+     * Парсинг аннонсера
+     * @global bittorrent $bt
+     * @param string $content контент аннонсера
+     * @return int|array кол-во пиров, либо массив из кол-ва сидов и личеров
+     */
+    protected function parse_announcer($content) {
+        global $bt;
+        $c = $bt->bdec($content);
+        if (!is_array($c))
+            return;
+        if (isset($c["complete"]) && isset($c["incomplete"]))
+            return array((int) $c["complete"], (int) $c["incomplete"]);
+        if (is_array($c['peers']))
+            return count($c['peers']);
+        else
+            return (int) (strlen($c['peers']) / 6);
+    }
+
+    /**
+     * Парсинг скрейпа
+     * @global bittorrent $bt
+     * @param string $content контент скрейпа
+     * @return array массив из кол-ва сидов и личеров
+     */
+    protected function parse_scrape($content) {
+        global $bt;
+        $c = $bt->bdec($content);
+        if (!is_array($c))
+            return;
+        if (isset($c["complete"]) && isset($c["incomplete"]))
+            return array((int) $c["complete"], (int) $c["incomplete"]);
+    }
+
+}
+
+?>

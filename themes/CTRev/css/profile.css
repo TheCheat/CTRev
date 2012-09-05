@@ -1,0 +1,69 @@
+div.left_col_profile {
+    position: relative;
+    float: left;
+    padding-right: 5px;
+}
+
+div.padded_avatar {
+    padding-top: 3px;
+}
+
+div.col_profile div.username,div.center_col_profile div.username {
+    font-size: 16px;
+    padding-left: 25px;
+    font-weight: bold;
+}
+
+div.subcol_profile {
+    width: 255px;
+}
+
+div.col_profile {
+    width: 250px;
+}
+
+dt.top_bordered {
+    border-top: 1px #800b14 solid;
+}
+
+#users_menus {
+    position: static;
+    padding-bottom: 4px;
+}
+
+#users_menus ul {
+    padding: 0px;
+    padding-left: 13px;
+}
+
+#users_menus ul li {
+    position: relative;
+    float: left;
+    list-style: none;
+    color: black;
+    padding: 0px;
+    margin: 0px;
+    text-align: left;
+}
+
+#users_menus ul li.selected {
+    font-weight: bold;
+}
+
+#users_menus ul li.selected a.text {
+    text-decoration: underline;
+}
+
+#users_center_col_body {
+    padding-top: 5px;
+}
+
+select.countries_select {
+    position: relative;
+    margin-left: 5px;
+}
+
+span.karma {
+    position: relative;
+    top: 2px;
+}

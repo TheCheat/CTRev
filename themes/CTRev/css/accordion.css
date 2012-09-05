@@ -1,0 +1,51 @@
+.accordion_sw {
+	width: 500px;
+}
+
+.accordion {
+	font-family: verdana;
+	border: 1px solid gray;
+}
+
+.accordion>div {
+	border: none;
+	text-decoration: none;
+	font-size: 10px;
+	margin: 0px;
+	padding: 10px;
+	background-color: #eee;
+}
+
+.accordion>a.accordion_header {
+	cursor: pointer;
+	display: block;
+	padding: 5px;
+	margin-top: 0;
+	text-decoration: none;
+	font-weight: bold;
+	font-size: 12px;
+	color: black;
+	background-color: #00a0c6;
+	border-top: 1px solid #FFFFFF;
+	border-bottom: 1px solid #999;
+	background-image: url(../images/AccordionTab0.gif);
+}
+
+.accordion>a.accordion_header:hover {
+	background-color: white;
+	color: white;
+	background-image: url(../images/AccordionTab2.gif);
+}
+
+.accordion>a.accordion_header.selected {
+	color: white;
+	background-color: #80cfe2;
+	background-image: url(../images/AccordionTab2.gif);
+}
+
+@media print {
+	.accordion>div {
+		display: block !important;
+		height: auto !important
+	}
+}
