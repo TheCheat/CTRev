@@ -194,8 +194,8 @@ CREATE TABLE IF NOT EXISTS `categories` (
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
 INSERT INTO `categories` (`id`, `parent_id`, `name`, `descr`, `transl_name`, `post_allow`, `type`, `pattern`, `sort`) VALUES
-(1, 0, 'Игры', 'Такое же простое описание простой категории', 'games', '', 'torrents', 1, 0),
-(6, 0, 'Софт', 'Софт и все, все, все', 'software', '', 'torrents', 1, 0),
+(1, 0, 'Игры', 'Такое же простое описание простой категории', 'games', '0', 'torrents', 1, 0),
+(6, 0, 'Софт', 'Софт и все, все, все', 'software', '0', 'torrents', 1, 0),
 (7, 6, 'PC', 'Софт для PC', 'pcsoft', '1', 'torrents', 1, 0),
 (8, 6, 'PPC', 'Blahblahblah', 'ppcsoft', '1', 'torrents', 1, 0),
 (3, 1, 'Action', 'AND MOAR!', 'action', '1', 'torrents', 1, 1),
