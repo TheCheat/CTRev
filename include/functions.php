@@ -630,7 +630,7 @@ function log_add($subject, $type = "user", $vars = array(), $touid = null) {
         "time" => time(),
         "byuid" => $users->v('id'), // -1 - система
         "byip" => $users->get_ip(),
-        "touid" => $touid);
+        "touid" => (int) $touid);
     $db->insert($contents, "logs");
 }
 

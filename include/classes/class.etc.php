@@ -139,7 +139,7 @@ class etc {
      * @global users $users
      * @param string $title заголовок сообщения
      * @param string $body тело сообщения
-     * @param integer $uid ID пользователя
+     * @param int $uid ID пользователя
      * @param string $email E-mail получателя
      * @param int $sender ID отправителя
      * @return bool статус отправки
@@ -148,6 +148,7 @@ class etc {
         global $db, $furl, $bbcodes, $users;
         if (!$sender)
             $sender = $users->v('id');
+        $uid = (int) $uid;
         $id = $db->insert(array(
             "subject" => $title,
             "text" => $body,

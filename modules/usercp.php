@@ -434,7 +434,7 @@ class usercp_ajax {
         $update ["user_email"] = (bool) $user_email;
         $update ["timezone"] = (int) $timezone;
         $update ["dst"] = (bool) $use_dst;
-        $update ["mailer_interval"] = $interval;
+        $update ["mailer_interval"] = (int) $interval;
         //print_r($update);
         if ($birthday)
             $update ["birthday"] = $birthday;
