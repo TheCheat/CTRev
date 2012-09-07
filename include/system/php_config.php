@@ -3,8 +3,8 @@
 define('ROOT', dirname(dirname(dirname(__FILE__))) . "/");
 require_once ROOT . 'include/system/config_global.php';
 if (IN_DEVELOPMENT) {
-    @error_reporting(E_ALL & ~E_NOTICE);
-    @ini_set('error_reporting', E_ALL & ~E_NOTICE);
+    @error_reporting(E_ALL & ~E_NOTICE & ~E_STRICT);
+    @ini_set('error_reporting', E_ALL & ~E_NOTICE & ~E_STRICT);
     @ini_set('display_errors', '1');
 } else {
     @error_reporting(0);
