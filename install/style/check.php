@@ -37,3 +37,4 @@
         </ul>
     </dd>
 </dl>
+<center><font size='1'><?= $lang->v('install_check_notice') ?></font></center>

@@ -25,6 +25,8 @@ $languages = array(
     'install_check_mbstring' => 'Поддержка mbstring? ',
     'install_check_furl' => 'Поддержка ЧПУ?(необяз.) ',
     'install_check_curl' => 'Поддержка CURL?(необяз.) ',
+    'install_check_notice' => '<b>*Примечание: install/lock</b> - файл, который создаётся после инсталляции. <br>
+        Если невозможно его записать, значит папка <b>install</b> не обладает необходимыми правами.',
     'install_database_dbhost' => 'Хост БД(:порт): ',
     'install_database_dbuser' => 'Пользователь БД: ',
     'install_database_dbpass' => 'Пароль БД: ',
