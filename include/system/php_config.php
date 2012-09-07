@@ -23,5 +23,4 @@ if (function_exists("set_magic_quotes_runtime"))
 @ob_start();
 if (function_exists("mb_internal_encoding") || !defined('ININSTALL'))
     mb_internal_encoding('UTF-8');
-
 ?>

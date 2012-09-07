@@ -340,7 +340,8 @@ $charset = ' . var_export($charset, true) . ';
             $error[] = $lang->v('install_error_wrong_username');
         if (!$users->check_password($password))
             $error[] = $lang->v('install_error_wrong_password');
-        if (!$users->check_email($email, ($tmp = false)))
+        $tmp = false; // reference
+        if (!$users->check_email($email, $tmp))
             $error[] = $lang->v('install_error_wrong_email');
         if ($error)
             return;

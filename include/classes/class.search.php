@@ -296,7 +296,8 @@ class search {
         global $db;
         if (!$id_col)
             $id_col = "id";
-        $where = $this->make_where($value, $columns, ($regexp = false));
+        $regexp = false; // reference
+        $where = $this->make_where($value, $columns, $regexp);
         if (is_array($columns))
             $cols = $columns + array(-1 => $id_col);
         else

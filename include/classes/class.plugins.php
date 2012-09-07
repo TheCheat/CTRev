@@ -626,7 +626,8 @@ class plugins_modifier {
                     continue;
                 foreach ((array) $cur as $per) {
                     list($what, $with) = $per;
-                    $contents = str_replace($with, $what, $contents, ($c = 1));
+                    $c = 1; // reference
+                    $contents = str_replace($with, $what, $contents, $c);
                 }
             }
             $r += $file->write_file($contents, $f);
