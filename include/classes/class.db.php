@@ -70,9 +70,7 @@ class db { // не final, ибо err переопределяется в анн�
      */
     public function connect() {
         include_once ROOT . 'include/dbconn.php';
-        if (!$this->connected)
-            $this->connected = true;
-        else
+        if ($this->connected)
             return;
         @mysql_connect($dbhost, $dbuser, $dbpass) or $this->err("mysql_connect");
 
@@ -82,8 +80,8 @@ class db { // не final, ибо err переопределяется в анн�
         mysql_query($q) or $this->err($q);
         $q = "SET CHARACTER_SET_RESULTS=" . $this->esc($charset);
         mysql_query($q) or $this->err($q);
-
         register_shutdown_function("mysql_close");
+        $this->connected = true;
     }
 
     /**
@@ -431,7 +429,7 @@ class db { // не final, ибо err переопределяется в анн�
         }
         $error = mysql_error();
         $emess = $lang->v('db_error') . ": " . $error . (IN_DEVELOPMENT ? '(' . $query . ')' : "");
-        if (!$this->nt_error && $tpl) {
+        if (!$this->nt_error && $tpl && $this->connected) {
             $tpl->assign('backtrace', $this->print_backtrace());
             error($emess, "", 'db_error');
         } else
