@@ -11,8 +11,6 @@ DirectoryIndex index.php
 
 # Кодировка по-умолчанию
 AddDefaultCharset UTF-8
-# Чтобы апач не решал что-либо за меня
-Options SymLinksIfOwnerMatch
 
 # Нач. Настраиваем PHP
 
