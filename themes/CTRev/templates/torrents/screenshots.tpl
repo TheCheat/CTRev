@@ -16,7 +16,7 @@
         var o = jQuery('dd.iposter:first').clone();
         var t = jQuery('a:first', o);
         if (t.length)
-            scr_type(t, 1);
+            scr_type(t, [*if 'allowed_screenshots'|config|is:$smarty.const.ALLOWED_IMG_PC*]0[*else*]1[*/if*]);
         var lp = jQuery('#last_scrnum');
         var i = parseInt(lp.text())+1;
         lp.text(i);
@@ -55,7 +55,7 @@
 <dl class='info_text screenshots'>
     [*assign var="p" value=0*]
     [*foreach from=$nrow.screenshots item="i" key="n"*]
-        <dt>[*if !$p*][*'torrents_poster'|lang*][*else*][*'torrents_screenshot_n'|lang*][*$p*][*/if*]</dt>
+        <dt>[*if !$p*][*'torrents_image_poster'|lang*][*else*][*'torrents_screenshot_n'|lang*][*$p*][*/if*]</dt>
         <dd class='iposter'>
             [*if 'allowed_screenshots'|config == ($smarty.const.ALLOWED_IMG_PC | $smarty.const.ALLOWED_IMG_URL)*]
                 <a href='javascript:void(0);' onclick='scr_type(this, 1)'>[*'torrents_from_server'|lang*]</a>&nbsp;|&nbsp;<a

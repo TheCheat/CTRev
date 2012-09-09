@@ -14,6 +14,7 @@ $languages = array(
     "torrents_category" => "Категория",
     "torrents_screenshots" => "Скриншоты и постер",
     "torrents_poster" => "Автор",
+    "torrents_image_poster" => 'Постер',
     "torrents_screenshot_n" => "Скриншот №",
     "torrents_from_pc" => "С компьютера",
     "torrents_from_server" => "Со стороннего сервера",
