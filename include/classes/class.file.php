@@ -111,7 +111,7 @@ final class file {
             $files = $this->open_folder($filename);
             $c = count($files);
             if ($chmod)
-                @chmod($rfilename, 0666);
+                @chmod($rfilename, 0777);
             $n = !$y = is_writable($filename);
             for ($i = 0; $i < $c; $i++) {
                 $r = $this->is_writable($filename . '/' . $files[$i], $chmod, $recursive);
@@ -127,7 +127,7 @@ final class file {
             }
         }
         if ($chmod)
-            @chmod($rfilename, 0666);
+            @chmod($rfilename, 0777);
         return is_writable($filename);
     }
 
