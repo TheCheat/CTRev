@@ -76,9 +76,13 @@ class db { // не final, ибо err переопределяется в анн�
 
         mysql_select_db($dbname) or $this->err("mysql_select_db");
 
-        $q = "SET NAMES " . $charset;
+        $q = "SET NAMES " . $charset . " COLLATE " . $charset . '_general_ci';
         mysql_query($q) or $this->err($q);
-        $q = "SET CHARACTER_SET_RESULTS=" . $this->esc($charset);
+        $q = "SET character_set_client=" . $this->esc($charset);
+        mysql_query($q) or $this->err($q);
+        $q = "SET character_set_results=" . $this->esc($charset);
+        mysql_query($q) or $this->err($q);
+        $q = "SET collation_connection=@@collation_database;";
         mysql_query($q) or $this->err($q);
         register_shutdown_function("mysql_close");
         $this->connected = true;
