@@ -805,6 +805,7 @@ class torrents {
             $plugins->run_hook('torrents_save_end');
 
             try {
+                $users->perm_exception();
                 $polls->change_type('torrents')->save($data, $id);
             } catch (EngineException $e) {
                 if ($e->getCode())
@@ -1049,13 +1050,13 @@ class torrents_ajax {
         } else
             throw new EngineException('torrents_this_torrents_are_not_exists');
         $db->delete('torrents', 'WHERE id=' . $id . ' LIMIT 1');
-        
+
         try {
             $plugins->pass_data(array('id' => $id), true)->run_hook('torrents_delete');
         } catch (PReturn $e) {
             return $e->r();
         }
-        
+
         $cache->remove("details/l-id" . $id);
         $f = $bt->get_filename($posted_time, $poster_id);
         @unlink(ROOT . $config->v('torrents_folder') . '/' . bittorrent::torrent_prefix .

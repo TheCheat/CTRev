@@ -60,6 +60,12 @@ class users_checker {
     protected $isettings = array("icq", "country", "show_age");
 
     /**
+     * Исключение вместо переадресации?
+     * @var int $perm_exception
+     */
+    protected $perm_exception = false;
+
+    /**
      * Генерация хеша пароля
      * @param array $row массив пользовательских параметров
      * @return string пассхеш
@@ -314,6 +320,18 @@ class users_checker {
     }
 
     /**
+     * Функция check_perms будет бросать исключение, вместо переадресации на страницу
+     * @param int $exc 1, если необходимы только исключения
+     * при 1, значение автоматически сбросится после первого исключения
+     * при 2, значение сбрасываться не будет
+     * @return users_checker $this
+     */
+    public function perm_exception($exc = 1) {
+        $this->perm_exception = (int) $exc;
+        return $this;
+    }
+
+    /**
      * Функция проверки прав пользователей, в случае отсутствия прав - посылает на страницу логина
      * @global furl $furl
      * @param string $rule право пользователя(!без префикса can_!)
@@ -322,6 +340,7 @@ class users_checker {
      * 1 - все, кроме гостей
      * 0 - все, кроме гостей и пользователей по-умолчанию
      * @return null
+     * @throws EngineException
      */
     public function check_perms($rule = '', $value = 1, $def = 1) {
         global $furl;
@@ -334,6 +353,11 @@ class users_checker {
             $if = ((int) $rule) < ((int) $value);
         }
         $if = $if || $default > $def;
+        if ($this->perm_exception) {
+            throw new EngineException;
+            if ($this->perm_exception !== 2)
+                $this->perm_exception(0);
+        }
         if ($if) {
             $furl->location($furl->construct("login", array(
                         "ref" => $_SERVER ['REQUEST_URI'])));

@@ -248,7 +248,7 @@ class polls extends pluginable_object {
                 $row ['answers'] = array(
                     '',
                     '');
-                $users->check_perms('polls', 2, 2);
+                $users->check_perms('polls', 2);
             } else {
                 $row ['answers'] = @unserialize($row ['answers']);
                 if ($row ['poster_id'] == $users->v('id'))
@@ -302,7 +302,7 @@ class polls extends pluginable_object {
                             $toid . ' AND type=' . $db->esc($type)) . " LIMIT 1");
             $row = $db->fetch_assoc($row);
             if (!$row)
-                $users->check_perms('polls', 2, 2);
+                $users->check_perms('polls', 2);
             else {
                 $poll_id = $row ['id'];
                 if ($row ['poster_id'] == $users->v('id'))
