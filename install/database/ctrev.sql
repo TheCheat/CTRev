@@ -1,10 +1,478 @@
 CREATE TABLE IF NOT EXISTS `admin_cats` (
-  `id` int(10) NOT NULL AUTO_INCREMENT,
-  `item` int(10) NOT NULL,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `item` int(10) unsigned NOT NULL,
   `name` varchar(100) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `item` (`item`,`name`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `admin_items` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `admin_modules` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `cat` int(10) unsigned NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `link` text NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `cat` (`cat`,`name`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `allowed_ft` (
+  `name` varchar(200) NOT NULL,
+  `types` text NOT NULL,
+  `max_filesize` int(10) unsigned NOT NULL DEFAULT '0',
+  `max_width` int(10) unsigned NOT NULL DEFAULT '0',
+  `max_height` int(10) unsigned NOT NULL DEFAULT '0',
+  `MIMES` text NOT NULL,
+  `makes_preview` enum('1','0') NOT NULL DEFAULT '0',
+  UNIQUE KEY `name` (`name`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Не нуждается в админке, ибо не нужно. Всегда Ваш, К.О.';
+
+CREATE TABLE IF NOT EXISTS `bans` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `period` int(12) unsigned NOT NULL DEFAULT '0',
+  `byuid` int(10) unsigned NOT NULL DEFAULT '0',
+  `reason` varchar(255) NOT NULL DEFAULT '',
+  `ip_f` int(11) unsigned DEFAULT NULL,
+  `ip_t` int(11) unsigned DEFAULT NULL,
+  `uid` int(10) unsigned NOT NULL DEFAULT '0',
+  `to_time` int(12) unsigned NOT NULL DEFAULT '0',
+  `email` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `first_last` (`ip_f`,`ip_t`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `blocks` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `title` varchar(200) NOT NULL,
+  `file` varchar(200) NOT NULL,
+  `pos` int(10) unsigned NOT NULL DEFAULT '0',
+  `type` enum('top','bottom','left','right') NOT NULL DEFAULT 'top',
+  `tpl` varchar(200) NOT NULL DEFAULT '',
+  `module` text,
+  `settings` text,
+  `enabled` enum('1','0') NOT NULL DEFAULT '1',
+  `group_allowed` text,
+  PRIMARY KEY (`id`),
+  KEY `enabled` (`enabled`),
+  KEY `file` (`file`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `bookmarks` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `toid` int(10) unsigned NOT NULL,
+  `type` enum('torrents') NOT NULL DEFAULT 'torrents',
+  `added` int(12) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `res_id` (`toid`,`type`,`user_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `bots` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(50) NOT NULL,
+  `firstip` int(12) unsigned NOT NULL DEFAULT '0',
+  `lastip` int(12) unsigned NOT NULL DEFAULT '0',
+  `agent` varchar(100) NOT NULL DEFAULT '',
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `captcha` (
+  `key` varchar(10) NOT NULL,
+  `session_id` varchar(32) NOT NULL,
+  `user_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `created` int(12) unsigned NOT NULL DEFAULT '0',
+  KEY `session_id` (`session_id`),
+  KEY `user_id` (`user_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `categories` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `parent_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `name` varchar(200) NOT NULL,
+  `descr` text,
+  `transl_name` varchar(200) NOT NULL,
+  `post_allow` enum('1','0') NOT NULL DEFAULT '1',
+  `type` enum('torrents') NOT NULL DEFAULT 'torrents',
+  `pattern` int(11) unsigned NOT NULL DEFAULT '0',
+  `sort` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `transl_name` (`transl_name`),
+  KEY `parent_id` (`parent_id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `chat` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `poster_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `posted_time` int(12) unsigned NOT NULL DEFAULT '0',
+  `edited_time` int(12) unsigned NOT NULL DEFAULT '0',
+  `text` text NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `edited_time` (`edited_time`),
+  KEY `posted_time` (`posted_time`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `chat_deleted` (
+  `id` int(10) unsigned NOT NULL,
+  `time` int(12) unsigned NOT NULL,
+  UNIQUE KEY `id` (`id`),
+  KEY `time` (`time`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='логи чата, какие сообщения были удалены';
+
+CREATE TABLE IF NOT EXISTS `comments` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `poster_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `subject` varchar(200) NOT NULL DEFAULT 'NO SUBJECT',
+  `text` text NOT NULL,
+  `posted_time` int(12) unsigned NOT NULL DEFAULT '0',
+  `toid` int(10) unsigned NOT NULL,
+  `type` enum('torrents','users') NOT NULL DEFAULT 'torrents',
+  `edited_time` int(12) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `toid` (`toid`,`type`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `config` (
+  `name` varchar(200) NOT NULL,
+  `value` text NOT NULL,
+  `type` enum('int','string','text','date','folder','radio','select','checkbox','other') NOT NULL DEFAULT 'text',
+  `allowed` text,
+  `cat` varchar(50) NOT NULL DEFAULT 'other',
+  `sort` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`name`),
+  KEY `cat` (`cat`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `countries` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(50) DEFAULT NULL,
+  `image` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `downloaded` (
+  `tid` int(10) unsigned NOT NULL,
+  `uid` int(10) unsigned NOT NULL,
+  `finished` enum('1','0') NOT NULL DEFAULT '0',
+  PRIMARY KEY (`tid`,`uid`),
+  KEY `finished` (`finished`),
+  KEY `tid` (`tid`,`finished`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `groups` (
+  `id` tinyint(3) unsigned NOT NULL AUTO_INCREMENT,
+  `default` enum('1','0') NOT NULL DEFAULT '0',
+  `acp_modules` text,
+  `pm_count` int(10) unsigned NOT NULL DEFAULT '50',
+  `notdeleted` enum('1','0') NOT NULL DEFAULT '0',
+  `system` enum('1','0') NOT NULL DEFAULT '0',
+  `guest` enum('1','0') NOT NULL DEFAULT '0',
+  `bot` enum('1','0') NOT NULL DEFAULT '0',
+  `name` varchar(50) NOT NULL,
+  `color` varchar(20) NOT NULL DEFAULT '',
+  `perms` text,
+  `sort` tinyint(3) NOT NULL DEFAULT '0',
+  `torrents_count` int(5) unsigned NOT NULL DEFAULT '0',
+  `karma_count` int(5) unsigned NOT NULL DEFAULT '0',
+  `bonus_count` int(5) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `groups_perm` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `perm` varchar(200) NOT NULL,
+  `dvalue` tinyint(2) unsigned NOT NULL DEFAULT '0',
+  `allowed` enum('1','2','3') NOT NULL DEFAULT '1',
+  `cat` varchar(50) NOT NULL DEFAULT 'other',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `perm` (`perm`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `invites` (
+  `user_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `to_userid` int(10) unsigned NOT NULL DEFAULT '0',
+  `invite_id` varchar(32) NOT NULL DEFAULT '',
+  UNIQUE KEY `invite_id` (`invite_id`),
+  KEY `user_id` (`user_id`),
+  KEY `to_userid` (`to_userid`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `logs` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `subject` varchar(250) NOT NULL,
+  `type` enum('user','admin','system','other') NOT NULL DEFAULT 'user',
+  `time` int(12) unsigned NOT NULL DEFAULT '0',
+  `byuid` int(10) unsigned NOT NULL DEFAULT '0',
+  `byip` int(12) unsigned NOT NULL DEFAULT '0',
+  `touid` int(10) unsigned NOT NULL DEFAULT '0',
+  `descr` text NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `time` (`time`),
+  KEY `type` (`type`),
+  KEY `byid` (`byuid`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `mailer` (
+  `user` int(10) unsigned NOT NULL,
+  `toid` int(10) unsigned NOT NULL,
+  `type` enum('torrents','category') NOT NULL DEFAULT 'torrents',
+  `interval` int(12) unsigned NOT NULL DEFAULT '0',
+  `last_check` int(12) unsigned NOT NULL DEFAULT '0',
+  `is_new` enum('1','0') NOT NULL DEFAULT '1',
+  UNIQUE KEY `res` (`toid`,`type`,`user`),
+  KEY `is_new` (`is_new`),
+  KEY `interval` (`interval`),
+  KEY `last_check` (`last_check`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `news` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `poster_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `posted_time` int(12) unsigned NOT NULL DEFAULT '0',
+  `content` text NOT NULL,
+  `title` varchar(250) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `added` (`posted_time`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `patterns` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `pattern` text NOT NULL COMMENT 'Да, да, я знаю, что нельзя ТАК делать, но ТАК будет быстрее, да и удобнее.',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `peers` (
+  `peer_id` varchar(20) NOT NULL,
+  `tid` int(10) unsigned NOT NULL DEFAULT '0',
+  `ip` int(10) unsigned NOT NULL DEFAULT '0',
+  `port` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `uploaded` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `seeder` enum('1','0') NOT NULL DEFAULT '0',
+  `uid` int(10) unsigned NOT NULL DEFAULT '0',
+  `time` int(12) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`tid`,`uid`),
+  UNIQUE KEY `peer_id` (`peer_id`),
+  KEY `seeder` (`tid`,`seeder`),
+  KEY `torrent` (`tid`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `plugins` (
+  `file` varchar(30) NOT NULL,
+  `settings` text NOT NULL,
+  PRIMARY KEY (`file`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `pmessages` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `subject` varchar(200) NOT NULL,
+  `text` text NOT NULL,
+  `sender` int(10) unsigned NOT NULL DEFAULT '0',
+  `time` int(12) unsigned NOT NULL DEFAULT '0',
+  `receiver` int(10) unsigned NOT NULL DEFAULT '0',
+  `unread` enum('1','0') NOT NULL DEFAULT '1',
+  PRIMARY KEY (`id`),
+  KEY `time` (`time`),
+  KEY `sender` (`sender`),
+  KEY `receiver` (`receiver`),
+  KEY `unread` (`receiver`,`unread`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `polls` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `question` varchar(200) NOT NULL,
+  `toid` int(10) unsigned NOT NULL DEFAULT '0',
+  `type` enum('torrents') NOT NULL DEFAULT 'torrents',
+  `answers` text NOT NULL,
+  `show_voted` enum('1','0') NOT NULL DEFAULT '1',
+  `change_votes` enum('1','0') NOT NULL DEFAULT '1',
+  `poll_ends` int(12) unsigned NOT NULL DEFAULT '0',
+  `max_votes` int(10) unsigned NOT NULL DEFAULT '0',
+  `poster_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `posted_time` int(12) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `poll_votes` (
+  `user_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `question_id` int(10) unsigned NOT NULL,
+  `user_ip` int(12) unsigned NOT NULL DEFAULT '0',
+  `answers_id` text NOT NULL,
+  UNIQUE KEY `question_id` (`question_id`,`user_id`,`user_ip`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `ratings` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `toid` int(10) unsigned NOT NULL,
+  `stoid` int(10) unsigned NOT NULL DEFAULT '0',
+  `type` enum('torrents','users') NOT NULL DEFAULT 'torrents',
+  `stype` enum('torrents') NOT NULL DEFAULT 'torrents',
+  `user` int(12) unsigned NOT NULL DEFAULT '0',
+  `value` tinyint(1) NOT NULL DEFAULT '0',
+  `ip` enum('1','0') NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `torus` (`toid`,`type`,`user`,`ip`,`stoid`,`stype`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `read_torrents` (
+  `torrent_id` int(12) unsigned NOT NULL,
+  `user_id` int(12) unsigned NOT NULL,
+  UNIQUE KEY `torrents_id` (`torrent_id`,`user_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `sessions` (
+  `sid` varchar(32) NOT NULL DEFAULT '',
+  `uid` int(10) unsigned NOT NULL DEFAULT '0',
+  `userdata` text NOT NULL,
+  `ip` int(10) unsigned NOT NULL DEFAULT '0',
+  `time` int(12) unsigned NOT NULL DEFAULT '0',
+  `login_trying` smallint(3) unsigned NOT NULL DEFAULT '0',
+  `trying_time` int(12) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`sid`),
+  KEY `time` (`time`),
+  KEY `login_trying` (`login_trying`),
+  KEY `def` (`ip`,`uid`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `smilies` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `code` varchar(20) NOT NULL,
+  `image` varchar(225) NOT NULL,
+  `name` varchar(200) NOT NULL,
+  `show_bbeditor` enum('1','0') NOT NULL DEFAULT '0',
+  `sort` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `code` (`code`),
+  KEY `image` (`image`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `static` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `url` varchar(150) NOT NULL,
+  `title` varchar(250) NOT NULL,
+  `bbcode` enum('1','0') NOT NULL DEFAULT '0',
+  `content` text NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `url` (`url`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `stats` (
+  `name` varchar(200) NOT NULL,
+  `value` text NOT NULL,
+  UNIQUE KEY `name` (`name`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `torrents` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `info_hash` varbinary(40) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `content` text NOT NULL,
+  `filelist` text NOT NULL,
+  `tags` varchar(500) DEFAULT NULL,
+  `category_id` text NOT NULL,
+  `size` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `announce_stat` text,
+  `announce_list` text,
+  `posted_time` int(12) unsigned NOT NULL DEFAULT '0',
+  `last_active` int(12) unsigned NOT NULL DEFAULT '0',
+  `comm_count` int(10) unsigned NOT NULL DEFAULT '0',
+  `downloaded` int(10) unsigned NOT NULL DEFAULT '0',
+  `leechers` int(10) unsigned NOT NULL DEFAULT '0',
+  `seeders` int(10) unsigned NOT NULL DEFAULT '0',
+  `banned` enum('2','1','0') NOT NULL DEFAULT '0' COMMENT '2 - в т.ч. запрет на редактирование',
+  `status` varchar(50) NOT NULL DEFAULT '0',
+  `status_by` int(10) unsigned NOT NULL DEFAULT '0',
+  `poster_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `rate_count` int(10) unsigned NOT NULL DEFAULT '0',
+  `rnum_count` int(10) unsigned NOT NULL DEFAULT '0',
+  `price` decimal(5,2) unsigned DEFAULT '10.00',
+  `sticky` enum('1','0') NOT NULL DEFAULT '0',
+  `on_top` enum('1','0') DEFAULT '0',
+  `screenshots` text NOT NULL,
+  `edit_reason` varchar(250) NOT NULL DEFAULT '',
+  `last_edit` int(12) unsigned NOT NULL DEFAULT '0',
+  `editor_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `edit_count` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `info_hash` (`info_hash`),
+  UNIQUE KEY `name` (`title`),
+  KEY `owner` (`poster_id`),
+  KEY `tags` (`tags`(333)),
+  KEY `on_top` (`on_top`),
+  KEY `sticky` (`sticky`),
+  KEY `posted_time` (`posted_time`),
+  FULLTEXT KEY `title` (`title`),
+  FULLTEXT KEY `title_content` (`title`,`content`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `users` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `username` varchar(40) NOT NULL,
+  `username_lower` varchar(40) NOT NULL,
+  `password` varchar(32) NOT NULL,
+  `salt` varchar(32) NOT NULL,
+  `email` varchar(80) NOT NULL,
+  `new_email` varchar(200) NOT NULL DEFAULT '',
+  `confirm_key` varchar(32) NOT NULL DEFAULT '',
+  `confirmed` enum('3','2','1','0') NOT NULL DEFAULT '0',
+  `registered` int(12) unsigned NOT NULL DEFAULT '0',
+  `last_visited` int(12) unsigned NOT NULL DEFAULT '0',
+  `settings` text COMMENT 'show_age, website, icq, skype, country, town, name, surname, announce_pk',
+  `admin_email` enum('1','0') NOT NULL DEFAULT '0',
+  `user_email` enum('1','0') NOT NULL DEFAULT '0',
+  `mailer_interval` int(10) unsigned NOT NULL DEFAULT '0',
+  `dst` enum('1','0') NOT NULL DEFAULT '0',
+  `timezone` int(3) NOT NULL DEFAULT '0',
+  `ip` int(10) unsigned NOT NULL DEFAULT '0',
+  `group` tinyint(3) NOT NULL DEFAULT '0',
+  `old_group` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `add_permissions` text,
+  `bonus_count` decimal(65,2) unsigned NOT NULL DEFAULT '300.00',
+  `avatar` varchar(250) NOT NULL DEFAULT '',
+  `gender` enum('u','m','f') NOT NULL DEFAULT 'u',
+  `birthday` int(12) unsigned DEFAULT '0',
+  `passkey` varchar(32) NOT NULL DEFAULT '',
+  `refered_by` int(10) unsigned NOT NULL DEFAULT '0',
+  `karma_count` int(10) NOT NULL DEFAULT '0',
+  `torrents_count` int(10) unsigned NOT NULL DEFAULT '0',
+  `comm_count` int(10) unsigned NOT NULL DEFAULT '0',
+  `hidden` enum('1','0') NOT NULL DEFAULT '0',
+  `warnings_count` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `username_lower` (`username_lower`),
+  UNIQUE KEY `passkey` (`passkey`),
+  KEY `status_added` (`confirmed`,`registered`),
+  KEY `ip` (`ip`),
+  KEY `last_access` (`last_visited`),
+  KEY `user` (`id`,`confirmed`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `warnings` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `uid` int(10) unsigned NOT NULL,
+  `reason` varchar(200) NOT NULL,
+  `byuid` int(10) unsigned NOT NULL DEFAULT '0',
+  `time` int(12) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `uid` (`uid`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `zebra` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `to_userid` int(10) unsigned NOT NULL DEFAULT '0',
+  `type` enum('f','b') NOT NULL DEFAULT 'f',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `userfriend` (`user_id`,`to_userid`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 INSERT INTO `admin_cats` (`id`, `item`, `name`) VALUES
 (1, 1, 'short_actions'),
@@ -21,13 +489,6 @@ INSERT INTO `admin_cats` (`id`, `item`, `name`) VALUES
 (12, 5, 'logs'),
 (13, 6, 'plugins');
 
-CREATE TABLE IF NOT EXISTS `admin_items` (
-  `id` int(10) NOT NULL AUTO_INCREMENT,
-  `name` varchar(100) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
-
 INSERT INTO `admin_items` (`id`, `name`) VALUES
 (1, 'main'),
 (2, 'users'),
@@ -35,15 +496,6 @@ INSERT INTO `admin_items` (`id`, `name`) VALUES
 (4, 'styles'),
 (5, 'system'),
 (6, 'plugins');
-
-CREATE TABLE IF NOT EXISTS `admin_modules` (
-  `id` int(10) NOT NULL AUTO_INCREMENT,
-  `cat` int(10) NOT NULL,
-  `name` varchar(100) NOT NULL,
-  `link` text NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `cat` (`cat`,`name`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
 INSERT INTO `admin_modules` (`id`, `cat`, `name`, `link`) VALUES
 (1, 1, 'users_manage', 'module=users'),
@@ -90,54 +542,13 @@ INSERT INTO `admin_modules` (`id`, `cat`, `name`, `link`) VALUES
 (42, 13, 'plugins', 'module=plugins'),
 (43, 13, 'plugins_add', 'module=plugins&act=add');
 
-CREATE TABLE IF NOT EXISTS `allowed_ft` (
-  `name` varchar(200) NOT NULL,
-  `types` text NOT NULL,
-  `max_filesize` int(10) unsigned NOT NULL DEFAULT '0',
-  `max_width` int(10) unsigned NOT NULL DEFAULT '0',
-  `max_height` int(10) unsigned NOT NULL DEFAULT '0',
-  `MIMES` text NOT NULL,
-  `makes_preview` enum('1','0') NOT NULL DEFAULT '0',
-  UNIQUE KEY `name` (`name`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Не нуждается в админке, ибо не нужно. Всегда Ваш, К.О.';
-
 INSERT INTO `allowed_ft` (`name`, `types`, `max_filesize`, `max_width`, `max_height`, `MIMES`, `makes_preview`) VALUES
 ('images', 'jpg;jpeg;png;gif', 2097152, 0, 0, 'image/jpeg;image/png;image/gif', '1'),
 ('avatars', 'jpg;jpeg;png;gif', 65536, 100, 100, 'image/jpeg;image/png;image/gif', '0'),
 ('torrents', 'torrent', 2097152, 0, 0, 'application/x-bittorrent', '0');
 
-CREATE TABLE IF NOT EXISTS `bans` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `period` int(12) unsigned NOT NULL DEFAULT '0',
-  `byuid` int(10) unsigned NOT NULL DEFAULT '0',
-  `reason` varchar(255) NOT NULL DEFAULT '',
-  `ip_f` int(11) unsigned DEFAULT NULL,
-  `ip_t` int(11) unsigned DEFAULT NULL,
-  `uid` int(10) unsigned NOT NULL DEFAULT '0',
-  `to_time` int(12) unsigned NOT NULL DEFAULT '0',
-  `email` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `first_last` (`ip_f`,`ip_t`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
-
 INSERT INTO `bans` (`id`, `period`, `byuid`, `reason`, `ip_f`, `ip_t`, `uid`, `to_time`, `email`) VALUES
 (1, 0, 1, '4ever bannaned!', 0, 0, 0, 0, '*@*.ru');
-
-CREATE TABLE IF NOT EXISTS `blocks` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `title` varchar(200) NOT NULL,
-  `file` varchar(200) NOT NULL,
-  `pos` int(10) unsigned NOT NULL,
-  `type` enum('top','bottom','left','right') NOT NULL DEFAULT 'top',
-  `tpl` varchar(200) NOT NULL,
-  `module` text NOT NULL,
-  `settings` text NOT NULL,
-  `enabled` enum('1','0') NOT NULL DEFAULT '1',
-  `group_allowed` text NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `enabled` (`enabled`),
-  KEY `file` (`file`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
 INSERT INTO `blocks` (`id`, `title`, `file`, `pos`, `type`, `tpl`, `module`, `settings`, `enabled`, `group_allowed`) VALUES
 (3, 'Ссылки', 'links', 0, 'left', '0', '', 'a:1:{s:5:"links";a:3:{s:28:"CTRev: A bit of (R)evolution";s:25:"http://ctrev.cyber-tm.ru/";s:25:"Project Cyberhype Tracker";s:23:"http://old.cyber-tm.ru/";s:42:"Официальный сайт Cyber-Team";s:19:"http://cyber-tm.ru/";}}', '1', ''),
@@ -150,49 +561,6 @@ INSERT INTO `blocks` (`id`, `title`, `file`, `pos`, `type`, `tpl`, `module`, `se
 (1, 'Торренты', 'torrents', 3, 'top', 'all_blocks', 'index', 'a:0:{}', '0', ''),
 (6, 'Тест параметров', 'simple_block', 3, 'left', '0', 'index', 'a:9:{s:4:"par1";s:13:"stringsqweqwe";s:5:"par1t";s:44:"Blah-Blah-Blah, Mr. Freeman, Blah-Blah-Blah.";s:4:"par2";s:4:"1213";s:4:"par3";s:1:"3";s:5:"par35";s:1:"1";s:4:"par4";a:4:{i:0;s:12:"stringsqweqw";i:1;s:6:"qweqwe";i:2;s:7:"weqwdas";i:3;s:6:"qweqwe";}s:4:"par5";a:2:{i:0;s:6:"121312";i:1;s:5:"21231";}s:4:"par6";a:3:{s:8:"strweqwe";s:5:"tests";s:10:"asdaweqeqw";s:4:"test";s:8:"qweqweqw";s:7:"testers";}s:4:"par7";a:3:{i:3;s:6:"tests1";i:1231;s:8:"testers1";i:12312;s:6:"tests1";}}', '', '6');
 
-CREATE TABLE IF NOT EXISTS `bookmarks` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `user_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `toid` int(10) unsigned NOT NULL,
-  `type` enum('torrents') NOT NULL DEFAULT 'torrents',
-  `added` int(12) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `res_id` (`toid`,`type`,`user_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-CREATE TABLE IF NOT EXISTS `bots` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(50) NOT NULL,
-  `firstip` int(11) unsigned NOT NULL,
-  `lastip` int(11) unsigned NOT NULL,
-  `agent` varchar(100) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-CREATE TABLE IF NOT EXISTS `captcha` (
-  `key` varchar(10) NOT NULL,
-  `session_id` varchar(32) NOT NULL,
-  `user_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `created` int(12) unsigned NOT NULL,
-  KEY `session_id` (`session_id`),
-  KEY `user_id` (`user_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-CREATE TABLE IF NOT EXISTS `categories` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `parent_id` int(10) unsigned NOT NULL,
-  `name` varchar(200) NOT NULL,
-  `descr` text NOT NULL,
-  `transl_name` varchar(200) NOT NULL,
-  `post_allow` enum('1','0') NOT NULL DEFAULT '1',
-  `type` enum('torrents') NOT NULL DEFAULT 'torrents',
-  `pattern` int(11) unsigned NOT NULL DEFAULT '0',
-  `sort` int(10) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `transl_name` (`transl_name`),
-  KEY `parent_id` (`parent_id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
-
 INSERT INTO `categories` (`id`, `parent_id`, `name`, `descr`, `transl_name`, `post_allow`, `type`, `pattern`, `sort`) VALUES
 (1, 0, 'Игры', 'Такое же простое описание простой категории', 'games', '0', 'torrents', 1, 0),
 (6, 0, 'Софт', 'Софт и все, все, все', 'software', '0', 'torrents', 1, 0),
@@ -200,48 +568,6 @@ INSERT INTO `categories` (`id`, `parent_id`, `name`, `descr`, `transl_name`, `po
 (8, 6, 'PPC', 'Blahblahblah', 'ppcsoft', '1', 'torrents', 1, 0),
 (3, 1, 'Action', 'AND MOAR!', 'action', '1', 'torrents', 1, 1),
 (4, 1, 'PC', 'MOAR!!!', 'pcgames', '1', 'torrents', 1, 2);
-
-CREATE TABLE IF NOT EXISTS `chat` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `poster_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `posted_time` int(12) unsigned NOT NULL DEFAULT '0',
-  `edited_time` int(12) NOT NULL DEFAULT '0',
-  `text` text NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `edited_time` (`edited_time`),
-  KEY `posted_time` (`posted_time`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-CREATE TABLE IF NOT EXISTS `chat_deleted` (
-  `id` int(10) NOT NULL,
-  `time` int(12) NOT NULL,
-  UNIQUE KEY `id` (`id`),
-  KEY `time` (`time`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='логи чата, какие сообщения были удалены';
-
-CREATE TABLE IF NOT EXISTS `comments` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `poster_id` int(10) unsigned NOT NULL,
-  `subject` varchar(200) NOT NULL,
-  `text` text NOT NULL,
-  `posted_time` int(12) unsigned NOT NULL,
-  `toid` int(10) unsigned NOT NULL,
-  `type` enum('torrents','users') NOT NULL,
-  `edited_time` int(12) unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `toid` (`toid`,`type`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-CREATE TABLE IF NOT EXISTS `config` (
-  `name` varchar(200) NOT NULL,
-  `value` text NOT NULL,
-  `type` enum('int','string','text','date','folder','radio','select','checkbox','other') NOT NULL DEFAULT 'text',
-  `allowed` text NOT NULL,
-  `cat` varchar(50) NOT NULL DEFAULT 'other',
-  `sort` int(10) NOT NULL,
-  PRIMARY KEY (`name`),
-  KEY `cat` (`cat`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 INSERT INTO `config` (`name`, `value`, `type`, `allowed`, `cat`, `sort`) VALUES
 ('annadress', '', 'text', '', 'announce', 1),
@@ -355,14 +681,6 @@ INSERT INTO `config` (`name`, `value`, `type`, `allowed`, `cat`, `sort`) VALUES
 ('last_profile_comments', '15', 'int', '', 'users', 9),
 ('last_profile_torrents', '15', 'int', '', 'users', 10);
 
-CREATE TABLE IF NOT EXISTS `countries` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(50) DEFAULT NULL,
-  `image` varchar(50) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
-
 INSERT INTO `countries` (`id`, `name`, `image`) VALUES
 (87, 'Antigua Barbuda', 'antiguabarbuda.gif'),
 (33, 'Belize', 'belize.gif'),
@@ -466,35 +784,6 @@ INSERT INTO `countries` (`id`, `name`, `image`) VALUES
 (30, 'Ямайка', 'jamaica.gif'),
 (17, 'Япония', 'japan.gif');
 
-CREATE TABLE IF NOT EXISTS `downloaded` (
-  `tid` int(10) NOT NULL,
-  `uid` int(10) NOT NULL,
-  `finished` enum('1','0') NOT NULL DEFAULT '0',
-  PRIMARY KEY (`tid`,`uid`),
-  KEY `finished` (`finished`),
-  KEY `tid` (`tid`,`finished`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-CREATE TABLE IF NOT EXISTS `groups` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `default` enum('1','0') NOT NULL,
-  `acp_modules` text,
-  `pm_count` int(10) unsigned NOT NULL,
-  `notdeleted` enum('1','0') NOT NULL DEFAULT '0',
-  `system` enum('1','0') NOT NULL,
-  `guest` enum('1','0') NOT NULL DEFAULT '0',
-  `bot` enum('1','0') NOT NULL DEFAULT '0',
-  `name` varchar(50) NOT NULL,
-  `color` varchar(20) NOT NULL,
-  `perms` text NOT NULL,
-  `sort` tinyint(3) NOT NULL,
-  `torrents_count` int(5) unsigned NOT NULL DEFAULT '0',
-  `karma_count` int(5) unsigned NOT NULL DEFAULT '0',
-  `bonus_count` int(5) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
-
 INSERT INTO `groups` (`id`, `default`, `acp_modules`, `pm_count`, `notdeleted`, `system`, `guest`, `bot`, `name`, `color`, `perms`, `sort`, `torrents_count`, `karma_count`, `bonus_count`) VALUES
 (1, '0', '', 0, '1', '0', '1', '0', 'group_guest', '#707070', '33:0;32:0;7:0;6:0;17:0;4:0;3:0;2:1;24:0;25:0;23:0;21:0;15:0;10:0;9:0', 0, 0, 0, 0),
 (7, '1', NULL, 0, '1', '0', '0', '0', 'group_user', '#000000', '', 1, 0, 0, 0),
@@ -504,16 +793,6 @@ INSERT INTO `groups` (`id`, `default`, `acp_modules`, `pm_count`, `notdeleted`, 
 (5, '0', NULL, 0, '0', '0', '0', '0', 'group_moderator', '#0060ff', '33:3;30:1;32:2;29:1;28:1;7:2;6:2;18:1;27:1;4:2;3:2;26:2;20:1;22:1;19:1;12:1;10:2;9:2;8:2', 5, 0, 0, 0),
 (8, '0', 'bans;warnings;users;logs;spages', 0, '0', '0', '0', '0', 'group_super_moderator', '#1ae615', '35:1;33:3;30:2;32:2;29:2;28:1;7:2;6:2;1:1;18:1;27:1;4:2;3:2;26:2;20:1;22:1;19:1;12:1;10:2;9:2;8:3', 6, 0, 0, 0),
 (6, '0', NULL, 0, '1', '1', '0', '0', 'group_administrator', '#e65710', '35:1;33:3;30:2;32:2;29:2;28:1;7:2;6:2;1:2;18:1;27:1;4:2;3:2;26:2;20:1;24:0;25:0;22:1;19:1;12:1;10:2;9:2;8:3', 7, 0, 0, 0);
-
-CREATE TABLE IF NOT EXISTS `groups_perm` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `perm` varchar(200) NOT NULL,
-  `dvalue` smallint(2) unsigned NOT NULL DEFAULT '0',
-  `allowed` enum('1','2','3') NOT NULL DEFAULT '1',
-  `cat` varchar(50) NOT NULL DEFAULT 'other',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `perm` (`perm`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
 INSERT INTO `groups_perm` (`id`, `perm`, `dvalue`, `allowed`, `cat`) VALUES
 (31, 'chat', 2, '2', 'blocks'),
@@ -550,167 +829,8 @@ INSERT INTO `groups_perm` (`id`, `perm`, `dvalue`, `allowed`, `cat`) VALUES
 (13, 'vote', 1, '1', 'voting'),
 (14, 'votersview', 1, '1', 'voting');
 
-CREATE TABLE IF NOT EXISTS `invites` (
-  `user_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `to_userid` int(10) unsigned NOT NULL DEFAULT '0',
-  `invite_id` varchar(32) NOT NULL DEFAULT '',
-  UNIQUE KEY `invite_id` (`invite_id`),
-  KEY `user_id` (`user_id`),
-  KEY `to_userid` (`to_userid`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-CREATE TABLE IF NOT EXISTS `logs` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `subject` varchar(250) NOT NULL,
-  `type` enum('user','admin','system','other') NOT NULL DEFAULT 'user',
-  `time` int(12) unsigned NOT NULL,
-  `byuid` int(10) unsigned NOT NULL,
-  `byip` int(12) unsigned NOT NULL,
-  `touid` int(10) unsigned NOT NULL,
-  `descr` text NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `time` (`time`),
-  KEY `type` (`type`),
-  KEY `byid` (`byuid`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-CREATE TABLE IF NOT EXISTS `mailer` (
-  `user` int(10) unsigned NOT NULL,
-  `toid` int(10) unsigned NOT NULL,
-  `type` enum('torrents','category') NOT NULL DEFAULT 'torrents',
-  `interval` int(12) unsigned NOT NULL,
-  `last_check` int(12) unsigned NOT NULL,
-  `is_new` enum('1','0') NOT NULL DEFAULT '1',
-  UNIQUE KEY `res` (`toid`,`type`,`user`),
-  KEY `is_new` (`is_new`),
-  KEY `interval` (`interval`),
-  KEY `last_check` (`last_check`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-CREATE TABLE IF NOT EXISTS `news` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `poster_id` int(11) unsigned NOT NULL DEFAULT '0',
-  `posted_time` int(12) unsigned NOT NULL DEFAULT '0',
-  `content` text NOT NULL,
-  `title` varchar(250) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `added` (`posted_time`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-CREATE TABLE IF NOT EXISTS `patterns` (
-  `id` int(10) NOT NULL AUTO_INCREMENT,
-  `name` varchar(100) NOT NULL,
-  `pattern` text NOT NULL COMMENT 'Да, да, я знаю, что нельзя ТАК делать, но ТАК будет быстрее, да и удобнее.',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
-
 INSERT INTO `patterns` (`id`, `name`, `pattern`) VALUES
 (1, 'Общий', 'a:4:{i:0;a:5:{s:4:"name";s:17:"*Название";s:5:"rname";s:4:"name";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:79:"{form.title}{this.$value}\r\n{form.content}[b]Название: [/b]{this.$value}";}i:1;a:5:{s:4:"name";s:42:"*Оригинальное название";s:5:"rname";s:5:"rname";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:107:"{form.title} / {this.$value}\r\n{form.content}[b]Оригинальное название: [/b]{this.$value}";}i:2;a:6:{s:4:"name";s:7:"*Год";s:5:"rname";s:4:"year";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:72:"{form.title} ({this.$value})\r\n{form.content}[b]Год: [/b]{this.$value}";s:4:"size";i:5;}i:3;a:5:{s:4:"name";s:17:"*Описание";s:5:"rname";s:5:"descr";s:4:"type";s:8:"textarea";s:5:"descr";s:37:"Тест. Вместе с <b>HTML</b>";s:8:"formdata";s:54:"{form.content}[b]Описание: [/b]\r\n{this.$value}";}}');
-
-CREATE TABLE IF NOT EXISTS `peers` (
-  `peer_id` varchar(20) NOT NULL,
-  `tid` int(10) unsigned NOT NULL DEFAULT '0',
-  `ip` int(10) unsigned NOT NULL DEFAULT '0',
-  `port` smallint(5) unsigned NOT NULL DEFAULT '0',
-  `uploaded` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `seeder` enum('1','0') NOT NULL DEFAULT '0',
-  `uid` int(10) unsigned NOT NULL DEFAULT '0',
-  `time` int(12) NOT NULL,
-  PRIMARY KEY (`tid`,`uid`),
-  UNIQUE KEY `peer_id` (`peer_id`),
-  KEY `seeder` (`tid`,`seeder`),
-  KEY `torrent` (`tid`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-CREATE TABLE IF NOT EXISTS `plugins` (
-  `file` varchar(30) NOT NULL,
-  `settings` text NOT NULL,
-  PRIMARY KEY (`file`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-CREATE TABLE IF NOT EXISTS `pmessages` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `subject` varchar(200) NOT NULL,
-  `text` text NOT NULL,
-  `sender` int(10) unsigned NOT NULL,
-  `time` int(12) unsigned NOT NULL,
-  `receiver` int(10) NOT NULL,
-  `unread` enum('1','0') NOT NULL DEFAULT '1',
-  PRIMARY KEY (`id`),
-  KEY `time` (`time`),
-  KEY `sender` (`sender`),
-  KEY `receiver` (`receiver`),
-  KEY `unread` (`receiver`,`unread`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-CREATE TABLE IF NOT EXISTS `polls` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `question` varchar(200) NOT NULL,
-  `toid` int(10) unsigned NOT NULL DEFAULT '0',
-  `type` enum('torrents') NOT NULL DEFAULT 'torrents',
-  `answers` text NOT NULL,
-  `show_voted` enum('1','0') NOT NULL DEFAULT '1',
-  `change_votes` enum('1','0') NOT NULL DEFAULT '1',
-  `poll_ends` int(12) unsigned NOT NULL DEFAULT '0',
-  `max_votes` int(10) unsigned NOT NULL DEFAULT '0',
-  `poster_id` int(10) unsigned NOT NULL,
-  `posted_time` int(12) unsigned NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-CREATE TABLE IF NOT EXISTS `poll_votes` (
-  `user_id` int(10) unsigned NOT NULL,
-  `question_id` int(10) unsigned NOT NULL,
-  `user_ip` int(12) unsigned NOT NULL,
-  `answers_id` text NOT NULL,
-  UNIQUE KEY `question_id` (`question_id`,`user_id`,`user_ip`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-CREATE TABLE IF NOT EXISTS `ratings` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `toid` int(10) unsigned NOT NULL,
-  `stoid` int(10) unsigned NOT NULL DEFAULT '0',
-  `type` enum('torrents','users') NOT NULL DEFAULT 'torrents',
-  `stype` enum('torrents') NOT NULL DEFAULT 'torrents',
-  `user` int(12) unsigned NOT NULL DEFAULT '0',
-  `value` tinyint(1) NOT NULL DEFAULT '0',
-  `ip` enum('1','0') NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `torus` (`toid`,`type`,`user`,`ip`,`stoid`,`stype`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-CREATE TABLE IF NOT EXISTS `read_torrents` (
-  `torrent_id` int(12) unsigned NOT NULL,
-  `user_id` int(12) unsigned NOT NULL,
-  UNIQUE KEY `torrents_id` (`torrent_id`,`user_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-CREATE TABLE IF NOT EXISTS `sessions` (
-  `sid` varchar(32) NOT NULL DEFAULT '',
-  `uid` int(10) unsigned NOT NULL DEFAULT '0',
-  `userdata` text NOT NULL,
-  `ip` int(10) unsigned NOT NULL DEFAULT '0',
-  `time` int(12) unsigned NOT NULL DEFAULT '0',
-  `login_trying` smallint(3) NOT NULL DEFAULT '0',
-  `trying_time` int(12) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`sid`),
-  KEY `time` (`time`),
-  KEY `login_trying` (`login_trying`),
-  KEY `def` (`ip`,`uid`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-CREATE TABLE IF NOT EXISTS `smilies` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `code` varchar(20) NOT NULL,
-  `image` varchar(225) NOT NULL,
-  `name` varchar(200) NOT NULL,
-  `show_bbeditor` enum('1','0') NOT NULL DEFAULT '0',
-  `sort` int(10) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `code` (`code`),
-  KEY `image` (`image`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
 INSERT INTO `smilies` (`id`, `code`, `image`, `name`, `show_bbeditor`, `sort`) VALUES
 (1, ':-)', 'smile1.gif', 'Smile', '1', 0),
@@ -737,128 +857,8 @@ INSERT INTO `smilies` (`id`, `code`, `image`, `name`, `show_bbeditor`, `sort`) V
 (23, ':sorry:', 'sorry.gif', 'Sorry', '1', 21),
 (24, ':hi:', 'hi.gif', 'Hi', '1', 22);
 
-CREATE TABLE IF NOT EXISTS `static` (
-  `id` int(10) NOT NULL AUTO_INCREMENT,
-  `url` varchar(150) NOT NULL,
-  `title` varchar(250) NOT NULL,
-  `bbcode` enum('1','0') NOT NULL DEFAULT '0',
-  `content` text NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `url` (`url`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-CREATE TABLE IF NOT EXISTS `stats` (
-  `name` varchar(200) NOT NULL,
-  `value` text NOT NULL,
-  UNIQUE KEY `name` (`name`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
 INSERT INTO `stats` (`name`, `value`) VALUES
 ('last_clean_rt', '1345397627'),
 ('last_cleanup', '1345729210'),
 ('max_online', '1'),
 ('max_online_time', '1345397628');
-
-CREATE TABLE IF NOT EXISTS `torrents` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `info_hash` varbinary(40) NOT NULL DEFAULT '                                        ',
-  `title` varchar(255) NOT NULL DEFAULT '',
-  `content` text NOT NULL,
-  `filelist` text NOT NULL,
-  `tags` varchar(500) DEFAULT NULL,
-  `category_id` text NOT NULL,
-  `size` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `announce_stat` text NOT NULL,
-  `announce_list` text,
-  `posted_time` int(12) unsigned NOT NULL DEFAULT '0',
-  `last_active` int(12) NOT NULL DEFAULT '0',
-  `comm_count` int(10) unsigned NOT NULL DEFAULT '0',
-  `downloaded` int(10) unsigned NOT NULL DEFAULT '0',
-  `leechers` int(10) unsigned NOT NULL DEFAULT '0',
-  `seeders` int(10) unsigned NOT NULL DEFAULT '0',
-  `banned` enum('2','1','0') NOT NULL DEFAULT '0' COMMENT '2 - в т.ч. запрет на редактирование',
-  `status` varchar(50) NOT NULL DEFAULT '0',
-  `status_by` int(10) NOT NULL DEFAULT '0',
-  `poster_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `rate_count` int(10) unsigned NOT NULL DEFAULT '0',
-  `rnum_count` int(10) unsigned NOT NULL DEFAULT '0',
-  `price` decimal(5,2) unsigned DEFAULT '10.00',
-  `sticky` enum('1','0') NOT NULL DEFAULT '0',
-  `on_top` enum('1','0') DEFAULT '0',
-  `screenshots` text NOT NULL,
-  `edit_reason` varchar(250) NOT NULL DEFAULT '',
-  `last_edit` int(12) unsigned NOT NULL DEFAULT '0',
-  `editor_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `edit_count` int(10) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `info_hash` (`info_hash`),
-  UNIQUE KEY `name` (`title`),
-  KEY `owner` (`poster_id`),
-  KEY `tags` (`tags`(333)),
-  KEY `on_top` (`on_top`),
-  KEY `sticky` (`sticky`),
-  KEY `posted_time` (`posted_time`),
-  FULLTEXT KEY `title` (`title`),
-  FULLTEXT KEY `title_content` (`title`,`content`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-CREATE TABLE IF NOT EXISTS `users` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `username` varchar(40) NOT NULL,
-  `username_lower` varchar(40) NOT NULL,
-  `password` varchar(32) NOT NULL DEFAULT '',
-  `salt` varchar(32) NOT NULL DEFAULT '',
-  `email` varchar(80) NOT NULL DEFAULT '',
-  `new_email` varchar(200) NOT NULL DEFAULT '',
-  `confirm_key` varchar(32) NOT NULL DEFAULT '',
-  `confirmed` enum('3','2','1','0') NOT NULL DEFAULT '0',
-  `registered` int(12) unsigned NOT NULL DEFAULT '0',
-  `last_visited` int(12) unsigned NOT NULL DEFAULT '0',
-  `settings` text COMMENT 'show_age, website, icq, skype, country, town, name, surname, announce_pk',
-  `admin_email` enum('1','0') NOT NULL DEFAULT '0',
-  `user_email` enum('1','0') NOT NULL DEFAULT '0',
-  `mailer_interval` int(10) unsigned NOT NULL DEFAULT '0',
-  `dst` enum('1','0') NOT NULL DEFAULT '0',
-  `timezone` int(3) NOT NULL DEFAULT '0',
-  `ip` int(10) unsigned NOT NULL DEFAULT '0',
-  `group` tinyint(3) NOT NULL DEFAULT '0',
-  `old_group` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `add_permissions` text,
-  `bonus_count` decimal(65,2) unsigned NOT NULL DEFAULT '300.00',
-  `avatar` varchar(250) NOT NULL DEFAULT '',
-  `gender` enum('u','m','f') NOT NULL DEFAULT 'u',
-  `birthday` int(12) unsigned DEFAULT '0',
-  `passkey` varchar(32) NOT NULL DEFAULT '',
-  `refered_by` int(10) unsigned NOT NULL DEFAULT '0',
-  `karma_count` int(10) NOT NULL DEFAULT '0',
-  `torrents_count` int(10) unsigned NOT NULL DEFAULT '0',
-  `comm_count` int(10) unsigned NOT NULL DEFAULT '0',
-  `hidden` enum('1','0') NOT NULL DEFAULT '0',
-  `warnings_count` int(10) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `username_lower` (`username_lower`),
-  UNIQUE KEY `passkey` (`passkey`),
-  KEY `status_added` (`confirmed`,`registered`),
-  KEY `ip` (`ip`),
-  KEY `last_access` (`last_visited`),
-  KEY `user` (`id`,`confirmed`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
-
-CREATE TABLE IF NOT EXISTS `warnings` (
-  `id` int(10) NOT NULL AUTO_INCREMENT,
-  `uid` int(10) NOT NULL,
-  `reason` varchar(200) NOT NULL,
-  `byuid` int(10) NOT NULL,
-  `time` int(12) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `uid` (`uid`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-CREATE TABLE IF NOT EXISTS `zebra` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `user_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `to_userid` int(10) unsigned NOT NULL DEFAULT '0',
-  `type` enum('f','b') NOT NULL DEFAULT 'f',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `userfriend` (`user_id`,`to_userid`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
