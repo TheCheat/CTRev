@@ -167,7 +167,7 @@ final class cache {
         if ($this->m)
             return @$this->m->flush();
         else
-            return @$file->unlink_folder('include/cache', true, 'include/cache/' . TEMPLATES_PATH);
+            return @$file->unlink_folder('include/cache', true, array(TEMPLATES_PATH, '.gitignore'));
     }
 
     /**
@@ -177,7 +177,7 @@ final class cache {
      */
     public function clear_tpl() {
         global $file;
-        return @$file->unlink_folder('include/cache/' . TEMPLATES_PATH, true);
+        return @$file->unlink_folder('include/cache/' . TEMPLATES_PATH, true, '.gitignore');
     }
 
 }

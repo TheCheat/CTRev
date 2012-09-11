@@ -23,9 +23,9 @@
             <dt class='pattern_values'>[*'patterns_area_values'|lang*]</dt>
             <dd class='pattern_values'><textarea cols="35" rows='5' name='values[]'>[*$row.values*]</textarea></dd>
             <dt class='pattern_html'>[*'patterns_area_html'|lang*]</dt>
-            <dd class='pattern_html'><textarea cols="35" rows='7' name='html[]'>[*$row.html|he*]</textarea></dd>
+            <dd class='pattern_html'><textarea cols="35" rows='7' name='html[]'>[*$row.html|he:false:true*]</textarea></dd>
             <dt class='pattern_descr'>[*'patterns_area_descr'|lang*]</dt>
-            <dd class='pattern_descr'><textarea cols="35" rows='5' name='descr[]'>[*$row.descr|he*]</textarea></dd>
+            <dd class='pattern_descr'><textarea cols="35" rows='5' name='descr[]'>[*$row.descr|he:false:true*]</textarea></dd>
             <dt>[*'patterns_area_formdata'|lang*]</dt>
             <dd><textarea cols="35" rows='5' name='formdata[]'>[*$row.formdata*]</textarea></dd>
         </dl>

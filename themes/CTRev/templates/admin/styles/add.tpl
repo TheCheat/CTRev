@@ -27,7 +27,7 @@
                     [*/if*]
                 </dd>
                 <dt>[*'styles_file_content'|lang*]</dt>
-                <dd><textarea name='content' rows='15' cols='65'>[*$contents|he*]</textarea></dd>
+                <dd><textarea name='content' rows='15' cols='65'>[*$contents|he:false:true*]</textarea></dd>
             </dl>
             <div align='center'>
                 <input type='submit' value='[*'save'|lang*]'>

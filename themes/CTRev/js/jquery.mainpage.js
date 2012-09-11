@@ -1003,6 +1003,7 @@ function change_input_type(obj, type) {
 function element_tablerow_height() {
     jQuery(document).ready(function () {
         var els = jQuery('.js_tablerow_height', 'tr, div.tr');
+        els.height('100%');
         var getmaxheight = function (el) {
             var p = jQuery(el).parents('tr, div.tr');
             var mx = jQuery('.js_tablerow_maxheight', p);

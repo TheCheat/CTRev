@@ -155,7 +155,7 @@
                                 <dt><a href='javascript:void(0);' onclick='edit_langkey(this);'>[*$key*]</a></dt>
                                 <dd><div class='clear_both'>
                                         <div class='langfield_input'>
-                                            <input type='text' name='values[[*$key*]]'  value='[*$value|he|rnl*]' size='55'>
+                                            <input type='text' name='values[[*$key*]]'  value='[*$value|he:false:true|rnl*]' size='55'>
                                         </div>
                                         <div class='lang_buttons'>
                                             <a href='javascript:void(0);' onclick='change_langfield(this);'>

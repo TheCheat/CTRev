@@ -386,7 +386,7 @@ $charset = ' . var_export($charset, true) . ';
 
         // предустановка параметров, если не заданы
         if (!$upd['baseurl'])
-            $upd['baseurl'] = preg_replace('/^(.*)(\/|\\\)(.*?)$/siu', '\1/', $_SERVER['PHP_SELF']);
+            $upd['baseurl'] = preg_replace('/^(.*)(\/|\\\)(.*?)$/siu', '\1', $_SERVER['PHP_SELF']);
         if (!$upd['contact_email'])
             $upd['contact_email'] = 'admin@' . $_SERVER['SERVER_NAME'];
         if (!isset($data['furl']))

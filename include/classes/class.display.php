@@ -318,12 +318,19 @@ class display_html {
      * Функция для экранирования HTML кода
      * @param string $html HTML код
      * @param bool $decode деэкранировать до нового экранирования?
+     * @param bool $nonbsp не преопразовывать многократные пробелы в &nbsp;?
      * @return string текст с экранированными спец.символами HTML
      */
-    public function html_encode($html, $decode = false) {
+    public function html_encode($html, $decode = false, $nonbsp = false) {
         if ($decode)
             $html = $this->html_decode($html);
-        $html = str_replace(array("&", "<", ">", "'", '"', '  '), array("&amp;", "&lt;", "&gt;", "&#39;", "&quot;", "&nbsp;&nbsp;"), $html);
+        $i = array("&", "<", ">", "'", '"');
+        $t = array("&amp;", "&lt;", "&gt;", "&#39;", "&quot;");
+        if (!$nonbsp) {
+            $i[] = '  ';
+            $t[] = "&nbsp;&nbsp;";
+        }
+        $html = str_replace($i, $t, $html);
         return $html;
     }
 
@@ -555,7 +562,7 @@ class display_modifier extends display_time {
             $out = "t" . $out;
         return $out;
     }
-    
+
     /**
      * "Переворачивание" текста
      * @param string $string текст

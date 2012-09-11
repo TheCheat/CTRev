@@ -153,11 +153,15 @@ final class file {
      * @param string $path путь к дирректории
      * @param bool $savedirs не удалять дирректории
      * @param mixed $except исключая...
+     * @param bool $fullpath полный путь в исключениях?
      * @return null
      */
-    public function unlink_folder($path, $savedirs = false, $except = null) {
+    public function unlink_folder($path, $savedirs = false, $except = null, $fullpath = false) {
         $npath = ROOT . $path;
-        if ($except && in_array($path, (array) $except))
+        $epath = $path;
+        if (!$fullpath && $except)
+            $epath = preg_replace('/^(.*)(\/|\\\)(.+?)$/siu', '\3', $epath);
+        if ($except && in_array($fullpath, (array) $except))
             return;
         if (is_dir($npath)) {
             $r = $this->open_folder($path);

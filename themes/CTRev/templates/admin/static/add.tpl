@@ -33,7 +33,7 @@
                     [*if $row.bbcode*]
                         [*assign var='content' value=$row.content*]
                     [*else*]
-                        [*assign var='content' value=$row.content|he*]
+                        [*assign var='content' value=$row.content|he:false:true*]
                     [*/if*]
                     <div class='static_content_input[*if !$row.bbcode*] hidden[*/if*]'>
                         [*input_form name='content' text=$content*]
