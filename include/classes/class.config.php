@@ -99,7 +99,7 @@ final class config {
      */
     public function set($var, $value, $sort = null) {
         global $db;
-        $this->vars[$var] = $value;
+        $this->vars[$var] = (string) $value;
         $update = array('value' => (string) $value);
         if ($sort)
             $update['sort'] = (int) $sort;
