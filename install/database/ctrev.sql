@@ -260,7 +260,7 @@ CREATE TABLE IF NOT EXISTS `peers` (
   `uid` int(10) unsigned NOT NULL DEFAULT '0',
   `time` int(12) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`tid`,`uid`),
-  UNIQUE KEY `peer_id` (`peer_id`),
+  UNIQUE KEY `peer_id` (`peer_id`,`tid`),
   KEY `seeder` (`tid`,`seeder`),
   KEY `torrent` (`tid`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
