@@ -23,6 +23,7 @@
 
 #JT {
     position: absolute;
+    display: table;
     z-index:100;
     border: 2px solid #CCCCCC;
     background-color: #fff;
