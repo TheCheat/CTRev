@@ -10,12 +10,10 @@
  * @name 		Главная страница сайта
  * @version             1.00
  */
-if (!IN_DEVELOPMENT) {
-    $ifile = 'install/lock';
-    if (!file_exists($ifile)) {
-        @header('Location: install.php');
-        die();
-    }
+$ifile = 'install/lock';
+if (!file_exists($ifile)) {
+    @header('Location: install.php');
+    die();
 }
 define('DELAYED_UINIT', true); // отложенная инициализация юзерей...
 include_once "./include/include.php";
