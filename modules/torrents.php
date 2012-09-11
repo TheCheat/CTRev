@@ -938,7 +938,7 @@ class torrents_ajax {
                     $row['name'] = $display->cut_text($row['title'], $max_title_symb);
                 $a[] = $row;
             }
-            $cache->write($a); // Ибо ещё 2 кеша есть
+            $cache->write($a);
         }
         $tpl->assign('res', $a);
         $tpl->display('blocks/contents/torrents.tpl');

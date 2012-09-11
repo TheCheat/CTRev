@@ -994,3 +994,30 @@ function change_input_type(obj, type) {
     h = h.replace(/(type=)['"]\w+['"]/, 'type="'+type+'"');
     obj.replaceWith(h);
 }
+
+/**
+ * Установка элементам с классом tablerow высоту(height) 
+ * элемента table-row(статично)
+ * @return null
+ */
+function element_tablerow_height() {
+    jQuery(document).ready(function () {
+        var els = jQuery('.js_tablerow_height', 'tr, div.tr');
+        var getmaxheight = function (el) {
+            var p = jQuery(el).parents('tr, div.tr');
+            var mx = jQuery('.js_tablerow_maxheight', p);
+            if (mx.length)
+                return mx.height();
+            var max;
+            jQuery('.js_tablerow_height', p).each(function () {
+                if (!max || max.height()<jQuery(this).height())
+                    max = jQuery(this);
+            });
+            max.addClass('js_tablerow_maxheight');
+            return max.height();
+        };
+        els.each(function () {
+            jQuery(this).height(getmaxheight(this));
+        });
+    });
+}

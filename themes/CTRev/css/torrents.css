@@ -175,7 +175,6 @@ div.torrent_element img {
 }
 
 div.torrent_element_name {
-    clear: both;
     font-size: 18px;
     text-align: center;
 }
@@ -183,12 +182,12 @@ div.torrent_element_name {
 div.torrent_element_descr {
     padding-left: 10px;
     text-align: left;
+    width: 100%;
 }
 div.torrent_element_poster {
     position: relative;
     float: left;
     width: 100px;
-    min-height: 100px;
     text-align: center;
 }
 div.torrents_search_results {
