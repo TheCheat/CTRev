@@ -100,7 +100,7 @@ final class config {
     public function set($var, $value, $sort = null) {
         global $db;
         $this->vars[$var] = $value;
-        $update = array('value' => $value);
+        $update = array('value' => (string) $value);
         if ($sort)
             $update['sort'] = (int) $sort;
         $db->update($update, 'config', 'WHERE name=' . $db->esc($var) . ' LIMIT 1');
