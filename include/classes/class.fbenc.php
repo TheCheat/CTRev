@@ -13,7 +13,6 @@
 if (!defined('INSITE'))
     die('Remote access denied!');
 
-
 class fbenc {
 
     /**
@@ -35,6 +34,8 @@ class fbenc {
      */
     protected function get_type($m) {
         $t = gettype($m);
+        if ($t == 'double' || $t == 'float')
+            $t = 'integer';
         switch ($t) {
             case "integer" :
             case "string" :
@@ -173,7 +174,7 @@ class fbenc {
         if ($v [0] == "0" && strlen($v) != 1)
             return;
         $left = $m[2];
-        return (int) $v;
+        return (float) longval($v); // сначала "длинное" целое, потом меняем тип
     }
 
     /**
@@ -281,4 +282,5 @@ class fbenc {
     }
 
 }
+
 ?>

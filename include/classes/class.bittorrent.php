@@ -37,18 +37,26 @@ class announce_parser extends fbenc {
      * @param array $dict словарь торрента
      * @return array список аннонсеров
      */
-    public function announce_lists($dict) {
+    public function announce_lists(&$dict) {
         global $config;
         $announce_urls = array();
-        if ($config->v('multitracker_on'))
+        if ($config->v('multitracker_on')) {
             if ($dict ['announce-list']) {
-                foreach ($dict ['announce-list'] as $tv) {
-                    $tv = $tv[0];
-                    if ($tv && $this->check_announce($tv))
-                        $announce_urls [] = $tv;
+                if (!is_array($dict['announce-list']))
+                    $dict ['announce-list'] = array(array($dict ['announce-list']));
+                foreach ($dict ['announce-list'] as $k => $tv) {
+                    if (!is_array($tv)) {
+                        unset($dict ['announce-list'][$k]);
+                        continue;
+                    }
+                    foreach ($tv as $t)
+                        if ($t && $this->check_announce($t))
+                            $announce_urls [] = $t;
                 }
             } elseif ($dict ['announce'])
                 $announce_urls [] = $dict ['announce'];
+        } else
+            unset($dict ['announce-list']);
         $announce_urls = array_unique($announce_urls);
         return $announce_urls;
     }
@@ -106,6 +114,19 @@ class bittorrent extends announce_parser {
     }
 
     /**
+     * В списке аннонсеров?
+     * @param string $url URL аннонсера
+     * @param array $list список
+     * @return bool true, если в списке
+     */
+    protected function in_annlist($url, $list) {
+        foreach ($list as $i)
+            if (in_array($url, $i))
+                return true;
+        return false;
+    }
+
+    /**
      * Предобработка dict перед скачиванием
      * @global config $config
      * @global users $users
@@ -131,6 +152,8 @@ class bittorrent extends announce_parser {
                 $furl->construct('announce', array(
                     'passkey' => $passkey,
                     'noencode' => true), false, true);
+        if (!is_array($dict ['announce-list']))
+            unset($dict ['announce-list']);
         if ($config->v('get_pk') && $dict ['announce-list']) {
             if ($users->v('settings'))
                 $users->decode_settings();
@@ -139,17 +162,18 @@ class bittorrent extends announce_parser {
             $pk = explode("\n", $config->v('get_pk'));
             $c = count($pk);
             foreach ($dict ['announce-list'] as $k => $a)
-                for ($i = 0; $i < $c; $i++)
-                    if ($this->pk_replace($dict ['announce-list'][$k][0], $pk[$i]))
-                        break;
+                foreach ($a as $l => $b)
+                    for ($i = 0; $i < $c; $i++)
+                        if ($this->pk_replace($dict ['announce-list'][$k][$l], $pk[$i]))
+                            break;
         }
         if ($config->v('additional_announces')) {
             $add = explode("\n", $config->v('additional_announces'));
             foreach ($add as $a) {
                 $a = trim($a);
-                $a = array($a);
-                if (in_array($a, $dict ['announce-list']))
+                if ($this->in_annlist($a, $dict ['announce-list']))
                     continue;
+                $a = array($a);
                 $dict ['announce-list'][] = $a;
             }
         }
@@ -185,7 +209,7 @@ class bittorrent extends announce_parser {
                 throw new EngineException('torrents_no_this_torrents');
             $off = $users->perm('free', 2) ? 1 : ($users->perm('free', 1) ? 0.5 : 0);
             $price = $price * (1 - $off);
-            
+
             if ($poster_id == $users->v('id'))
                 $downloaded = true;
 

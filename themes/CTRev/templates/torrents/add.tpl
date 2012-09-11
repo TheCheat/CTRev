@@ -8,7 +8,7 @@
                     "autoheight" : false
                 });
             });
-            var cats_was_selected = false;
+            var cats_was_selected = [*if $id*]true[*else*]false[*/if*];
             function check_torrentsform(form) {
                 make_tobbcode();
                 try {
