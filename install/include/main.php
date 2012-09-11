@@ -383,10 +383,21 @@ $charset = ' . var_export($charset, true) . ';
             'furl',
             'cache_on');
         $upd = rex($data, $params);
+
+        // предустановка параметров, если не заданы
         if (!$upd['baseurl'])
-            $upd['baseurl'] = '/';
-        $upd['furl'] = (bool) $upd['furl'];
-        $upd['cache_on'] = (bool) $upd['cache_on'];
+            $upd['baseurl'] = preg_replace('/^(.*)(\/|\\\)(.*?)$/siu', '\1/', $_SERVER['PHP_SELF']);
+        if (!$upd['contact_email'])
+            $upd['contact_email'] = 'admin@' . $_SERVER['SERVER_NAME'];
+        if (!isset($data['furl']))
+            $upd['furl'] = (bool) $_SERVER['HTTP_FURL_AVALIABLE'];
+        else
+            $upd['furl'] = (bool) $upd['furl'];
+        if (!isset($data['cache_on']))
+            $upd['cache_on'] = true;
+        else
+            $upd['cache_on'] = (bool) $upd['cache_on'];
+
         $upd['secret_key'] = $users->generate_salt();
         foreach ($upd as $k => $v)
             $config->set($k, $v);
