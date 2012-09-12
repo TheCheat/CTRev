@@ -39,8 +39,8 @@ if (!$itime)
 list($torrent, $seedleech,
         $downloaded) = $db->fetch_row($db->query('SELECT id, ' . $area . ',downloaded FROM torrents WHERE
     info_hash=' . $db->esc($info_hash) . ' AND banned="0" LIMIT 1'));
-//if (!$torrent)
-//    $bt->err('Unknown torrent. Infohash - ' . $info_hash);
+if (!$torrent)
+    $bt->err('Unknown torrent. Infohash - ' . $info_hash);
 list($user) = $db->fetch_row($db->query('SELECT id FROM users WHERE
     passkey=' . $db->esc($passkey) . ' AND `group`>0 LIMIT 1'));
 $where = "WHERE tid=" . $torrent . ' AND uid=' . $user . " LIMIT 1";
