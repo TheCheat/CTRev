@@ -34,6 +34,8 @@ php_value "error_reporting" 30711
 
 SetEnv HTTP_FURL_AVALIABLE 1
 
+Options FollowSymLinks
+
 RewriteEngine on
 
 RewriteRule ^static/([a-z0-9\-\_]+)\.(html|php)$                                ./index.php?module=statics&page=$1 [NC,L]
