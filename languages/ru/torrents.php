@@ -23,6 +23,7 @@ $languages = array(
     "torrents_no_title" => "Нет заголовка торрента",
     "torrents_no_content" => "Нет содержимого торрента",
     "torrents_this_torrents_are_not_exists" => "Извините, но данный торрент не существует!",
+    "torrents_torrent_already_exists" => 'Такой же торрент / торрент с таким же названием уже существует!',
     "torrents_menu" => "Меню торрента",
     "torrents_are_sure_to_delete_torrents" => "Вы уверены, что хотите удалить этот торрент?",
     "torrents_edit_torrents" => "Редактировать торрент",

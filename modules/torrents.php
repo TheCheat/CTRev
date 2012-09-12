@@ -764,7 +764,11 @@ class torrents {
                 $plugins->pass_data(array('update' => &$update,
                     'error' => &$error), true)->run_hook('torrents_save_add');
 
-                $id = $db->insert($update, 'torrents');
+                $id = $db->no_error()->insert($update, 'torrents');
+                if ($db->errno() == UNIQUE_VALUE_ERROR)
+                    throw new EngineException('torrents_torrent_already_exists');
+                elseif ($db->errno())
+                    $db->err();
                 if ($config->v('getpeers_after_upload'))
                     $getpeers->get_peers($id, $announce_list, $infohash);
                 $etc->add_res();
@@ -798,7 +802,11 @@ class torrents {
                     'id' => $id,
                     'error' => &$error), true)->run_hook('torrents_save_edit');
 
-                $db->update($update, 'torrents', 'WHERE id=' . $id . ' LIMIT 1');
+                $db->no_error()->update($update, 'torrents', 'WHERE id=' . $id . ' LIMIT 1');
+                if ($db->errno() == UNIQUE_VALUE_ERROR)
+                    throw new EngineException('torrents_torrent_already_exists');
+                elseif ($db->errno())
+                    $db->err();
                 log_add("edited_torrents", "user", array($row ['title'], $id));
             }
 
