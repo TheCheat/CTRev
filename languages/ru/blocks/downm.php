@@ -9,8 +9,8 @@ $languages = array("downm_menu_item_online" => "Онлайн",
     "downm_whos_online_title" => "Кто онлайн",
     "downm_bd_title" => "Список ДР",
     "downm_bd_nobody_celebrates" => "Сегодня никто не празднует свой день рождения.",
-    "users_no_comments" => "Нет комментариев",
-    "users_no_torrents" => "Нет торрентов",
+    "downm_no_comments" => "Нет комментариев",
+    "downm_no_torrents" => "Нет торрентов",
     "downm_torrents_sticky" => "Важные торренты",
     "downm_torrents_all" => "Все торренты");
 ?>

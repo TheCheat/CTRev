@@ -33,5 +33,9 @@
         </tbody>
     </table>
 [*else*] 
-    [*message lang_var='users_no_comments' type='info'*]
+    [*assign var='lv' value='users_no_comments'*]
+    [*if !isset($comm_row[0].poster_id)*]
+        [*assign var='lv' value='downm_no_comments'*]
+    [*/if*]
+    [*message lang_var=$lv type='info'*] 
 [*/if*]

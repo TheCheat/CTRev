@@ -5,7 +5,7 @@
             <tr>
                 <th width="70%"><b>[*'users_torrents_title'|lang*]</b></th>
                 <th><b>[*'users_torrents_added'|lang*]</b></th>
-                [*if $torrents_row[0].username*]
+                [*if isset($torrents_row[0].poster_id)*]
                     <th><b>[*'users_author'|lang*]</b></th>
                 [*/if*]
             </tr>
@@ -29,5 +29,9 @@
         </tbody>
     </table>
 [*else*] 
-    [*message lang_var='users_no_torrents' type='info'*] 
+    [*assign var='lv' value='users_no_torrents'*]
+    [*if !isset($torrents_row[0].poster_id)*]
+        [*assign var='lv' value='downm_no_torrents'*]
+    [*/if*]
+    [*message lang_var=$lv type='info'*] 
 [*/if*]
