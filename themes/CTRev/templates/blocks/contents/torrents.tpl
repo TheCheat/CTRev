@@ -51,6 +51,6 @@
 [*/if*]
 <script type='text/javascript'>
     init_corners();
-    element_tablerow_height(1);
+    element_tablerow_height();
 </script>
 [*include file='sexy_lightbox.tpl'*]

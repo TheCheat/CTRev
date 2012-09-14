@@ -1002,19 +1002,21 @@ function change_input_type(obj, type) {
  */
 function element_tablerow_height() {
     jQuery(document).ready(function () {
-        var els = jQuery('.js_tablerow_height', 'tr, div.tr');
-        els.height('100%');
+        var he = '.js_tablerow_height';
+        var tr = 'tr, div.tr';
+        var mhe = '.js_tablerow_maxheight';
+        var els = jQuery(he, mhe);
         var getmaxheight = function (el) {
-            var p = jQuery(el).parents('tr, div.tr');
-            var mx = jQuery('.js_tablerow_maxheight', p);
+            var p = jQuery(el).parents(tr);
+            var mx = jQuery(mhe, p);
             if (mx.length)
                 return mx.height();
-            var max;
-            jQuery('.js_tablerow_height', p).each(function () {
-                if (!max || max.height()<jQuery(this).height())
+            var max = null;
+            jQuery(he, p).each(function () {
+                if (max === null || max.height()<jQuery(this).height())
                     max = jQuery(this);
             });
-            max.addClass('js_tablerow_maxheight');
+            max.addClass(he.substr(1));
             return max.height();
         };
         els.each(function () {
