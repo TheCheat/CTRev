@@ -294,6 +294,7 @@ function position_obj($object, $parent) {
  * @return null
  */
 function toggle_menu(obj, ul2div, taked) {
+    var cl = "this_toggle_menu";
     if (!taked) {
         var $obj = jQuery(obj);
         var $sobj, $menu;
@@ -308,7 +309,6 @@ function toggle_menu(obj, ul2div, taked) {
         $menu.addClass("toggledMenu");
         $obj.attr("onclick", "");
         $obj.unbind("click");
-        $menu.unbind("mouseleave");
         $obj.bind("click", {
             menu : $menu,
             sobj : $sobj
@@ -320,12 +320,30 @@ function toggle_menu(obj, ul2div, taked) {
         $menu = obj;
         $sobj = taked;
     }
-    $menu.addClass("this_toggle_menu");
+    var $body = jQuery('body');
+    $body.unbind("mousedown");
+    if ($menu.css('display')=='none') {
+        $menu.addClass('togglemenu_parent');
+        $sobj.addClass('togglemenu_parent');
+        $body.bind("mousedown", {
+            menu : $menu,
+            sobj : $sobj
+        }, function (event) {
+            var $menu = event.data.menu;
+            var $sobj = event.data.sobj;
+            var $targ = jQuery(event.target);
+            if (!$targ.is('.togglemenu_parent'))
+                $targ = $targ.parents('.togglemenu_parent');
+            if ($targ.get(0)==$menu.get(0) || $targ.get(0)==$sobj.get(0)) return;
+            jQuery($menu).slideUp('fast');
+        });
+    }
+    $menu.addClass(cl);
     /* Чистим все запущенные toggle */
-    jQuery(".toggledMenu:not(.this_toggle_menu)").hide();
+    jQuery(".toggledMenu:not(."+cl+")").hide();
     position_obj($menu, $sobj);
     $menu.slideToggle('fast');
-    $menu.removeClass("this_toggle_menu");
+    $menu.removeClass(cl);
 }
 /**
  * Установка значения рейтинга
