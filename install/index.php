@@ -4,7 +4,7 @@
  * Project:             CTRev
  * File:                index.php
  *
- * @link 	  	http://ctrev.cyber-tm.com/
+ * @link 	  	http://ctrev.cyber-tm.ru/
  * @copyright           (c) 2008-2012, Cyber-Team
  * @author 	  	The Cheat <cybertmdev@gmail.com>
  * @name 		Инсталляция сайта
@@ -12,6 +12,7 @@
  */
 if (!defined('INSITE'))
     die("Remote access denied!");
+
 define('ININSTALL', true);
 include "include/functions.php";
 include "include/system/php_config.php";
@@ -56,21 +57,49 @@ $lang->change_folder($lng);
 $lang->get('system');
 $lang->get('main');
 $lang->get('install/main');
-if (!in_array($_GET['page'], $pages))
-    $page = reset($pages);
-else
-    $page = $_GET['page'];
-if (INSTALL_LOCKED) {
-    $page = end($pages);
-    $pages = array($page);
+if (!defined('INCONVERT')) {
+    if (INSTALL_LOCKED) {
+        $page = end($pages);
+        $pages = array($page);
+    }
+    define('INSTALL_FILE', 'install');
+} else {
+    $lang->get('install/convert');
+    $pages = array(
+        "notice",
+        "database",
+        "convert",
+        "finish");
+    define('INSTALL_FILE', 'convert');
+}
+if (defined('INCONVERT')) {
+    if (!INSTALL_LOCKED)
+        die('You must install at first!');
+    $converted = false;
+    include ROOT . 'install/include/convert.php';
+    $main = new convert($converted);
+    if ($converted) {
+        $page = end($pages);
+        $pages = array($page);
+    }
+} else {
+    include ROOT . 'install/include/main.php';
+    $main = new main();
+}
+
+
+if (!$page) {
+    if (!in_array($_GET['page'], $pages))
+        $page = reset($pages);
+    else
+        $page = $_GET['page'];
 }
 define('INSTALL_PAGE', $page);
 define('CONTENT_PATH', 'install/style/content/');
 define('IMAGES_PATH', 'install/style/content/images/');
 define('JS_PAGES', '["' . implode('", "', array_map('addslashes', $pages)) . '"]');
 
-include ROOT . 'install/include/main.php';
-$main = new main();
+
 if ($_GET['page'])
     $main->init();
 else {

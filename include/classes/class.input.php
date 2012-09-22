@@ -114,13 +114,21 @@ class input {
         $behour = strpos($type, "h") !== false;
         $beminute = strpos($type, "i") !== false;
         $besecond = strpos($type, "s") !== false;
-        $text = "";
         $ttime = $tdate = array();
         $now = - 1;
-        if ($beyear) {
+        $text = "";
+        if ($beday) {
             if ($time > 0)
-                $now = date("Y", $time);
-            $text .= "<input name=\"" . $name . "_year\" type=\"text\" size=\"4\" maxlength=\"4\" value=\"" . ($now > 0 ? $now : "") . "\">";
+                $now = date("d", $time);
+            $text .= "<select name=\"" . $name . "_day\">";
+            if ($fromnull)
+                $text .= "<option value=\"0\"" . ($now == 0 ? " selected=\"selected\"" : "") . ">--</option>";
+            for ($i = 1; $i <= 31; $i++) {
+                if (strlen($i) < 2)
+                    $i = "0" . $i;
+                $text .= "<option value=\"" . $i . "\"" . ($now == $i ? " selected=\"selected\"" : "") . ">" . $i . "</option>";
+            }
+            $text .= "</select>";
             $tdate[] = $text;
         }
         $text = "";
@@ -137,18 +145,10 @@ class input {
             $tdate[] = $text;
         }
         $text = "";
-        if ($beday) {
+        if ($beyear) {
             if ($time > 0)
-                $now = date("d", $time);
-            $text .= "<select name=\"" . $name . "_day\">";
-            if ($fromnull)
-                $text .= "<option value=\"0\"" . ($now == 0 ? " selected=\"selected\"" : "") . ">--</option>";
-            for ($i = 1; $i <= 31; $i++) {
-                if (strlen($i) < 2)
-                    $i = "0" . $i;
-                $text .= "<option value=\"" . $i . "\"" . ($now == $i ? " selected=\"selected\"" : "") . ">" . $i . "</option>";
-            }
-            $text .= "</select>";
+                $now = date("Y", $time);
+            $text .= "<input name=\"" . $name . "_year\" type=\"text\" size=\"4\" maxlength=\"4\" value=\"" . ($now > 0 ? $now : "") . "\">";
             $tdate[] = $text;
         }
         $text = "";

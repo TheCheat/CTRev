@@ -4,7 +4,7 @@
  * Project:            	CTRev
  * File:                index.php
  *
- * @link 	  	http://ctrev.cyber-tm.com/
+ * @link 	  	http://ctrev.cyber-tm.ru/
  * @copyright         	(c) 2009-2012, Cyber-Team
  * @author 	  	The Cheat <cybertmdev@gmail.com>
  * @name 		Основной файл, загружающий модули АЦ

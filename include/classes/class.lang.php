@@ -173,7 +173,7 @@ final class lang {
             else
                 $out .= "\t" . var_export($key, true) . " => " . var_export($value, true) . ",\n";
         $out = "<?php\n" . rtrim($out, ",\n") . ");\n?>";
-        $file->write_file($out, LANGUAGES_PATH . '/' . $folder . '/' . $f);
+        $file->write_file($out, LANGUAGES_PATH . '/' . $folder . '/' . $f . '.php');
     }
 
     /**

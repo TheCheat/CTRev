@@ -65,6 +65,12 @@ class db { // не final, ибо err переопределяется в анн�
     protected $last_table = "";
 
     /**
+     * Имя базы данных для запроса
+     * @var string $prdb
+     */
+    protected $prdb = "";
+
+    /**
      * Коннект к БД
      * @return null
      */
@@ -86,6 +92,27 @@ class db { // не final, ибо err переопределяется в анн�
         mysql_query($q) or $this->err($q);
         register_shutdown_function("mysql_close");
         $this->connected = true;
+    }
+
+    /**
+     * Запрос к базе, отличной от данной
+     * @param string $name имя БД
+     * @return db $this
+     */
+    public function prepend_db($name) {
+        $this->prdb = $name;
+        return $this;
+    }
+
+    /**
+     * Получение имени БД, отличной от данной
+     * @return string имя БД
+     */
+    protected function get_db() {
+        if ($this->prdb)
+            $r = '`' . $this->prdb . '`.';
+        $this->prepend_db('');
+        return $r;
     }
 
     /**
@@ -114,7 +141,7 @@ class db { // не final, ибо err переопределяется в анн�
      * @return int кол-во удалённых строк
      */
     public function truncate_table($table) {
-        $this->query("TRUNCATE TABLE `" . $table . "`");
+        $this->query("TRUNCATE TABLE " . $this->get_db() . $table);
         return $this->affected_rows();
     }
 
@@ -125,7 +152,7 @@ class db { // не final, ибо err переопределяется в анн�
      * @return int кол-во удалённых строк
      */
     public function delete($table, $suffix = null) {
-        $this->query("DELETE FROM `" . $table . "` " . $suffix);
+        $this->query("DELETE FROM " . $this->get_db() . $table . " " . $suffix);
         return $this->affected_rows();
     }
 
@@ -145,7 +172,7 @@ class db { // не final, ибо err переопределяется в анн�
                 $col = mb_substr($col, 4);
             $vals .= ( $vals ? ", " : "") . "`" . $col . "`=" . ($esc ? $this->esc($val) : $val);
         }
-        $this->query("UPDATE `" . $table . "` SET " . $vals . " " . $suffix);
+        $this->query("UPDATE " . $this->get_db() . $table . " SET " . $vals . " " . $suffix);
         return $this->affected_rows();
     }
 
@@ -173,7 +200,7 @@ class db { // не final, ибо err переопределяется в анн�
                 $cols .= ( $cols ? ", " : "") . "`" . $col . "`";
             $vals .= ( $vals ? ", " : "") . $this->esc($val);
         }
-        $st = "INSERT INTO `" . $table . "`" . ($cols ? " (" . $cols . ")" : "") . " VALUE";
+        $st = "INSERT INTO " . $this->get_db() . $table . ($cols ? " (" . $cols . ")" : "") . " VALUE";
         if ($multi) {
             if ($this->last_table != $table || !$this->last_query)
                 $this->last_query = $st . "S(" . $vals . ")";
@@ -369,7 +396,7 @@ class db { // не final, ибо err переопределяется в анн�
      * @return int позиция данного значения(начиная с 0)
      */
     public function get_current_pos($table, $where, $col, $value, $orderby = null) {
-        $r = $this->query("SELECT * FROM `" . $table . '` WHERE ' . $where .
+        $r = $this->query("SELECT * FROM " . $this->get_db() . $table . ' WHERE ' . $where .
                 ($orderby ? " ORDER BY " . $orderby : ""));
         $c = 0;
         while ($row = $this->fetch_assoc($r)) {
@@ -415,6 +442,14 @@ class db { // не final, ибо err переопределяется в анн�
     }
 
     /**
+     * Получение текста ошибки
+     * @return string текст ошибки
+     */
+    public function errtext() {
+        return mysql_error();
+    }
+
+    /**
      * Вывод ошибки последнего запроса к БД
      * @global furl $furl
      * @global lang $lang
@@ -431,7 +466,7 @@ class db { // не final, ибо err переопределяется в анн�
             $this->query("REPAIR TABLE " . $table, true);
             $furl->location('', 1);
         }
-        $error = mysql_error();
+        $error = $this->errtext();
         $emess = $lang->v('db_error') . ": " . $error . (IN_DEVELOPMENT ? '(' . $query . ')' : "");
         if (!$this->nt_error && $tpl && $this->connected) {
             $tpl->assign('backtrace', $this->print_backtrace());
@@ -503,7 +538,7 @@ class db { // не final, ибо err переопределяется в анн�
                 break;
         }
         $r = $this->query("SELECT " . $act . "(" . ($column != "*" ? "`" . $column . "`" : "*") . ")
-            FROM " . $table . ($where ? " WHERE " . $where : ""));
+            FROM " . $this->get_db() . $table . ($where ? " WHERE " . $where : ""));
         $a = $this->fetch_row($r);
         return $a [0];
     }

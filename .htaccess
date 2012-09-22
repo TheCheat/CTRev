@@ -29,12 +29,15 @@ php_value "error_reporting" 30711
 </IfModule>
 # Кон.
 
-# Нач. Настрока rewrite
+# Нач. Настройка rewrite
 <IfModule mod_rewrite.c>
 
 SetEnv HTTP_FURL_AVALIABLE 1
 
-Options +FollowSymLinks -MultiViews -Indexes
+<IfModule mod_negotiation.c>
+# Подразумевается, что Options +FollowSymlinks уже есть, ибо многие хостеры против
+Options -MultiViews
+</IfModule>
 
 RewriteEngine on
 

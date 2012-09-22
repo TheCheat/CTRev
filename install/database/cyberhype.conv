@@ -1,0 +1,88 @@
+table comments?torrent>0 OR touid>0
+id
+poster_id: user
+text
+posted_time: UNIX_TIMESTAMP(added)
+toid: IF(torrent>0, torrent, touid)
+type: IF(torrent>0,'torrents','users')
+edited_time: UNIX_TIMESTAMP(editedat)
+
+table categories
+id
+name
+transl_name|function: catname({id}, {name})
+
+table categories:incat
+id|function: incatid({id})
+name
+transl_name|function: catname({id}, {name}, {(SELECT c.name FROM categories AS c WHERE c.id=incat.incat_cat)})
+parent_id: incat_cat
+
+table ratings?torrent>0
+toid: torrent
+type: 'torrents'
+user
+value: rating
+
+table bookmarks
+user_id: userid
+toid: torrentid
+type: 'torrents'
+
+table downloaded: snatched
+tid: torrent
+uid: userid
+finished: IF(finished='yes', '1', '0')
+
+table zebra:friends
+user_id: userid
+to_userid: friendid
+type: 'f'
+
+table zebra:blocks
+user_id: userid
+to_userid: blockid
+type: 'b'
+
+table torrents
+id|function: tfile({$row})
+info_hash
+title: name
+content: descr
+size
+filelist|function: filelist({id})
+tags: keywords
+announce_list
+posted_time: UNIX_TIMESTAMP(added)
+poster_id: owner
+last_active: UNIX_TIMESTAMP(last_action)
+comm_count|function: countrows('comments', 'toid={id} AND type="torrents"')
+downloaded: times_completed
+banned: IF(banned='yes', '1', '0')
+sticky: IF(sticky='yes', '1', '0')
+on_top: 1
+screenshots|function: screenshots({poster}, {screenshots})
+category_id|function: catid({category}, {incat})
+rate_count: ratingsum
+rnum_count: numratings
+
+table users
+id
+username
+username_lower: LOWER(username)
+password: passhash
+confirmed: 3
+salt: secret
+ip|function: ip({ip})
+email
+registered: UNIX_TIMESTAMP(added)
+last_visited: UNIX_TIMESTAMP(last_access)
+admin_email: 1
+group|function: group({`group`})
+bonus_count: 300+bonus
+gender: IF(gender='1', 'm', 'f')
+birthday: UNIX_TIMESTAMP(birthday)
+avatar|function: avatar({avatar}, {id})
+passkey|function: passkey({passkey})
+torrents_count|function: countrows('torrents', 'poster_id={id}')
+comm_count|function: countrows('comments', 'poster_id={id}')

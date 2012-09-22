@@ -4,7 +4,7 @@
  * Project:            	CTRev
  * File:                class.stats.php
  *
- * @link 	  	http://ctrev.cyber-tm.com/
+ * @link 	  	http://ctrev.cyber-tm.ru/
  * @copyright         	(c) 2008-2012, Cyber-Team
  * @author 	  	The Cheat <cybertmdev@gmail.com>
  * @name                Ведение статистики на сайте
@@ -22,17 +22,24 @@ final class stats {
     private $res = array();
 
     /**
-     * Чтение значения из статистики
+     * Конструктор
      * @global db $db
-     * @param string $name поле
-     * @return string значение
+     * @return null
      */
-    public function read($name = null) {
+    public function __construct() {
         global $db;
         if (!$this->res) {
             $res = $db->query("SELECT * FROM stats");
             $this->res = $db->fetch2array($res, null, array("name" => "value"));
         }
+    }
+
+    /**
+     * Чтение значения из статистики
+     * @param string $name поле
+     * @return string значение
+     */
+    public function read($name = null) {
         if ($name)
             return $this->res[$name];
         else
@@ -55,6 +62,20 @@ final class stats {
         }
         $this->res[$name] = $value;
         $db->update(array("value" => $value), "stats", "WHERE name=" . $db->esc($name) . " LIMIT 1");
+    }
+
+    /**
+     * Удаление поля статистики
+     * @global db $db
+     * @param string $name поле
+     * @return null
+     */
+    public function remove($name) {
+        global $db;
+        if (!isset($this->res[$name]))
+            return;
+        unset($this->res[$name]);
+        $db->delete("stats", "WHERE name=" . $db->esc($name) . " LIMIT 1");
     }
 
 }

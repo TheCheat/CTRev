@@ -293,7 +293,7 @@ final class plugins_manager {
         $this->plugins[$plugin] = $obj;
         if (!$install) {
             $this->load_incfile($plugin);
-            if (is_callable($obj, "init"))
+            if (is_callable(array($obj, "init")))
                 $obj->init($this->p);
             $this->load_incfile($plugin, true);
         }
@@ -313,7 +313,7 @@ final class plugins_manager {
         $o = $this->plugins[$plugin];
         if ($re)
             $this->p->revert_replace($plugin);
-        if (is_callable($o, 'install'))
+        if (is_callable(array($o, 'install')))
             $r = $o->install($re);
         $this->p->save_replaced($plugin);
         return $r || is_null($r) ? true : false;
@@ -329,7 +329,7 @@ final class plugins_manager {
             return false;
         $o = $this->plugins[$plugin];
         $revert = $this->p->revert_replace($plugin);
-        if (is_callable($o, 'uninstall'))
+        if (is_callable(array($o, 'uninstall')))
             $r = $o->uninstall($revert);
         return $r || is_null($r) ? true : false;
     }

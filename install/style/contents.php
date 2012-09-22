@@ -39,11 +39,11 @@
                 else
                     form = '';
                 status_icon('loading');
-                jQuery.post('install.php?page='+pages[current_page]+'&check=1', form, function (data) {
+                jQuery.post('<?= INSTALL_FILE ?>.php?page='+pages[current_page]+'&check=1', form, function (data) {
                     if (data=='OK!') {
                         current_page++;
                         show_buttons();
-                        jQuery.post('install.php?page='+pages[current_page], function (data) {
+                        jQuery.post('<?= INSTALL_FILE ?>.php?page='+pages[current_page], function (data) {
                             status_icon('success');
                             jQuery('#install_contents').empty().append(data);
                             init_corners();
@@ -60,7 +60,7 @@
                 current_page--;
                 show_buttons();                
                 status_icon('loading');
-                jQuery.post('install.php?page='+pages[current_page], function (data) {
+                jQuery.post('<?= INSTALL_FILE ?>.php?page='+pages[current_page], function (data) {
                     status_icon('success');
                     jQuery('#install_contents').empty().append(data);
                     init_corners();

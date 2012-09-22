@@ -116,9 +116,10 @@
                     <div class="td"><div class="content">
                             [*$torrents.screenshots|show_image:true*]
                             [*$torrents.content|ft:false:true*]
-                            [*if $full_torrents*]<fieldset class='dscreenshots'>
+                            [*assign var='tscreen' value=$torrents.screenshots|show_image:false*]
+                            [*if $full_torrents && $tscreen*]<fieldset class='dscreenshots'>
                                     <legend>[*'torrents_details_screenshots'|lang*]</legend>
-                                    <center>[*$torrents.screenshots|show_image:false*]</center>
+                                    <center>[*$tscreen*]</center>
                                 </fieldset>
                             [*/if*]
                         </div></div>

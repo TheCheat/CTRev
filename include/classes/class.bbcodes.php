@@ -42,9 +42,9 @@ class formatter_callbacks extends pluginable_object {
         "size" => '/\[size=%Q;([0-9\.]+)\s*(px|pt|\%)\;?%Q;\](.+?)\[\/size\]/siu',
         "color" => '/\[color=%Q;\#?([0-9a-f]{3,6})\;?%Q;\](.+?)\[\/color\]/siu',
         "quote" => '/\[quote\](.+?)\[\/quote\]/siu',
-        "quote=" => '/\[quote=%Q;(.+?)%Q;\](.+?)\[\/quote\]/siu',
+        "quote=" => '/\[quote=%Q;([^\n]+?)%Q;\](.+?)\[\/quote\]/siu',
         "spoiler" => '/\[spoiler\](.+?)\[\/spoiler\]/siu',
-        "spoiler=" => '/\[spoiler=%Q;(.+?)%Q;\](.+?)\[\/spoiler\]/siu');
+        "spoiler=" => '/\[spoiler=%Q;([^\n]+)%Q;\](.+?)\[\/spoiler\]/siu');
 
     /**
      * Заменяемые значения в HTML
@@ -125,7 +125,7 @@ class formatter_callbacks extends pluginable_object {
      */
     protected $spec_patterns = array(
         "code" => '/\[code(?:=%Q;(js|html|php|css|java|delphi|cs|cpp|ls)%Q;)?\](.+?)\[\/code\]/siu',
-        "img" => '/\[img(?:=%Q;(.+?)%Q;)?(?:\s+w=%Q;([0-9]+)%Q;)?(?:\s+h=%Q;([0-9]+)%Q;)?(?:\s+(bottom|left|middle|right|top))?\]%URL_PATTERN;\[\/img\]/siu',
+        "img" => '/\[img(?:=%Q;([^\n]+)%Q;)?(?:\s+w=%Q;([0-9]+)%Q;)?(?:\s+h=%Q;([0-9]+)%Q;)?(?:\s+(bottom|left|middle|right|top))?\]%URL_PATTERN;\[\/img\]/siu',
         "list" => '/\[list(?:=%Q;(disc|circle|square)%Q;)?(?:=%Q;([aAiI1])%Q;(?:\s+s=%Q;([0-9]+)%Q;)?)?\](.+?)\[\/list\]/siu',
         "hide" => '/\[hide(?:=%Q;([0-9]+)%Q;)?(?:\s+g=%Q;([0-9\,]+)%Q;)?\](.+?)\[\/hide\]/siu');
 

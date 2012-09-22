@@ -13,7 +13,7 @@
                         [*/if*]
                     </div>
                     <hr>
-                    <div class="padded_avatar">
+                    <div class="padded_avatar content">
                         <div class="left_col_profile">[*$row.avatar|ua*]
                             [*assign var="uid" value=$row.id*]
                             <div align="center">[*include file="profile/karma.tpl"*]</div>

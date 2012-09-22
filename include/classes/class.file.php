@@ -161,7 +161,7 @@ final class file {
         $epath = $path;
         if (!$fullpath && $except)
             $epath = preg_replace('/^(.*)(\/|\\\)(.+?)$/siu', '\3', $epath);
-        if ($except && in_array($fullpath, (array) $except))
+        if ($except && in_array($epath, (array) $except))
             return;
         if (is_dir($npath)) {
             $r = $this->open_folder($path);
