@@ -166,7 +166,7 @@ class convert {
         $input = new input();
         $cfiles = $input->select_folder("file", 'install/database', $this->cfile, false, false, "/^(.*)\.conv$/siu", 1);
         $tpl->assign('cfiles', $cfiles);
-        $r = $db->query('SELECT id,name FROM groups');
+        $r = $db->query('SELECT id, name FROM groups');
         $tpl->assign('groups', $db->fetch2array($r, 'assoc', array('id' => 'name')));
     }
 
@@ -183,7 +183,7 @@ class convert {
         $this->getter = new get_convert($this->db, unserialize($this->groups));
         if ($_GET['convert']) {
             if ($_GET['finish']) {
-                $db->update(array('value' => '1'), 'convert', 'WHERE field="converted" LIMIT 1');
+                $db->update(array('value' => '1'), '`convert`', 'WHERE field="converted" LIMIT 1');
                 $stats->remove(self::stfield);
                 $pname = sprintf(self::pname, $this->db);
                 $plugins->manager->delete($pname);
@@ -217,7 +217,6 @@ class convert {
             die(sprintf($lang->v('convert_cfile_not_exists'), $cfile));
         $db->query('DROP TABLE IF EXISTS `convert`');
         $db->query('CREATE TABLE `convert`(`field` VARCHAR( 200 ) NOT NULL,`value` TEXT NOT NULL, PRIMARY KEY ( `field` ))');
-        $db->truncate_table('convert');
         $groups = array();
         foreach ((array) $_POST['groups'] as $id => $grs) {
             $id = (int) $id;
@@ -238,7 +237,7 @@ class convert {
             'groups' => serialize($groups),
             'converted' => '0');
         foreach ($i as $f => $v)
-            $db->insert(array("field" => $f, "value" => $v), "convert", true);
+            $db->insert(array("field" => $f, "value" => $v), "`convert`", true);
         $db->save_last_table();
     }
 
