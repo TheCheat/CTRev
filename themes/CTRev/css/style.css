@@ -514,14 +514,6 @@ span.db_queries {
     height: 12px;
     padding-left: 13px;
 }
-img.passgen {
-    position: relative;
-    width: 14px;
-    height: 14px;
-    left: -16px;
-    top: 3px;
-}
-
 ul.links {
     padding: 2px 15px;
     margin: 0px;

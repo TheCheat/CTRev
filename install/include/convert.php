@@ -147,7 +147,9 @@ class convert {
      */
     private function request_settings() {
         global $db;
-        $r = $db->query('SELECT `field`, `value` FROM `convert`');
+        $r = $db->no_error()->query('SELECT `field`, `value` FROM `convert`');
+        if (!$r)
+            return;
         while (list($field, $value) = $db->fetch_row($r))
             $this->$field = $value;
     }
@@ -213,7 +215,7 @@ class convert {
             die(sprintf($lang->v('convert_wrong_db'), $cdb));
         if (!file_exists(ROOT . sprintf(self::fpath, $cfile)) || !file_exists(ROOT . sprintf(self::gpath, $cfile)))
             die(sprintf($lang->v('convert_cfile_not_exists'), $cfile));
-        $db->query('DROP TABLE `convert`');
+        $db->query('DROP TABLE IF EXISTS `convert`');
         $db->query('CREATE TABLE `convert`(`field` VARCHAR( 200 ) NOT NULL,`value` TEXT NOT NULL, PRIMARY KEY ( `field` ))');
         $db->truncate_table('convert');
         $groups = array();

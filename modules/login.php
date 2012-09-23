@@ -187,7 +187,7 @@ class login_ajax {
         $key = $users->generate_salt();
         $ok = $db->update(array(
             "confirm_key" => $key,
-            "new_email" => ""), "users", $where);
+            "new_email" => ""), "users", 'WHERE ' . $where);
         $link = $furl->construct('login', array(
             "act" => "recover",
             "key" => $key,

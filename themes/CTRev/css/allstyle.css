@@ -659,3 +659,12 @@ input.very_simple_button {
 input.very_simple_button:hover {
     border-color: gray;
 }
+
+
+img.passgen {
+    position: relative;
+    width: 14px;
+    height: 14px;
+    left: -16px;
+    top: 3px;
+}

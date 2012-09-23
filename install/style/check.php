@@ -15,6 +15,7 @@
             <li><?= sprintf($lang->v('install_check_templates'), $s) ?></li>
             <li><?= sprintf($lang->v('install_check_lang'), $s2) ?></li>
         </ul>
+        <font color="1"><?= $lang->v('install_check_notice') ?></font>
     </dd>
     <dt><?= $lang->v('install_check_env') ?></dt>
     <dd><ul class='check_rewritable'>

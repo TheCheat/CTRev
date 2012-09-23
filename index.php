@@ -10,8 +10,7 @@
  * @name 		Главная страница сайта
  * @version             1.00
  */
-$ifile = 'install/lock';
-if (!file_exists($ifile)) {
+if (!file_exists('install/lock') && file_exists('install/')) {
     @header('Location: install.php');
     die();
 }

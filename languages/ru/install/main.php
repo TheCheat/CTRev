@@ -20,6 +20,8 @@ $languages = array(
     'install_check_writable_no' => '<font color="red">не</font>',
     'install_check_templates' => '<span><abbr title="themes/{имя шаблона}/templates">Шаблоны</abbr></span> %s перезаписываемы(необх. для плагинов)',
     'install_check_lang' => '<span><abbr title="languages/{имя пакета}">Языковые пакеты</abbr></span> %s перезаписываемы(необяз.)',
+    'install_check_notice' => '*Причмечание: Файл install/lock отсутсвует и не нужно его создавать. 
+        Если написано, что он неперезаписываем, то это означает, что невозможна запись в папку install',
     'install_check_env' => 'Сервер',
     'install_check_php' => 'PHP(мин. 5.0, рек. 5.3): ',
     'install_check_mbstring' => 'Поддержка mbstring? ',

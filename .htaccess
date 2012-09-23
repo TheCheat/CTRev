@@ -35,8 +35,7 @@ php_value "error_reporting" 30711
 SetEnv HTTP_FURL_AVALIABLE 1
 
 <IfModule mod_negotiation.c>
-# Подразумевается, что Options +FollowSymlinks уже есть, ибо многие хостеры против
-Options -MultiViews
+Options +FollowSymLinks -MultiViews -Indexes
 </IfModule>
 
 RewriteEngine on
