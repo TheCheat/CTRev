@@ -206,8 +206,8 @@ class convert {
     private function check_settings() {
         global $lang, $db;
         $peronce = (int) $_POST['peronce'];
-        if ($peronce < 50)
-            $peronce = $this->peronce;
+        if ($peronce < 20)
+            $peronce = 20;
         $cdb = $_POST['db'];
         $cfile = $_POST['file'];
         $r = $db->query("SHOW DATABASES LIKE " . $db->esc($cdb));
@@ -285,16 +285,17 @@ class convert {
         $cachefile = 'convert/cparse-off' . $toffset;
         if (!($a = $cache->read($cachefile))) {
             $content = $this->convert_tables();
-            $c = preg_match_all('/(^)\s*?table\s+(\w+)(?:\s*?\:\s*?(\w+))?(?:\s*?\?(.*?))?\s*?($)/miu', $content, $matches, PREG_OFFSET_CAPTURE, $toffset);
+            $c = preg_match_all('/(^)\s*?table\s+(\w+)\/([\w\s,]+?)(?:\s*?\:\s*?(\w+))?(?:\s*?\?(.*?))?\s*?($)/miu', $content, $matches, PREG_OFFSET_CAPTURE, $toffset);
             $i = 0;
             if (!$matches)
                 die($finish);
             $table = $matches[2][$i][0];
-            $ftable = $matches[3][$i][0];
+            $orderby = $matches[3][$i][0];
+            $ftable = $matches[4][$i][0];
             if (!$ftable)
                 $ftable = $table;
-            $cond = trim($matches[4][$i][0]);
-            $pos = $matches[5][$i][1];
+            $cond = trim($matches[5][$i][0]);
+            $pos = $matches[6][$i][1];
             $i++;
             if ($matches[1][$i]) {
                 $ntoffset = $matches[1][$i][1];
@@ -302,11 +303,11 @@ class convert {
             }
             $data = trim($len ? mb_substr($content, $pos, $len) : mb_substr($content, $pos));
             $this->parse_columns($data);
-            $a = array($table, $ftable, $cond, $ntoffset, $this->columns, $this->insert);
+            $a = array($table, $orderby, $ftable, $cond, $ntoffset, $this->columns, $this->insert);
             $cache->write($a, $cachefile);
         } else
-            list($table, $ftable, $cond, $ntoffset, $this->columns, $this->insert) = $a;
-        $this->select4insert($table, $ftable, $cond, $loffset);
+            list($table, $orderby, $ftable, $cond, $ntoffset, $this->columns, $this->insert) = $a;
+        $this->select4insert($table, $orderby, $ftable, $cond, $loffset);
         $c = $db->prepend_db($this->db)->count_rows($ftable, $cond);
         if ($c <= $loffset + $this->peronce) {
             if (!$ntoffset)
@@ -360,18 +361,21 @@ class convert {
      * @global lang $lang
      * @param string 
      * @param string $table имя таблицы вставки
+     * @param string $orderby сортировка таблицы выборки
      * @param string $ftable имя таблицы выборки
      * @param string $cond условие для выборки
      * @param int $limit ограничение
      * @return array массив значений
      */
-    private function select4insert($table, $ftable, $cond, $limit) {
+    private function select4insert($table, $orderby, $ftable, $cond, $limit) {
         global $db, $lang;
         $query = "SELECT ";
         $c = count($this->columns);
         for ($i = 0; $i < $c; $i++)
             $query .= ($i ? ', ' : '') . $this->columns[$i];
+        $orderby = '`' . implode('`, `', array_map('trim', explode(',', $orderby))) . '`';
         $query .= " FROM `" . $this->db . "`.`" . $ftable . "`" . ($cond ? " WHERE " . $cond : "") . "
+            ORDER BY " . $orderby . "
             LIMIT " . $limit . ',' . $this->peronce;
         $r = $db->no_error()->query($query);
         if ($db->errno()) {

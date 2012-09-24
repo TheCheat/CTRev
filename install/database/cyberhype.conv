@@ -1,4 +1,4 @@
-table comments?torrent>0 OR touid>0
+table comments/id?torrent>0 OR touid>0
 id
 poster_id: user
 text
@@ -7,44 +7,44 @@ toid: IF(torrent>0, torrent, touid)
 type: IF(torrent>0,'torrents','users')
 edited_time: UNIX_TIMESTAMP(editedat)
 
-table categories
+table categories/id
 id
 name
 transl_name|function: catname({id}, {name})
 
-table categories:incat
+table categories/id:incat
 id|function: incatid({id})
 name
 transl_name|function: catname({id}, {name}, {(SELECT c.name FROM categories AS c WHERE c.id=incat.incat_cat)})
 parent_id: incat_cat
 
-table ratings?torrent>0
+table ratings/id?torrent>0
 toid: torrent
 type: 'torrents'
 user
 value: rating
 
-table bookmarks
+table bookmarks/id
 user_id: userid
 toid: torrentid
 type: 'torrents'
 
-table downloaded: snatched
+table downloaded/id: snatched
 tid: torrent
 uid: userid
 finished: IF(finished='yes', '1', '0')
 
-table zebra:friends
+table zebra/userid,friendid:friends
 user_id: userid
 to_userid: friendid
 type: 'f'
 
-table zebra:blocks
+table zebra/userid,blockid:blocks
 user_id: userid
 to_userid: blockid
 type: 'b'
 
-table torrents
+table torrents/id
 id|function: tfile({$row})
 info_hash
 title: name
@@ -66,7 +66,7 @@ category_id|function: catid({category}, {incat})
 rate_count: ratingsum
 rnum_count: numratings
 
-table users
+table users/id
 id
 username
 username_lower: LOWER(username)
