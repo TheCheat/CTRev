@@ -414,7 +414,7 @@ class torrents {
             $where = implode(" AND ", $where);
             $page = 'page';
             if (!$full && !$fe) {
-                $count = $db->count_rows("torrents AS t", $where);
+                $count = $db->as_table('t')->count_rows("torrents", $where);
                 $perpage = $config->v('torrents_perpage');
                 $maxpage = intval($count / $perpage) + ($count % $perpage != 0 ? 1 : 0);
                 list ( $pages, $limit ) = $display->pages($count, $perpage, 'change_tpage', $page, '', true);

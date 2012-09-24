@@ -183,7 +183,7 @@ class convert {
         $this->getter = new get_convert($this->db, unserialize($this->groups));
         if ($_GET['convert']) {
             if ($_GET['finish']) {
-                $db->update(array('value' => '1'), '`convert`', 'WHERE field="converted" LIMIT 1');
+                $db->update(array('value' => '1'), 'convert', 'WHERE field="converted" LIMIT 1');
                 $stats->remove(self::stfield);
                 $pname = sprintf(self::pname, $this->db);
                 $plugins->manager->delete($pname);
@@ -237,7 +237,7 @@ class convert {
             'groups' => serialize($groups),
             'converted' => '0');
         foreach ($i as $f => $v)
-            $db->insert(array("field" => $f, "value" => $v), "`convert`", true);
+            $db->insert(array("field" => $f, "value" => $v), "convert", true);
         $db->save_last_table();
     }
 

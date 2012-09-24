@@ -71,6 +71,12 @@ class db { // не final, ибо err переопределяется в анн�
     protected $prdb = "";
 
     /**
+     * Вставка/обновление/удаление/выборка таблицы с AS
+     * @var string
+     */
+    protected $astable = "";
+
+    /**
      * Коннект к БД
      * @return null
      */
@@ -105,22 +111,37 @@ class db { // не final, ибо err переопределяется в анн�
     }
 
     /**
-     * Получение имени БД, отличной от данной
-     * @return string имя БД
-     */
-    protected function get_db() {
-        if ($this->prdb)
-            $r = '`' . $this->prdb . '`.';
-        $this->prepend_db('');
-        return $r;
-    }
-
-    /**
      * Получение ID последнего запроса
      * @return resid ID последнего запроса
      */
     public function get_lastres() {
         return $this->last_resource;
+    }
+
+    /**
+     * Получение имени таблицы, экранированной, с префиксом и постфиксом
+     * @param string $table имя таблицы
+     * @return string имя с префиксом и постфиксом
+     */
+    protected function get_tname($table) {
+        $r = '`' . $table . '`';
+        if ($this->prdb)
+            $r = '`' . $this->prdb . '`.' . $r;
+        if ($this->astable)
+            $r .= ' AS `' . $this->astable . '`';
+        $this->prepend_db('');
+        $this->as_table('');
+        return $r;
+    }
+
+    /**
+     * Вставка/обновление/удаление/выборка таблицы с AS
+     * @param string $as as что?
+     * @return db $this
+     */
+    public function as_table($as) {
+        $this->astable = $as;
+        return $this;
     }
 
     /**
@@ -141,7 +162,7 @@ class db { // не final, ибо err переопределяется в анн�
      * @return int кол-во удалённых строк
      */
     public function truncate_table($table) {
-        $this->query("TRUNCATE TABLE " . $this->get_db() . $table);
+        $this->query("TRUNCATE TABLE " . $this->get_tname($table));
         return $this->affected_rows();
     }
 
@@ -152,7 +173,7 @@ class db { // не final, ибо err переопределяется в анн�
      * @return int кол-во удалённых строк
      */
     public function delete($table, $suffix = null) {
-        $this->query("DELETE FROM " . $this->get_db() . $table . " " . $suffix);
+        $this->query("DELETE FROM " . $this->get_tname($table) . " " . $suffix);
         return $this->affected_rows();
     }
 
@@ -172,7 +193,7 @@ class db { // не final, ибо err переопределяется в анн�
                 $col = mb_substr($col, 4);
             $vals .= ( $vals ? ", " : "") . "`" . $col . "`=" . ($esc ? $this->esc($val) : $val);
         }
-        $this->query("UPDATE " . $this->get_db() . $table . " SET " . $vals . " " . $suffix);
+        $this->query("UPDATE " . $this->get_tname($table) . " SET " . $vals . " " . $suffix);
         return $this->affected_rows();
     }
 
@@ -200,7 +221,7 @@ class db { // не final, ибо err переопределяется в анн�
                 $cols .= ( $cols ? ", " : "") . "`" . $col . "`";
             $vals .= ( $vals ? ", " : "") . $this->esc($val);
         }
-        $st = "INSERT INTO " . $this->get_db() . $table . ($cols ? " (" . $cols . ")" : "") . " VALUE";
+        $st = "INSERT INTO " . $this->get_tname($table) . ($cols ? " (" . $cols . ")" : "") . " VALUE";
         if ($multi) {
             if ($this->last_table != $table || !$this->last_query)
                 $this->last_query = $st . "S(" . $vals . ")";
@@ -396,7 +417,7 @@ class db { // не final, ибо err переопределяется в анн�
      * @return int позиция данного значения(начиная с 0)
      */
     public function get_current_pos($table, $where, $col, $value, $orderby = null) {
-        $r = $this->query("SELECT * FROM " . $this->get_db() . $table . ' WHERE ' . $where .
+        $r = $this->query("SELECT * FROM " . $this->get_tname($table) . ' WHERE ' . $where .
                 ($orderby ? " ORDER BY " . $orderby : ""));
         $c = 0;
         while ($row = $this->fetch_assoc($r)) {
@@ -538,7 +559,7 @@ class db { // не final, ибо err переопределяется в анн�
                 break;
         }
         $r = $this->query("SELECT " . $act . "(" . ($column != "*" ? "`" . $column . "`" : "*") . ")
-            FROM " . $this->get_db() . $table . ($where ? " WHERE " . $where : ""));
+            FROM " . $this->get_tname($table) . ($where ? " WHERE " . $where : ""));
         $a = $this->fetch_row($r);
         return $a [0];
     }
