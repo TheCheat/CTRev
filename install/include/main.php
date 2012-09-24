@@ -33,7 +33,7 @@ class main {
      * @const int need_filesize
      */
 
-    const need_filesize = 10;
+    const need_filesize = 5;
 
     /**
      * Инициализация AJAX части инсталляции

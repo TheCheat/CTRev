@@ -23,14 +23,15 @@ $languages = array(
     'install_check_notice' => '*Причмечание: Файл install/lock отсутсвует и не нужно его создавать. 
         Если написано, что он неперезаписываем, то это означает, что невозможна запись в папку install',
     'install_check_env' => 'Сервер',
+    'install_check_upload_filesize' => '<abbr title="Поля upload_max_filesize и post_max_size 
+        в конфигурации PHP(php.ini)">Макс. размер загружаемых файлов</abbr>',
+    'install_check_filesize_recomm' => 'мин. <b>%d</b> мегабайт, рек. не менее <b>15</b> мегабайт',
     'install_check_php' => 'PHP(мин. 5.0, рек. 5.3): ',
     'install_check_mbstring' => 'Поддержка mbstring? ',
     'install_check_furl' => 'Поддержка ЧПУ?(необяз.) ',
     'install_check_curl' => 'Поддержка CURL?(необяз.) ',
     'install_check_notice' => '<b>*Примечание: install/lock</b> - файл, который создаётся после инсталляции. <br>
         Если невозможно его записать, значит папка <b>install</b> не обладает необходимыми правами.',
-    'install_check_upload_filesize' => 'Макс. размер загружаемых файлов',
-    'install_check_filesize_recomm' => 'необходимо: <b>%d</b> мегабайт',
     'install_database_dbhost' => 'Хост БД(:порт): ',
     'install_database_dbuser' => 'Пользователь БД: ',
     'install_database_dbpass' => 'Пароль БД: ',
