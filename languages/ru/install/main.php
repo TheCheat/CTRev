@@ -29,6 +29,8 @@ $languages = array(
     'install_check_curl' => 'Поддержка CURL?(необяз.) ',
     'install_check_notice' => '<b>*Примечание: install/lock</b> - файл, который создаётся после инсталляции. <br>
         Если невозможно его записать, значит папка <b>install</b> не обладает необходимыми правами.',
+    'install_check_upload_filesize' => 'Макс. размер загружаемых файлов',
+    'install_check_filesize_recomm' => 'необходимо: <b>%d</b> мегабайт',
     'install_database_dbhost' => 'Хост БД(:порт): ',
     'install_database_dbuser' => 'Пользователь БД: ',
     'install_database_dbpass' => 'Пароль БД: ',
@@ -57,11 +59,13 @@ $languages = array(
         удалите файл %s.<br><br>
         <font color="red"><b>Примечание:</b></font> при редактировании
         профиля в <b>"Панели Управления"</b> Вам необходимо заполнить все поля, 
-        отмеченные звёздочкой(напр. пол, дата рождения)!',
+        отмеченные звёздочкой(напр. пол, дата рождения)!<div class="br"></div>
+        <center><font size="3"><a href="./"><b>На главную</b></a></font></center>',
     'install_error_not_rewritable' => 'Дирректория/файл %s не перезаписываемы',
     'install_error_cant_write_dbconn' => 'Невозможно записать файл для коннекта с БД',
     'install_error_php_version' => 'Версия PHP ниже необходимой',
     'install_error_mbstring_non_exists' => 'Расширение mbstring отсуствует',
+    'install_error_upload_filesize' => 'Допустимый размер загружаемых файлов слишком мал!',
     'install_error_table_non_exists' => 'Таблица <b>%s</b> отсуствует',
     'install_error_passwords_not_match' => 'Пароль не совпадает с повтором пароля',
     'install_error_wrong_username' => 'Неправильное имя пользователя',

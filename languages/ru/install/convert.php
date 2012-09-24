@@ -27,7 +27,8 @@ $languages = array(
     'convert_plugin_installed' => 'Плагин <font color="green"><b>успешно</b></font> установлен',
     "convert_finished" => 'Конвертация данных успешно завершена!<br>
         Файл заблокирован, чтобы снова запустить конвертацию, удалите из Вашей БД
-        таблицу <b>convert</b>.',
+        таблицу <b>convert</b>.<div class="br"></div>
+        <center><font size="3"><a href="./"><b>На главную</b></a></font></center>',
     'convert_cant_find_group' => 'Не найдено сопоставление для группы c ID %d',
     'convert_groups_compare' => 'Сопоставление групп',
     'convert_groups_compare_notice' => '<b>*Инструкция:</b> укажите соответствие между

@@ -29,6 +29,13 @@ class main {
         'install/lock');
 
     /**
+     * Необходимый объём загружаемых файлов(в МБ.)
+     * @const int need_filesize
+     */
+
+    const need_filesize = 10;
+
+    /**
      * Инициализация AJAX части инсталляции
      * @return null 
      */
@@ -76,9 +83,10 @@ class main {
              * $query = $matches[1][0];
              * $offset = $matches[3][1] + 1;
              */
-            preg_match('/(?:^|\n)(.*?)(;)(?:\n|$)/s', $dump, $matches, PREG_OFFSET_CAPTURE, $offset);
+            $dump = substr($dump, $offset);
+            preg_match('/(?:^|\n)(.*?)(;)(?:\n|$)/s', $dump, $matches, PREG_OFFSET_CAPTURE);
             $query = $matches[1][0];
-            $offset = $matches[2][1] + 1;
+            $offset = $matches[2][1] + $offset + 1;
         }
         if (!$matches) {
             print('<script type="text/javascript">
@@ -181,6 +189,40 @@ class main {
     }
 
     /**
+     * Конвертация объёма данных вида \d(K|M|G|T) в \d({@link $to}), 
+     * если {@link $to} больше входного значения
+     * @param string $v объём данных
+     * @param string $to куда конвертируем
+     * @return string значение
+     */
+    protected function convert_filesize($v, $to) {
+        $l = strlen($v) - 1;
+        $pv = $v[$l];
+        if (!is_numeric($pv))
+            $v = longval(substr($v, 0, $l));
+        $a = array('K' => 1, 'M' => 2, 'G' => 3, 'T' => 4);
+        $pv = (int) $a[strtoupper($pv)];
+        $to = (int) $a[strtoupper($to)];
+        if ($to >= $pv)
+            return $v;
+        return pow(1024, $pv - $to);
+    }
+
+    /**
+     * Сравнение объёма данных вида \d(K|M|G)
+     * @param string $v1 певрое значение
+     * @param string $v2 второе значение
+     * @return bool true, если {@link $v1} больше или равно {@link $v2}
+     */
+    public function check_filesize($v1, $v2) {
+        $to1 = $v2[strlen($v2) - 1];
+        $to2 = $v1[strlen($v1) - 1];
+        $v1 = $this->convert_filesize($v1, $to1);
+        $v2 = $this->convert_filesize($v2, $to2);
+        return $v1 >= $v2;
+    }
+
+    /**
      * Отображение проверки на перезаписываемость
      * @global file $file
      * @global db $db
@@ -190,6 +232,10 @@ class main {
     protected function show_check() {
         global $file, $tpl, $db;
         $tpl->assign('file', $file);
+        $ufs = ini_get('upload_max_filesize');
+        $pms = ini_get('post_max_size');
+        $tpl->assign('maxfilesize', $this->check_filesize($ufs, $pms) ? $pms : $ufs);
+        $tpl->assign('needfilesize', self::need_filesize);
         //$tpl->assign('dbversion', $db->version());
         $tpl->assign('chmod', $this->chmod);
         $tpl->assign('this', $this);
@@ -441,6 +487,11 @@ $charset = ' . var_export($charset, true) . ';
                     if ($r !== 2 && $r !== true)
                         $error [] = sprintf($lang->v('install_error_not_rewritable'), $f);
                 }
+                $ufs = ini_get('upload_max_filesize');
+                $pms = ini_get('post_max_size');
+                $s = $this->check_filesize($ufs, $pms) ? $pms : $ufs;
+                if (!$this->check_filesize($s, self::need_filesize . 'M'))
+                    $error[] = $lang->v('install_error_upload_filesize');
                 if (!version_compare(PHP_VERSION, '5.0', '>='))
                     $error[] = $lang->v('install_error_php_version');
                 if (!in_array('mbstring', get_loaded_extensions()))

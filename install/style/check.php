@@ -20,6 +20,11 @@
     <dt><?= $lang->v('install_check_env') ?></dt>
     <dd><ul class='check_rewritable'>
             <li>
+                <span><?= $lang->v('install_check_upload_filesize') ?></span>
+                <?= $data['this']->colored($data['this']->check_filesize($data['maxfilesize'], $data["needfilesize"] . 'M'), $data['maxfilesize']) ?>,
+                <font size="1"><?= sprintf($lang->v('install_check_filesize_recomm'), $data["needfilesize"]) ?></font>
+            </li>
+            <li>
                 <span><?= $lang->v('install_check_php') ?></span>
                 <?= $data['this']->colored(version_compare(PHP_VERSION, '5.0', '>='), PHP_VERSION) ?>
             </li>
