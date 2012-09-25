@@ -54,26 +54,6 @@ class search {
     protected $infiles_replace_cb = null;
 
     /**
-     * Функция, обрезающая строку по слово
-     * @param string $text обрезаемый текст
-     * @param int $start начало обрезки
-     * @param int $length длина обрезания
-     * @return string обрезанная строка
-     */
-    protected function cut_word($text, $start, $length) {
-        $after = "";
-        $prev = "";
-        preg_match('/^\w+/siu', mb_substr($text, $length + $start), $matches);
-        $after = $matches [0];
-        if ($start > 0) {
-            $string = mb_substr($text, 0, $start);
-            preg_match('/\w+$/siu', $string, $matches);
-            $prev = $matches [0];
-        }
-        return $prev . mb_substr($text, $start, $length) . $after;
-    }
-
-    /**
      * Для array_map: regexp -> /$regexp/siu
      * @param string $regexp входной регексп
      * @return string выходной регексп
@@ -87,17 +67,18 @@ class search {
     /**
      * Обрезка результата поиска
      * @global config $config
+     * @global display $display
      * @param string $what что режем?
      * @param array $length как сильно?
      * @return null
      */
     public function cut_search(&$what, $length = 0) {
-        global $config;
+        global $config, $display;
         if (!$length)
             $length = $config->v('max_search_symb');
         if (!$length)
             return;
-        $what = $this->cut_word($what, 0, $length);
+        $what = $display->cut_word($what, 0, $length);
     }
 
     /**
@@ -112,6 +93,7 @@ class search {
     /**
      * Подсветка найденных слов в тексте и отсечение лишней части текста, в случае, когда много символов
      * @global config $config
+     * @global display $display
      * @param string $text строка поиска
      * @param array|string $regexp регулярные выражения поиска. 
      * Группа в рег. выражении под номером 1 всегда должна быть искомым выражением.
@@ -119,7 +101,7 @@ class search {
      * @return bool true, если найдено
      */
     public function highlight_text(&$text, $regexp, $cut = true) {
-        global $config;
+        global $config, $display;
         $cut_symb_max = $config->v('max_search_symb');
         if (!is_array($regexp))
             $regexp = array($regexp);
@@ -127,7 +109,7 @@ class search {
         $ntext = preg_replace_callback($regexp, array($this, 'highlight_pcre_callback'), $text);
         if ($ntext == $text) {
             if ($cut && $cut_symb_max)
-                $text = $this->cut_word($text, 0, $cut_symb_max) . "...";
+                $text = $display->cut_word($text, 0, $cut_symb_max) . "...";
             return false;
         }
         $text = $ntext;
@@ -138,11 +120,12 @@ class search {
     /**
      * Обрезка выделенного текста
      * @global config $config
+     * @global display $display
      * @param string $text текст
      * @return null 
      */
     protected function highlight_cut(&$text) {
-        global $config;
+        global $config, $display;
         $cut_symb_max = $config->v('max_search_symb');
         $ret = preg_split('/(\<font class\=\"highlighted\"\>(?:.+?)\<\/font\>)/siu', $text, - 1, PREG_SPLIT_DELIM_CAPTURE);
         $count = count($ret);
@@ -154,13 +137,13 @@ class search {
             if ($i % 2 == 0) {
                 $strlen = mb_strlen($ret [$i]);
                 if ($i == 0) // режем начало
-                    $text .= ( $strlen > $max_symb ? "..." . $this->cut_word($ret [$i], $strlen - $max_symb, $max_symb) : $ret [$i]);
+                    $text .= ( $strlen > $max_symb ? "..." . $display->cut_word($ret [$i], $strlen - $max_symb, $max_symb) : $ret [$i]);
                 elseif ($i == $count - 1) // режем конец
-                    $text .= ( $strlen > $max_symb ? $this->cut_word($ret [$i], 0, $max_symb) . "..." : $ret [$i]);
+                    $text .= ( $strlen > $max_symb ? $display->cut_word($ret [$i], 0, $max_symb) . "..." : $ret [$i]);
                 else // и серединку
-                    $text .= ( $strlen > $max_symb ? $this->cut_word($ret [$i], 0, $smax_symb) . "..." . $this->cut_word($ret [$i], $strlen - $smax_symb, $smax_symb) : $ret [$i]);
+                    $text .= ( $strlen > $max_symb ? $display->cut_word($ret [$i], 0, $smax_symb) . "..." . $display->cut_word($ret [$i], $strlen - $smax_symb, $smax_symb) : $ret [$i]);
                 if (mb_strlen($text) > $cut_symb_max && $cut_symb_max) { // кончаем нарезку, ибо слишком многа букафф
-                    $text = $this->cut_word($text, 0, $lastword > $cut_symb_max ? $lastword : $cut_symb_max) . "...";
+                    $text = $display->cut_word($text, 0, $lastword > $cut_symb_max ? $lastword : $cut_symb_max) . "...";
                     break;
                 }
             } else {

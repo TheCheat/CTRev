@@ -589,14 +589,54 @@ class display_modifier extends display_time {
     }
 
     /**
+     * Функция, обрезающая строку по слово
+     * @param string $text обрезаемый текст
+     * @param int $start начало обрезки
+     * @param int $length длина обрезания
+     * @return string обрезанная строка
+     */
+    public function cut_word($text, $start, $length) {
+        $after = "";
+        $prev = "";
+        preg_match('/^\w+/siu', mb_substr($text, $length + $start), $matches);
+        $after = $matches [0];
+        if ($start > 0) {
+            $string = mb_substr($text, 0, $start);
+            preg_match('/\w+$/siu', $string, $matches);
+            $prev = $matches [0];
+        }
+        return $prev . mb_substr($text, $start, $length) . $after;
+    }
+
+    /**
      * Обрезание текста и добавление трёх точек в конец
      * @param string $txt текст
      * @param int $car макс. длина
+     * @param bool $autotags автоматически закрывать обрезанные теги?
      * @return string обрезанный текст
      */
-    public function cut_text($txt, $car) {
-        if (mb_strlen($txt) > $car && $car)
-            return mb_substr($txt, 0, $car) . "...";
+    public function cut_text($txt, $car, $autotags = true) {
+        if (mb_strlen($txt) > $car && $car) {
+            $txt = $this->cut_word($txt, 0, $car);
+            if ($autotags)
+                $txt = $this->autoclose_tags($txt);
+            $txt .= "...";
+        }
+        return $txt;
+    }
+
+    /**
+     * Автоматическое закрытие тегов в конце строки
+     * @param string $txt строка
+     * @return string строка с закрытыми тегами
+     */
+    protected function autoclose_tags($txt) {
+        $i = 0;
+        $maxi = 20; // макс. кол-во незакрытых тегов
+        do {
+            $otxt = $txt;
+            $i++;
+        } while (($txt = preg_replace('/(\[(\w+)[\]\=](?(?!\[\/\2\]).)*$)/siu', '\1[/\2]', $txt)) != $otxt && $i < $maxi);
         return $txt;
     }
 
