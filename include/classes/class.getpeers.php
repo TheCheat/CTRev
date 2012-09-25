@@ -26,7 +26,7 @@ class getpeers {
      * @const int time_limit
      */
 
-    const time_limit = 15;
+    const time_limit = 5;
 
     /**
      * Конструктор запроса для аннонсеров
@@ -60,6 +60,53 @@ class getpeers {
     }
 
     /**
+     * Получение контента страницы посредством сокетов
+     * @param string $url URL страницы
+     * @param string $ua User-Agent
+     * @return string контент страницы
+     */
+    protected function content_via_sockets($url, $ua = "uTorrent/1820") {
+        $p = parse_url($url);
+        $host = $p['host'];
+        $path = $p['path'];
+        if (!$path)
+            $path = "/";
+        $port = $p['port'];
+        if (!$port) {
+            switch ($p['scheme']) {
+                case "https":
+                    $port = 443;
+                    $host = "ssl://" . $host;
+                    break;
+                case "udp":
+                    $port = 13;
+                    $host = "udp://" . $host;
+                    break;
+                default:
+                    $port = 80;
+                    break;
+            }
+        }
+        $query = $p['query'];
+        $r = fsockopen($host, $port, $errno, $errstr, self::time_limit);
+        if (!$r)
+            return;
+        $out = "GET " . $path . "?" . $query . " HTTP/1.1\r\n";
+        $out .= "Host: " . $host . "\r\n";
+        $out .= "User-Agent: " . $ua . "\r\n";
+        $out .= "Connection: Close";
+        $hend = "\r\n\r\n";
+        $out .= $hend;
+        fwrite($r, $out);
+        $c = '';
+        while (!feof($r))
+            $c .= fgets($r, 1024);
+        fclose($r);
+        $c = trim(mb_substr($c, mb_strpos($c, $hend) + mb_strlen($hend)));
+        return $c;
+    }
+
+    /**
      * Посылка запроса по URL и получение результата
      * @param string $url URL
      * @param string $infohash инфохеш торрента
@@ -81,12 +128,7 @@ class getpeers {
 
             curl_close($ch);
         } else
-            $r = @file_get_contents($url, null, stream_context_create(array(
-                                'http' => array(
-                                    'method' => "GET",
-                                    'timeout' => self::time_limit,
-                                    'header' => "User-Agent: " . $ua . "\r\n"
-                                    ))));
+            $r = $this->content_via_sockets($url, $ua);
         return $r;
     }
 
