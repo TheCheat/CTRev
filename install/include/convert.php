@@ -383,7 +383,7 @@ class convert {
             die();
         }
         while ($row = $db->fetch_assoc($r))
-            $db->insert($this->insert($row), $table, true);
+            $db->ignore()->insert($this->insert($row), $table, true);
         $db->no_error()->save_last_table();
         if ($db->errno()) {
             printf($lang->v('convert_insert_error'), $table, $db->errno(), $db->errtext());

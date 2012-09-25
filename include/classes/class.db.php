@@ -77,6 +77,12 @@ class db { // не final, ибо err переопределяется в анн�
     protected $astable = "";
 
     /**
+     * Добавление IGNORE в UPDATE/INSERT
+     * @var bool
+     */
+    protected $ignore = false;
+
+    /**
      * Коннект к БД
      * @return null
      */
@@ -193,7 +199,12 @@ class db { // не final, ибо err переопределяется в анн�
                 $col = mb_substr($col, 4);
             $vals .= ( $vals ? ", " : "") . "`" . $col . "`=" . ($esc ? $this->esc($val) : $val);
         }
-        $this->query("UPDATE " . $this->get_tname($table) . " SET " . $vals . " " . $suffix);
+        $a = '';
+        if ($this->ignore) {
+            $a = "IGNORE";
+            $this->ignore();
+        }
+        $this->query("UPDATE " . $a . " " . $this->get_tname($table) . " SET " . $vals . " " . $suffix);
         return $this->affected_rows();
     }
 
@@ -204,6 +215,15 @@ class db { // не final, ибо err переопределяется в анн�
      */
     public function insert_id($res = null) {
         return $res ? mysql_insert_id($res) : mysql_insert_id();
+    }
+
+    /**
+     * Добавление IGNORE в UPDATE/INSERT
+     * @return db $this
+     */
+    public function ignore() {
+        $this->ignore = !$this->ignore;
+        return $this;
     }
 
     /**
@@ -221,7 +241,12 @@ class db { // не final, ибо err переопределяется в анн�
                 $cols .= ( $cols ? ", " : "") . "`" . $col . "`";
             $vals .= ( $vals ? ", " : "") . $this->esc($val);
         }
-        $st = "INSERT INTO " . $this->get_tname($table) . ($cols ? " (" . $cols . ")" : "") . " VALUE";
+        $a = '';
+        if ($this->ignore) {
+            $a = "IGNORE";
+            $this->ignore();
+        }
+        $st = "INSERT " . $a . " INTO " . $this->get_tname($table) . ($cols ? " (" . $cols . ")" : "") . " VALUE";
         if ($multi) {
             if ($this->last_table != $table || !$this->last_query)
                 $this->last_query = $st . "S(" . $vals . ")";
