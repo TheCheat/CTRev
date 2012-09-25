@@ -77,6 +77,12 @@ class bittorrent extends announce_parser {
     const torrent_prefix = "t";
 
     /**
+     * Макс. кол-во файлов, записываемых в БД
+     * @const int max_filelist
+     */
+    const max_filelist = 100;
+
+    /**
      * Получение значащей части имени файла, уникальный идентефикатор для каждого торрента
      * @param int $time время создания
      * @param int $poster_id ID создателя
@@ -263,7 +269,15 @@ class bittorrent extends announce_parser {
             if (!$flist || !is_array($flist) || count($flist) < 1)
                 throw new EngineException("bencode_dict_miss_keys");
             $filesize = 0;
+            $i = 0;
             foreach ($flist as $fn) {
+                $i++;
+                if ($i > self::max_filelist) {
+                    $filelist [] = array(
+                        "...",
+                        0);
+                    break;
+                }
                 list ( $ll, $ff ) = $this->dict_check($fn, "length(i):path(l)");
                 $filesize += $ll;
                 $ffa = array();

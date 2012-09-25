@@ -245,7 +245,7 @@ CREATE TABLE IF NOT EXISTS `news` (
 CREATE TABLE IF NOT EXISTS `patterns` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(100) NOT NULL,
-  `pattern` text NOT NULL COMMENT 'Да, да, я знаю, что нельзя ТАК делать, но ТАК будет быстрее, да и удобнее.',
+  `pattern` mediumtext NOT NULL COMMENT 'Да, да, я знаю, что нельзя ТАК делать, но ТАК будет быстрее, да и удобнее.',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;

@@ -99,8 +99,13 @@ class get_convert {
      */
     public function get_filelist($id) {
         global $db;
-        $r = $db->query('SELECT filename, size FROM `' . $this->db . '`.`files` WHERE torrent=' . $id);
-        return serialize($db->fetch2array($r, "row"));
+        $r = $db->query('SELECT filename, size FROM `' . $this->db . '`.`files` 
+            WHERE torrent=' . $id . ' LIMIT 0, ' . (bittorrent::max_filelist + 1));
+        $arr = $db->fetch2array($r, "row");
+        $c = count($arr);
+        if ($c > bittorrent::max_filelist)
+            $arr[$c - 1] = array('...', 0);
+        return serialize($arr);
     }
 
     /**
