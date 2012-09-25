@@ -65,7 +65,7 @@ class getpeers {
      * @param string $ua User-Agent
      * @return string контент страницы
      */
-    protected function content_via_sockets($url, $ua = "uTorrent/1820") {
+    public function content_via_sockets($url, $ua = "uTorrent/1820") {
         $p = parse_url($url);
         $host = $p['host'];
         $path = $p['path'];
@@ -94,15 +94,40 @@ class getpeers {
         $out = "GET " . $path . "?" . $query . " HTTP/1.1\r\n";
         $out .= "Host: " . $host . "\r\n";
         $out .= "User-Agent: " . $ua . "\r\n";
-        $out .= "Connection: Close";
-        $hend = "\r\n\r\n";
-        $out .= $hend;
+        $out .= "Connection: Close\r\n\r\n";
         fwrite($r, $out);
         $c = '';
         while (!feof($r))
             $c .= fgets($r, 1024);
         fclose($r);
-        $c = trim(mb_substr($c, mb_strpos($c, $hend) + mb_strlen($hend)));
+        return $this->parse_headers($c);
+    }
+
+    /**
+     * Обрезание заголовков и парсинг чанков
+     * @param string $c контент с заголовками
+     * @return string спарсенный контент
+     */
+    protected function parse_headers($c) {
+        $hend = "\r\n\r\n";
+        $p = strpos($c, $hend);
+        $h = substr($c, 0, $p);
+        $c = trim(substr($c, $p + strlen($hend)));
+        if (preg_match('/Transfer-Encoding\:\s*chunked\r\n/siu', $h)) {
+            $r = '';
+            $nl = "\r\n";
+            $nll = strlen($nl);
+            do {
+                $p = strpos($c, $nl);
+                $clen = hexdec(substr($c, 0, $p));
+                $p += $nll;
+                $r .= substr($c, $p, $clen);
+                $c = substr($c, $p + $clen);
+                if (!$clen)
+                    break;
+            } while ($c);
+            $c = $r;
+        }
         return $c;
     }
 

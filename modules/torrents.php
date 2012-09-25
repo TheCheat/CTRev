@@ -279,12 +279,19 @@ class torrents {
             $rows = array_merge($rows, $a);
         }
         $cat_arr = $cats->cid2arr($rows ['category_id'], 0);
-        $tags = explode(',', $rows['tags']);
-        $r = "";
-        foreach ($tags as $tag)
-            $r .= ( $r ? ", " : "") . "<a href='" . $furl->construct('search', array('auto' => true,
-                        'tag' => $tag)) . "'>" . $tag . "</a>";
-        $rows ['tags'] = $r;
+        $rows['tags'] = trim($rows['tags']);
+        if ($rows['tags']) {
+            $tags = explode(',', $rows['tags']);
+            $r = "";
+            foreach ($tags as $tag) {
+                $tag = trim($tag);
+                if (!$tag)
+                    continue;
+                $r .= ( $r ? ", " : "") . "<a href='" . $furl->construct('search', array('auto' => true,
+                            'tag' => $tag)) . "'>" . $tag . "</a>";
+            }
+            $rows ['tags'] = $r;
+        }
         $rows ['filelist'] = (array) unserialize($rows ['filelist']);
         $rows ['cats_arr'] = $cat_arr [1];
         $rows ['cat_parents'] = $cat_arr [0];
