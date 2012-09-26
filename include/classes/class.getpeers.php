@@ -26,7 +26,7 @@ class getpeers {
      * @const int time_limit
      */
 
-    const time_limit = 5;
+    const time_limit = 2;
 
     /**
      * Конструктор запроса для аннонсеров
@@ -88,18 +88,18 @@ class getpeers {
             }
         }
         $query = $p['query'];
-        $r = fsockopen($host, $port, $errno, $errstr, self::time_limit);
+        $r = @fsockopen($host, $port, $errno, $errstr, self::time_limit);
         if (!$r)
             return;
         $out = "GET " . $path . "?" . $query . " HTTP/1.1\r\n";
         $out .= "Host: " . $host . "\r\n";
         $out .= "User-Agent: " . $ua . "\r\n";
         $out .= "Connection: Close\r\n\r\n";
-        fwrite($r, $out);
+        if (!@fwrite($r, $out))
+            return; // для UDP
         $c = '';
         while (!feof($r))
             $c .= fgets($r, 1024);
-        fclose($r);
         return $this->parse_headers($c);
     }
 
@@ -122,7 +122,7 @@ class getpeers {
                 $clen = hexdec(substr($c, 0, $p));
                 $p += $nll;
                 $r .= substr($c, $p, $clen);
-                $c = substr($c, $p + $clen);
+                $c = substr($c, $p + $clen + 2); // + 2 ибо перевод на новую строку
                 if (!$clen)
                     break;
             } while ($c);

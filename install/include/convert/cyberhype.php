@@ -69,7 +69,7 @@ class get_convert {
      */
     public function get_tfile($row) {
         global $bt, $config;
-        $fname = $bt->get_filename($row['UNIX_TIMESTAMP(added)'], $row['owner']);
+        $fname = $bt->get_filename($row['posted_time'], $row['poster_id']);
         $path = ROOT . $config->v('torrents_folder') . '/';
         $nname = $path . bittorrent::torrent_prefix . $fname . ".torrent";
         $oname = $path . $row['id'] . ".torrent";
