@@ -39,9 +39,9 @@
                 else
                     form = '';
                 status_icon('loading');
-                jQuery.post('<?= INSTALL_FILE ?>.php?page='+pages[current_page]+'&check=1', form, function (data) {
+                jQuery.post('<?= INSTALL_FILE ?>.php?page='+pages[current_page+1]+'&check=1', form, function (data) {
                     if (data=='OK!') {
-                        jQuery.post('<?= INSTALL_FILE ?>.php?page='+pages[current_page], function (data) {
+                        jQuery.post('<?= INSTALL_FILE ?>.php?page='+pages[current_page+1], function (data) {
                             current_page++;
                             show_buttons();
                             status_icon('success');
@@ -58,7 +58,7 @@
             }
             function confirm_back() {           
                 status_icon('loading');
-                jQuery.post('<?= INSTALL_FILE ?>.php?page='+pages[current_page], function (data) {
+                jQuery.post('<?= INSTALL_FILE ?>.php?page='+pages[current_page-1], function (data) {
                     current_page--;
                     show_buttons();     
                     status_icon('success');
