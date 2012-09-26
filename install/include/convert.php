@@ -132,10 +132,17 @@ class convert {
             die('OK!');
         } else {
             $tpl->assign("config", $config);
-            if (INSTALL_PAGE == "database")
-                $this->show_database();
-            elseif (INSTALL_PAGE == "convert")
-                $this->show_convert();
+            switch (INSTALL_PAGE) {
+                case "database":
+                    $this->show_database();
+                    break;
+                case "convert":
+                    $this->show_convert();
+                    break;
+                case "notice":
+                    $cache->clear();
+                    break;
+            }
             $tpl->display("convert/" . INSTALL_PAGE);
         }
     }

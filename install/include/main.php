@@ -306,6 +306,7 @@ class main {
      * Отображение последней стадии установки
      * @global tpl $tpl
      * @global file $file
+     * @global cache $cache
      * @return null 
      */
     protected function show_finish() {
@@ -423,6 +424,8 @@ $charset = ' . var_export($charset, true) . ';
         $users = new users();
         include_once ROOT . 'include/classes/class.config.php';
         $config = new config();
+        $cache->init();
+        $cache->clear();
         $params = array('site_title',
             'baseurl',
             'contact_email',
