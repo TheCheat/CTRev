@@ -127,8 +127,8 @@ class categories {
             $cat = (int) $cur;
         else {
             $cat = mb_strtolower($display->strip_subpath($cur));
-            preg_match('/^(.*?)\//siu', $cat, $matches);
-            $cat = $matches[1];
+            if (preg_match('/^(.*?)\//siu', $cat, $matches))
+                $cat = $matches[1];
         }
         $c = $this->get($cat);
         $cat_row = array(
