@@ -25,7 +25,7 @@
                                 <a href="[*gen_link module=$thisrow.type id=$thisrow.toid title=$thisrow.title*]">[*$thisrow.title*]</a></font></p>
                     </td>
                     <td align="center">[*date time=$thisrow.posted_time*]</td>
-                    [*if isset($thisrow.poster_id)*]
+                    [*if isset($thisrow.username)*]
                         <td align="center"><b>[*$thisrow.username|gcl:$thisrow.group*]</b></td>
                     [*/if*]
                 </tr>
@@ -34,7 +34,7 @@
     </table>
 [*else*] 
     [*assign var='lv' value='users_no_comments'*]
-    [*if !isset($comm_row[0].poster_id)*]
+    [*if !isset($comm_row[0].username)*]
         [*assign var='lv' value='downm_no_comments'*]
     [*/if*]
     [*message lang_var=$lv type='info'*] 
