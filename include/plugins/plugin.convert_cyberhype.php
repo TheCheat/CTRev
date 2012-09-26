@@ -65,6 +65,29 @@ class plugin_convert_cyberhype {
      */
     public function init($plugins) {
         $plugins->add_hook('users_check_data', array($this, 'converted_login'));
+        $plugins->add_hook('usercp_save_main', array($this, 'converted_usercp'));
+        $plugins->add_hook('login_recover_save', array($this, 'converted_recover'));
+    }
+
+    /**
+     * Сохранение конвертированного пользователя
+     * @param array $data массив переменных
+     * @return null
+     */
+    public function converted_recover($data) {
+        $update = &$data['update'];
+        $update['converted'] = '0';
+    }
+
+    /**
+     * Сохранение конвертированного пользователя
+     * @param array $data массив переменных
+     * @return null
+     */
+    public function converted_usercp($data) {
+        $update = &$data['update'];
+        if ($update ["password"])
+            $update['converted'] = '0';
     }
 
     /**

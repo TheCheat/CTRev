@@ -199,7 +199,8 @@ class login_ajax {
     /**
      * Сохранение нового пароля
      * @global db $db
-     * @global users $users\
+     * @global users $users
+     * @global plugins $plugins
      * @param string $key ключ подтверждения
      * @param string $email E-mail пользователя
      * @param string $password новый пароль
@@ -207,18 +208,20 @@ class login_ajax {
      * @return null
      */
     protected function recover_save($key, $email, $password, $passagain) {
-        global $db, $users;
+        global $db, $users, $plugins;
         if ($users->v())
             return;
         if ($password != $passagain || !$users->check_password($password))
             throw new EngineException("recover_pass_not_equals");
         $salt = $users->generate_salt();
         $password = $users->generate_pwd_hash($password, $salt);
-        $count = $db->update(array(
+        $update = array(
             "confirm_key" => "",
             "new_email" => "",
             "password" => $password,
-            "salt" => $salt), "users", ('WHERE confirm_key=' . $db->esc($key) . ' AND email=' . $db->esc($email)));
+            "salt" => $salt);
+        $plugins->pass_data(array("update" => &$update), true)->run_hook('login_recover_save');
+        $count = $db->update($update, "users", ('WHERE confirm_key=' . $db->esc($key) . ' AND email=' . $db->esc($email)));
         if (!$count)
             throw new EngineException("recover_user_not_exists");
     }
