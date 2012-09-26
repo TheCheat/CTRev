@@ -267,7 +267,7 @@ CREATE TABLE IF NOT EXISTS `peers` (
 
 CREATE TABLE IF NOT EXISTS `plugins` (
   `file` varchar(30) NOT NULL,
-  `settings` text NOT NULL,
+  `settings` text NULL,
   PRIMARY KEY (`file`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
