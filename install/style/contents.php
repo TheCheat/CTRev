@@ -41,9 +41,9 @@
                 status_icon('loading');
                 jQuery.post('<?= INSTALL_FILE ?>.php?page='+pages[current_page]+'&check=1', form, function (data) {
                     if (data=='OK!') {
-                        current_page++;
-                        show_buttons();
                         jQuery.post('<?= INSTALL_FILE ?>.php?page='+pages[current_page], function (data) {
+                            current_page++;
+                            show_buttons();
                             status_icon('success');
                             jQuery('#install_contents').empty().append(data);
                             init_corners();
@@ -56,11 +56,11 @@
                     }
                 });
             }
-            function confirm_back() {
-                current_page--;
-                show_buttons();                
+            function confirm_back() {           
                 status_icon('loading');
                 jQuery.post('<?= INSTALL_FILE ?>.php?page='+pages[current_page], function (data) {
+                    current_page--;
+                    show_buttons();     
                     status_icon('success');
                     jQuery('#install_contents').empty().append(data);
                     init_corners();
