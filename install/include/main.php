@@ -412,12 +412,13 @@ $charset = ' . var_export($charset, true) . ';
     /**
      * Настройка сайта
      * @global cache $cache
+     * @global config $config
      * @param array $data массив данных
      * @param array $error массив ошибок
      * @return null
      */
     protected function config($data, &$error) {
-        global $cache;
+        global $cache, $config;
         include_once ROOT . 'include/classes/class.cache.php';
         $cache = new cache();
         include_once ROOT . 'include/classes/class.users.php';
