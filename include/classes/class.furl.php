@@ -508,7 +508,8 @@ final class furl extends pluginable_object {
             }
         } elseif ($nobaseurl) {
             $burl = false;
-        }/*
+        }
+        /*
           if (!is_array($params) && $params)
           $params = (array) $display->parse_smarty_array($params);
           else */
@@ -526,12 +527,12 @@ final class furl extends pluginable_object {
             $url = 'index.php?module=' . ($this->rmodules[$module] ? $this->rmodules[$module] : $module);
             $function = $module . '_nfurl_rules';
         }
+        $slashes = $params ['slashes'];
+        $noencode = $params ['noencode'];
         $b = $this->is_callable($function);
         if ($b)
             $params = $this->resort($module, $params);
         $postfix = "";
-        $slashes = $params ['slashes'];
-        $noencode = $params ['noencode'];
         $surl = '';
         $ourl = $url;
         if ($params && !$page) {
