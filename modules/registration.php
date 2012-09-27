@@ -235,6 +235,8 @@ class registration {
                 "group" => $users->find_group('default'),
                 "refered_by" => $refered_by,
                 "confirm_key" => ($config->v('confirm_email') ? $etc->confirm_request($email, "confirm_register") : ""));
+            if ($config->v('bonus_by_default'))
+                $update['bonus_count'] = $config->v('bonus_by_default');
             $update ["gender"] = $gender == "f" ? "f" : "m";
             $update ["admin_email"] = (bool) $admin_email;
             $update ["user_email"] = (bool) $user_email;
@@ -249,14 +251,14 @@ class registration {
             $settings = rex($data, $cols);
             $settings["country"] = (int) $settings["country"];
             $settings["show_age"] = (bool) $data ['show_age'];
-            
+
             try {
                 $plugins->pass_data(array('update' => &$update,
                     'settings' => &$settings), true)->run_hook('register_user');
             } catch (PReturn $e) {
                 return $e->r();
             }
-            
+
             $update['settings'] = $users->make_settings($settings);
             $id = $db->insert($update, "users");
             if ($invite)

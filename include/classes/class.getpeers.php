@@ -146,6 +146,7 @@ class getpeers {
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_HEADER, false);
             curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, self::time_limit);
+            curl_setopt($ch, CURLOPT_TIMEOUT, self::time_limit);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_USERAGENT, $ua);
 
@@ -203,7 +204,7 @@ class getpeers {
         global $bt;
         $c = $bt->bdec($content);
         if (!is_array($c))
-            return;
+            return 0;
         if (isset($c["complete"]) && isset($c["incomplete"]))
             return array((int) $c["complete"], (int) $c["incomplete"]);
         if (is_array($c['peers']))
@@ -222,7 +223,7 @@ class getpeers {
         global $bt;
         $c = $bt->bdec($content);
         if (!is_array($c))
-            return;
+            return 0;
         if (isset($c["complete"]) && isset($c["incomplete"]))
             return array((int) $c["complete"], (int) $c["incomplete"]);
     }

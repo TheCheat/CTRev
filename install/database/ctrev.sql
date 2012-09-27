@@ -679,7 +679,8 @@ INSERT INTO `config` (`name`, `value`, `type`, `allowed`, `cat`, `sort`) VALUES
 ('warn2ban', '5', 'int', '', 'users', 7),
 ('warn2ban_days', '7', 'int', '', 'users', 8),
 ('last_profile_comments', '15', 'int', '', 'users', 9),
-('last_profile_torrents', '15', 'int', '', 'users', 10);
+('last_profile_torrents', '15', 'int', '', 'users', 10),
+('bonus_by_default', '300', 'int', '', 'users', 11);
 
 INSERT INTO `countries` (`id`, `name`, `image`) VALUES
 (87, 'Antigua Barbuda', 'antiguabarbuda.gif'),

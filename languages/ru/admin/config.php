@@ -38,6 +38,7 @@ $languages = array(
     "config_field_avatars_folder" => "Путь к аватарам",
     "config_field_baseurl" => "Путь к корню сайта",
     "config_field_bonus_per_invited" => "Кол-во бонусов за приглашённого",
+    'config_field_bonus_by_default' => 'Кол-во бонусов при регистрации',
     "config_field_cache_modsettings" => "Кешировать настройки блоков/плагинов?",
     "config_field_cache_details" => "Кешировать статистику торрентов?",
     "config_field_cache_oldtime" => "Время жизни кеш-файлов(ч.)",
