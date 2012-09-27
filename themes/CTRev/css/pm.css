@@ -33,3 +33,9 @@
 div.pm_content_single {
     min-height: 80px;
 }
+div.pm_content_underline {
+    display: table;
+    clear: both;
+    width: 100%;
+    margin-bottom: -10px;
+}

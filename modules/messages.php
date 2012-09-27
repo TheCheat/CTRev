@@ -170,7 +170,7 @@ class messages_ajax {
         }
         if (!$rec)
             throw new EngineException('pm_no_messages_send');
-        if ($rec > $config->v('max_pmessages'))
+        if (count($rec) > $config->v('max_pmessages'))
             throw new EngineException('pm_too_much_messages_send', $config->v('max_pmessages'));
         
         try {
