@@ -39,12 +39,13 @@
                 else
                     form = '';
                 status_icon('loading');
+                show_buttons(true); // disable until not loaded
                 jQuery.post('<?= INSTALL_FILE ?>.php?page='+pages[current_page]+'&check=1', form, function (data) {
                     if (data=='OK!') {
-                        jQuery.post('<?= INSTALL_FILE ?>.php?page='+pages[current_page+1], function (data) {
-                            current_page++;
-                            show_buttons();
+                        current_page++;
+                        jQuery.post('<?= INSTALL_FILE ?>.php?page='+pages[current_page], function (data) {
                             status_icon('success');
+                            show_buttons();    
                             jQuery('#install_contents').empty().append(data);
                             init_corners();
                             onhovered_dd();
@@ -58,9 +59,10 @@
             }
             function confirm_back() {           
                 status_icon('loading');
-                jQuery.post('<?= INSTALL_FILE ?>.php?page='+pages[current_page-1], function (data) {
-                    current_page--;
-                    show_buttons();     
+                show_buttons(true); // disable until not loaded
+                current_page--; 
+                jQuery.post('<?= INSTALL_FILE ?>.php?page='+pages[current_page], function (data) {
+                    show_buttons();    
                     status_icon('success');
                     jQuery('#install_contents').empty().append(data);
                     init_corners();
