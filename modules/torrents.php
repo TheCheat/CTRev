@@ -174,7 +174,7 @@ class torrents {
             t.content, t.id, t.screenshots FROM torrents AS t
             LEFT JOIN users AS u ON u.id=t.poster_id
             ' . ($where ? " WHERE " . $where : "") .
-                " ORDER BY posted_time" .
+                " ORDER BY CAST(sticky AS INT) DESC, posted_time DESC" .
                 ($config->v('max_rss_items') ? " LIMIT " . $config->v('max_rss_items') : ""));
         $tpl->assign('rows', $db->fetch2array($row));
         $tpl->assign('cat_rows', $cat_rows);
@@ -224,7 +224,7 @@ class torrents {
             LEFT JOIN read_torrents AS rt ON rt.torrent_id=t.id AND rt.user_id=' . $users->v('id') . '
             LEFT JOIN users AS u ON t.poster_id=u.id
             WHERE (rt.torrent_id=false OR rt.torrent_id IS NULL)' . $add . '
-            ORDER BY posted_time DESC
+            ORDER BY CAST(sticky AS INT) DESC, posted_time DESC
             LIMIT ' . $limit);
         $tpl->assign('rows', $db->fetch2array($rows));
         $tpl->assign('pages', $pages);
@@ -448,7 +448,7 @@ class torrents {
             ' . (/* !$id */true ? ' LEFT JOIN read_torrents AS rt ON rt.torrent_id=t.id AND rt.user_id=' . $users->v('id') : "") : "")
                     . ($full ? ' LEFT JOIN users AS st ON st.id=t.status_by' : "")
                     . ($where ? ' WHERE ' . $where : "") .
-                    (!$full ? ' ORDER BY t.sticky DESC, t.posted_time DESC' : "") .
+                    (!$full ? ' ORDER BY CAST(t.sticky AS INT) DESC, t.posted_time DESC' : "") .
                     ($limit ? ' LIMIT ' . $limit : ""));
             $rows = $db->fetch2array($rows);
             if ($full && !$rows)
@@ -939,7 +939,9 @@ class torrents_ajax {
             $r = $db->query('SELECT t.id, t.title, t.seeders, t.leechers, 
             t.size, t.screenshots, u.username, u.group, t.posted_time 
             FROM torrents AS t LEFT JOIN users AS u ON u.id=t.poster_id
-            WHERE ' . $cats->cat_where($catids, true) . ' LIMIT ' . $limit);
+            WHERE ' . $cats->cat_where($catids, true) . ' AND on_top="1"
+            ORDER BY posted_time DESC
+            LIMIT ' . $limit);
             $a = array();
             $torrents = $plugins->get_module('torrents');
             while ($row = $db->fetch_assoc($r)) {
