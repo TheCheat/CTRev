@@ -137,6 +137,7 @@ class etc {
      * @global furl $furl
      * @global bbcodes $bbcodes
      * @global users $users
+     * @global lang $lang
      * @param string $title заголовок сообщения
      * @param string $body тело сообщения
      * @param int $uid ID пользователя
@@ -145,10 +146,12 @@ class etc {
      * @return bool статус отправки
      */
     public function send_message($title, $body, $uid, $email = null, $sender = null) {
-        global $db, $furl, $bbcodes, $users;
+        global $db, $furl, $bbcodes, $users, $lang;
         if (!$sender)
             $sender = $users->v('id');
         $uid = (int) $uid;
+        if (!$title)
+            $title = $lang->v('pmessage_empty_subject');
         $id = $db->insert(array(
             "subject" => $title,
             "text" => $body,

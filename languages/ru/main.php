@@ -137,6 +137,7 @@ $languages = array_merge($languages, array(
     "paginator_last" => "Последняя",
     "paginator_prev" => "Предыдущая",
     "paginator_first" => "Первая",
+    "pmessage_empty_subject" => 'Без заголовка',
     "quoted_text" => "Цитата...",
     "hidden_text" => "Скрытый текст",
     "hide_show" => 'Скрыть\Показать',

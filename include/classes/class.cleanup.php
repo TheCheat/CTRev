@@ -54,6 +54,7 @@ final class cleanup extends pluginable_object {
         $time = $stats->read('last_cleanup');
         if (!$force && time() < $time + $config->v('cleanup_each') * $hour)
             return;
+        $stats->write('last_cleanup', time());
         $am = $users->admin_mode(true);
         $users->set_tmpvars(array('id' => -1));
         $mailer->change_type('torrents')->cleanup();
@@ -66,7 +67,6 @@ final class cleanup extends pluginable_object {
         if ($am)
             $users->admin_mode();
         //$cache->clear_ocache($config->v('cache_oldtime') * 3600);
-        $stats->write('last_cleanup', time());
     }
 
     /**
