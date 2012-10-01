@@ -157,10 +157,9 @@ function myerror_report($errorno, $errormsg, $file, $line) {
  * @param string $body текст сообщения
  * @param string|array $to кому
  * @param string $error ошибоки
- * @param string $from от кого(по-умолчанию от администратора сайта)
  * @return null
  */
-function send_mail($subject, $body, $to, &$error = '', $from = "") {
+function send_mail($subject, $body, $to, &$error = '') {
     global $config;
     $to = (is_array($to) ? implode($to, ", ") : $to);
 //@header('Content-Type: text/plain');
