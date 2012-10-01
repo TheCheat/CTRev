@@ -506,9 +506,8 @@ final class furl extends pluginable_object {
                 $params = $module;
                 $module = $module_t;
             }
-        } elseif ($nobaseurl) {
+        } elseif ($nobaseurl)
             $burl = false;
-        }
         /*
           if (!is_array($params) && $params)
           $params = (array) $display->parse_smarty_array($params);
@@ -524,7 +523,7 @@ final class furl extends pluginable_object {
             $url .= $module . ($page ? '' : "/");
             $function = $module . '_furl_rules';
         } else {
-            $url = 'index.php?module=' . ($this->rmodules[$module] ? $this->rmodules[$module] : $module);
+            $url .= 'index.php?module=' . ($this->rmodules[$module] ? $this->rmodules[$module] : $module);
             $function = $module . '_nfurl_rules';
         }
         $slashes = $params ['slashes'];
