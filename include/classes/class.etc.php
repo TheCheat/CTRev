@@ -428,6 +428,8 @@ class etc {
         global $db, $users, $plugins, $comments, $mailer, $rating;
         $id = (int) $id;
         $r = $this->select_user($id, null, '`group`, avatar, username');
+        if (!$r)
+            return;
         $gr = $users->get_group($r['group']);
         if (!$gr['can_bedeleted'])
             return false;

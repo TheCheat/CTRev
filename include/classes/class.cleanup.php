@@ -195,7 +195,7 @@ final class cleanup extends pluginable_object {
         $when = time() - $config->v('del_inactive') * $day;
         $r = $db->query("SELECT id FROM users WHERE last_visited <= " . $when);
         while (list($id) = $db->fetch_row($r))
-            $etc->delete_user($row["id"]);
+            $etc->delete_user($id);
     }
 
     /**
