@@ -465,10 +465,10 @@ function init_baseurl() {
  */
 function init_spaths() {
     global $users, $BASEURL, $theme_path, $tpl, $_style;
-    if ($_style == $users->style && $_style)
+    if ($users  && $_style == $users->get_theme() && $_style)
         return;
-    if ($users->style)
-        $_style = $users->style;
+    if ($users && $users->get_theme())
+        $_style = $users->get_theme();
     else
         $_style = DEFAULT_THEME;
     $tpl->left_delimiter = "[*";

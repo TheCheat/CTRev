@@ -142,7 +142,7 @@
                 [*/foreach*]
                 [*if !$admin_file*]
                     <dt>[*'usercp_area_theme'|lang*]</dt>
-                    <dd>[*select_folder folder=$smarty.const.THEMES_PATH current=$curstyle*]</dd>
+                    <dd>[*select_folder folder=$smarty.const.THEMES_PATH name='theme' current=$curtheme*]</dd>
                     <dt>[*'usercp_area_lang'|lang*]</dt>
                     <dd>[*select_folder folder=$smarty.const.LANGUAGES_PATH current=$curlang*]</dd>
                 [*/if*]
