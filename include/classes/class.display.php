@@ -502,7 +502,7 @@ class display_modifier extends display_time {
      * @var array|string $from_transl
      */
     protected $from_transl = "а.б.в.г.д.е.ё.ж.з.и.й.к.л.м.н.о.п.р.с.т.у.ф.х.ц.ч.ш.щ.ъ.ы.ь.э.ю.я. .-";
-    
+
     /**
      * Соответствесвующие им символы при транслитировании
      * @var array|string $to_transl
@@ -845,10 +845,10 @@ class display extends display_modifier {
     public static function o() {
         if (!self::$o) {
             $cn = 'display';
-            $c = n('display', true);
+            $c = n($cn, true);
             if ($c != $cn) {
                 if (is_callable(array($c, 'o')))
-                    self::$o = $c::o();
+                    self::$o = call_user_func(array($c, "o")); // static
                 else
                     self::$o = new $c();
             } else

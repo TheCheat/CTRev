@@ -1022,10 +1022,10 @@ class users extends users_modifier {
     public static function o() {
         if (!self::$o) {
             $cn = 'users';
-            $c = n('users', true);
+            $c = n($cn, true);
             if ($c != $cn) {
                 if (is_callable(array($c, 'o')))
-                    self::$o = $c::o();
+                    self::$o = call_user_func(array($c, "o")); // static
                 else
                     self::$o = new $c();
             } else

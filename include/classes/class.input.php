@@ -501,10 +501,10 @@ class input {
     public static function o() {
         if (!self::$o) {
             $cn = 'input';
-            $c = n('input', true);
+            $c = n($cn, true);
             if ($c != $cn) {
                 if (is_callable(array($c, 'o')))
-                    self::$o = $c::o();
+                    self::$o = call_user_func(array($c, "o")); // static
                 else
                     self::$o = new $c();
             } else
