@@ -685,7 +685,7 @@ final class bbcodes extends bbcode_formatter {
 
     /**
      * Получение объекта класса
-     * @return furl $this
+     * @return bbcodes $this
      */
     public static function o() {
         if (!self::$o) {

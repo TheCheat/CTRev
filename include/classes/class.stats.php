@@ -98,7 +98,7 @@ final class stats {
 
     /**
      * Получение объекта класса
-     * @return tpl $this
+     * @return stats $this
      */
     public static function o() {
         if (!self::$o)
