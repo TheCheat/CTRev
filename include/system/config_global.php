@@ -4,7 +4,7 @@ if (!defined('INSITE'))
     die('Remote access denied!');
 
 define('ENGINE_VERSION', '1.00');
-define('ENGINE_STAGE', 'RC1');
+define('ENGINE_STAGE', 'RC2');
 
 define('MODULES_PATH', 'modules'); // путь к модулям, относительно корня системы
 define('BLOCKS_PATH', 'blocks'); // путь к блокам, относительно модулей
