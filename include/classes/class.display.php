@@ -17,13 +17,13 @@ class display_html {
 
     /**
      * Интервалы дат знаков зодиака
-     * @var array
+     * @var array $zodiac_intervals
      */
     protected $zodiac_intervals = array();
 
     /**
      * Английские названия знаков зодиака
-     * @var array
+     * @var array $zodiac_signs
      */
     protected $zodiac_signs = array(
         "21.01" => "aquarius",
@@ -40,19 +40,19 @@ class display_html {
         "22.12" => "capricorn");
 
     /**
-     * @const paginator_id_prefix - префикс перед ID пейджинатора
+     * @const paginator_id_prefix префикс перед ID пейджинатора
      */
 
     const paginator_id_prefix = 'paginator';
 
     /**
      * Идентефицирование переменной для пейджинатора
-     * @var int
+     * @var int $paginator_id
      */
     protected $paginator_id = 0;
 
     /**
-     * @const avatar_prefix - префикс имя файла аватары
+     * @const avatar_prefix префикс имя файла аватары
      */
 
     const avatar_prefix = "avatar-id";
@@ -499,18 +499,19 @@ class display_modifier extends display_time {
 
     /**
      * Входящие символы при транслитировании
-     * @var array|string
+     * @var array|string $from_transl
      */
     protected $from_transl = "а.б.в.г.д.е.ё.ж.з.и.й.к.л.м.н.о.п.р.с.т.у.ф.х.ц.ч.ш.щ.ъ.ы.ь.э.ю.я. .-";
-    /*
+    
+    /**
      * Соответствесвующие им символы при транслитировании
-     * @var array|string
+     * @var array|string $to_transl
      */
     protected $to_transl = "a.b.v.g.d.e.e.zh.z.i.y.k.l.m.n.o.p.r.c.t.u.f.h.c.ch.sh.sch..y..e.u.ya._.-";
 
     /**
      * Соответствие между транслитируемыми символами
-     * @var array
+     * @var array $transl_rules
      */
     protected $transl_rules = array();
 
@@ -644,39 +645,39 @@ class display_modifier extends display_time {
 
 class display extends display_modifier {
     /**
-     * Паттерн URL
+     * 
+     * @const url_pattern паттерн URL
      * 2 - протокол
      * 3 - домен
      * 4 - порт
      * 5 - оставшаяся часть
      *
      * про parse_url помним, но сие надёжнее :)
-     * @const string url_pattern
      */
 
     const url_pattern = '((http|https|ftp|udp)\:\/\/((?:[a-zа-я0-9\-\_]+\.[a-zа-я0-9\-\_\.]+)|localhost)(\:[0-9]+)?([a-zа-я0-9\.\?\%\=\&\/\-\_\#\;]*?))';
 
     /**
      * Цвета для ратио(если первая буква $n, то цвет будет #$n$n0000)
-     * @var string
+     * @var string $ratio_color
      */
     protected $ratio_color = "fedcba9876";
 
     /**
      * Дельта порога для цвета
-     * @var float
+     * @var float $ratio_per
      */
     protected $ratio_per = 0.1;
 
     /**
      * Цвета для ратио торрента(если первая буква $n, то цвет будет #$n$n0000)
-     * @var string
+     * @var string $slr_color
      */
     protected $slr_color = "fedcba987654321";
 
     /**
      * Дельта порога для цвета
-     * @var float
+     * @var float $slr_per
      */
     protected $slr_per = 0.025;
 
@@ -809,7 +810,7 @@ class display extends display_modifier {
 
     /**
      * Объект данного класса
-     * @var display
+     * @var display $o
      */
     protected static $o = null;
 

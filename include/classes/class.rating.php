@@ -17,19 +17,19 @@ class rating extends pluginable_object {
 
     /**
      * Статус системы рейтинга
-     * @var bool
+     * @var bool $state
      */
     protected $state = true;
 
     /**
      * Инициализовано?
-     * @var bool
+     * @var bool $inited
      */
     protected $inited = false;
 
     /**
      * Максимальные значения рейтинга
-     * @var array
+     * @var array $max
      */
     protected $max = array(
         "torrents" => 5,
@@ -37,7 +37,7 @@ class rating extends pluginable_object {
 
     /**
      * Минимальные значения рейтинга
-     * @var array
+     * @var array $min
      */
     protected $min = array(
         "torrents" => 0.5,
@@ -45,7 +45,7 @@ class rating extends pluginable_object {
 
     /**
      * Возможная часть рейтинга, 0 - означает только возможность мин. и макс. значения
-     * @var array
+     * @var array $part
      */
     protected $part = array(
         "torrents" => 0.5,
@@ -53,19 +53,19 @@ class rating extends pluginable_object {
 
     /**
      * Тип рейтинга
-     * @var string
+     * @var string $type
      */
     protected $type = 'torrents';
 
     /**
      * Тип голоса
-     * @var string
+     * @var string $stype
      */
     protected $stype = 'torrents';
 
     /**
      * Допустимые типы рейтинга
-     * @var array
+     * @var array $allowed_types
      */
     protected $allowed_types = array(
         'torrents',
@@ -73,7 +73,7 @@ class rating extends pluginable_object {
 
     /**
      * Допустимые типы голоса
-     * @var array
+     * @var array $allowed_stypes
      */
     protected $allowed_stypes = array(
         'torrents');
@@ -90,13 +90,13 @@ class rating extends pluginable_object {
         $this->access_var('min', PVAR_ADD);
         $this->access_var('part', PVAR_ADD);
         /**
-         * Отображение рейтинга
-         * @param int rid - ID ресурса
-         * @param string type - тип ресурса
-         * @param int owner - владелец ресурса
-         * @param array res - массив ресурса
-         * @param int srid - доп. ID ресурса(для уникальности)
-         * @param string stype - доп. тип ресурса(для уникальности)
+         * @tutorial Отображение рейтинга(display_rating)
+         * int rid ID ресурса
+         * string type тип ресурса
+         * int owner владелец ресурса
+         * array res массив ресурса
+         * int srid доп. ID ресурса(для уникальности)
+         * string stype доп. тип ресурса(для уникальности)
          */
         tpl::o()->register_function("display_rating", array(
             $this,
@@ -105,7 +105,7 @@ class rating extends pluginable_object {
 
     /**
      * Изменение типа рейтинга
-     * @param string $rtype тип рейтинга
+     * @param string $type тип рейтинга
      * @return rating $this
      */
     public function change_type($type) {

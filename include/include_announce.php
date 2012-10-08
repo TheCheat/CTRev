@@ -1,5 +1,16 @@
 <?php
 
+/**
+ * Project:            	CTRev
+ * File:                include_announce.php
+ *
+ * @link 	  	http://ctrev.cyber-tm.ru/
+ * @copyright         	(c) 2008-2012, Cyber-Team
+ * @author 	  	The Cheat <cybertmdev@gmail.com>
+ * @name 		Загрузка основных файлов движка для аннонсера
+ * @version           	1.00
+ */
+
 define('INSITE', true);
 define('INANNOUNCE', true);
 

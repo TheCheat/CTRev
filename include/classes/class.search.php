@@ -19,7 +19,7 @@ class search {
     /**
      * Правила в PCRE для выборки слов
      * @todo добавить больше правил, вынести куда-нибудь отдельно
-     * @var array
+     * @var array $pcre_rules
      */
     protected $pcre_rules = array(
         'c|с',
@@ -27,7 +27,7 @@ class search {
 
     /**
      * Правила в PCRE для полнотекстового поиска в логическом режиме
-     * @var array
+     * @var array $bool_rules
      */
     protected $bool_rules = array(
         '^([\\\]([\+\(\<\>\~]))+' => '',
@@ -37,19 +37,19 @@ class search {
 
     /**
      * Правила инициализированы?
-     * @var bool
+     * @var bool $rules_inited
      */
     protected $rules_inited = false;
 
     /**
      * Замена для поиска внутри файлов
-     * @var string
+     * @var string $infiles_replace
      */
     protected $infiles_replace = null;
 
     /**
      * Функция записи файла
-     * @var string
+     * @var string $infiles_replace_cb
      */
     protected $infiles_replace_cb = null;
 

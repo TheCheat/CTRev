@@ -7,7 +7,6 @@
  * @link 	  	http://ctrev.cyber-tm.ru/
  * @copyright         	(c) 2008-2012, Cyber-Team
  * @author 	  	The Cheat <cybertmdev@gmail.com>
- * @package             display
  * @name		Класс BB-кодов
  * @version           	1.00
  */
@@ -18,7 +17,7 @@ abstract class formatter_callbacks extends pluginable_object {
 
     /**
      * Мультивложенность тегов
-     * @var array
+     * @var array $multi_tagin
      */
     protected $multi_tagin = array(
         "simple",
@@ -30,7 +29,7 @@ abstract class formatter_callbacks extends pluginable_object {
 
     /**
      * Паттерны BB-кодов
-     * @var array
+     * @var array $bb_patterns
      */
     protected $bb_patterns = array(
         "simple" => '/\[(b|i|u|s|p|su[bp]|strong|strike|em)\](.+?)\[\/\1\]/siu',
@@ -48,7 +47,7 @@ abstract class formatter_callbacks extends pluginable_object {
 
     /**
      * Заменяемые значения в HTML
-     * @var array
+     * @var array $bb_replacement
      */
     protected $bb_replacement = array(
         "simple" => '<\1>\2</\1>',
@@ -74,7 +73,7 @@ abstract class formatter_callbacks extends pluginable_object {
 
     /**
      * Простые теги
-     * @var array
+     * @var array $simple_tags
      */
     protected $simple_tags = array(
         "simple",
@@ -87,14 +86,14 @@ abstract class formatter_callbacks extends pluginable_object {
 
     /**
      * Переменная для очистки текста от тегов в цитируемом сообщении.
-     * @var array
+     * @var array $remove_quote_tags
      */
     protected $remove_quote_tags = array(
         "hide" => '%LANG[hidden_text]');
 
     /**
      * Переменная для очистки текста от тегов. Сначала {@link $bb_patterns}, потом {@link $spec_patterns}
-     * @var array
+     * @var array $removing_tags
      */
     protected $removing_tags = array(
         "simple" => '\2',
@@ -121,7 +120,7 @@ abstract class formatter_callbacks extends pluginable_object {
 
     /**
      * Специальные паттерны, которые заменяются с помощью отдельных функций
-     * @var array
+     * @var array $spec_patterns
      */
     protected $spec_patterns = array(
         "code" => '/\[code(?:=%Q;(js|html|php|css|java|delphi|cs|cpp|ls)%Q;)?\](.+?)\[\/code\]/siu',
@@ -193,7 +192,7 @@ abstract class formatter_callbacks extends pluginable_object {
             if (!$vars)
                 $vars = furl::o()->construct("registration");
             ob_start();
-            mess($text, $vars, "info", false, "hidden_text", "left", false, true);
+            message($text, $vars, "info", false, "hidden_text", "left", false, true);
             $cont = ob_get_contents();
             ob_end_clean();
             return $cont;
@@ -262,7 +261,6 @@ abstract class formatter_callbacks extends pluginable_object {
     /**
      * Обработка значений для preg_replace_callback тега hide
      * @param array $matches входящий массив парсенной строки
-     * @param bool $rss RSS?
      * @return string HTML код
      */
     protected function pcre_callback_code($matches) {
@@ -291,31 +289,31 @@ abstract class bbcode_formatter extends formatter_callbacks {
 
     /**
      * Массив смайлов
-     * @var array
+     * @var array $smilies
      */
     public $smilies = array();
 
     /**
      * Паттерны ББ-кодов в "одном флаконе"
-     * @var array
+     * @var array $merged_bb
      */
     protected $merged_bb = array();
 
     /**
      * Выполнялось ли форматирование текста
-     * @var bool
+     * @var bool $executed_format
      */
     protected $executed_format = false;
 
     /**
      * Выполнялось ли форматирование текста для цитат
-     * @var bool
+     * @var bool $subexe_format
      */
     protected $subexe_format = false;
 
     /**
      * Инициализовано ли JS форматирование?
-     * @var bool
+     * @var bool $inited_js_format
      */
     protected $inited_js_format = false;
 
@@ -579,13 +577,13 @@ final class bbcodes extends bbcode_formatter {
 
     /**
      * ID формы
-     * @var int 
+     * @var int $id 
      */
     protected $id = 0;
 
     /**
      * Инициализовано ли JS для формы с BB-кодами
-     * @var bool
+     * @var bool $inited_js
      */
     protected $inited_js = false;
 
@@ -643,13 +641,13 @@ final class bbcodes extends bbcode_formatter {
 
     /**
      * Объект данного класса
-     * @var furl
+     * @var furl $o
      */
     private static $o = null;
 
     /**
      * Переменная для создания объекта только через функцию o
-     * @var bool
+     * @var bool $singletoned
      */
     protected static $singletoned = false;
 

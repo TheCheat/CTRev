@@ -17,7 +17,7 @@ class ajax_index {
 
     /**
      * Заполнено ли поле?
-     * @var bool
+     * @var bool $pattern_filled
      */
     protected $pattern_filled = true;
 
@@ -279,7 +279,6 @@ class ajax_index {
     /**
      * Проверка и сборка шаблона для формы
      * @param int $id ID шаблона
-     * @param array $data проверяемые данные
      * @return null 
      */
     protected function check_pattern($id) {

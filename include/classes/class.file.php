@@ -7,7 +7,6 @@
  * @link 	  	http://ctrev.cyber-tm.ru/
  * @copyright         	(c) 2008-2012, Cyber-Team
  * @author 	  	The Cheat <cybertmdev@gmail.com>
- * @package             file
  * @name           	Работа с файлами. Базовые функции, расширять плагинами не нужно.
  * @version           	1.00
  */
@@ -18,25 +17,24 @@ final class file {
 
     /**
      * Временный путь для сортировки
-     * @var string
+     * @var string $tmp_path
      */
     private $tmp_path = '';
 
     /**
      * Необходимо перекешировать?
-     * @var bool
+     * @var bool $recache
      */
     private $recache = false;
 
     /**
      * Массив кешированных результатов is_writable
-     * @var array
+     * @var array $cached
      */
     private $cached = null;
 
     /**
-     * Кеш-файл
-     * @const string cachefile
+     * @const cachefile кеш-файл
      */
 
     const cachefile = 'writable';
@@ -222,6 +220,7 @@ final class file {
     /**
      * Запись файла
      * @param string $content содержимое
+     * @param string $path путь записи от корня
      * @return bool статус записи
      */
     public function write_file($content, $path) {
@@ -251,7 +250,7 @@ final class file {
 
     /**
      * Объект данного класса
-     * @var file
+     * @var file $o
      */
     private static $o = null;
 

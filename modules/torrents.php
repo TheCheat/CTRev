@@ -17,19 +17,19 @@ class torrents {
 
     /**
      * Заголовок модуля
-     * @var string
+     * @var string $title
      */
     public $title = "";
 
     /**
      * Объект категорий
-     * @var categories
+     * @var categories $cats
      */
     protected $cats = null;
 
     /**
      * Список статусов торрента(имя=>banned)
-     * @var array
+     * @var array $status
      */
     public static $status = array(
         'checked' => 0,
@@ -45,19 +45,18 @@ class torrents {
 
     /**
      * Макс. ширина для превью скриншота
-     * @var int
+     * @var int $scr_width
      */
     protected $scr_width = 150;
 
     /**
      * Макс. высота для превью скриншота
-     * @var int
+     * @var int $scr_height
      */
     protected $scr_height = 150;
 
     /**
-     * Префикс в имени скриншота, хранимого на сервере
-     * @const string image_prefix
+     * @const image_prefix префикс в имени скриншота, хранимого на сервере
      */
 
     const image_prefix = "i";
@@ -796,7 +795,7 @@ class torrents_ajax {
 
     /**
      * Имя блока для отображения
-     * @var string
+     * @var string $block_name
      */
     protected $block_name = "torrents_simple";
 

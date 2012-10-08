@@ -7,7 +7,6 @@
  * @link 	  	http://ctrev.cyber-tm.ru/
  * @copyright 	        (c) 2008-2012, Cyber-Team
  * @author 	  	The Cheat <cybertmdev@gmail.com>
- * @package             file
  * @name           	Методы обработки изображений
  * @version   	        1.00
  */
@@ -18,43 +17,43 @@ class image {
 
     /**
      * Ширина превью
-     * @var int
+     * @var int $preview_width
      */
     protected $preview_width = 0;
 
     /**
      * Высота превью
-     * @var int
+     * @var int $preview_height
      */
     protected $preview_height = 0;
 
     /**
      * Стандартный размер букв
-     * @var int
+     * @var int $size_def
      */
     protected $size_def = 23;
 
     /**
      * Максимальный размер букв
-     * @var int
+     * @var int $size_max
      */
     protected $size_max = 23;
 
     /**
      * Минимальный размер букв
-     * @var int
+     * @var int $size_min
      */
     protected $size_min = 15;
 
     /**
      * Минимальный цвет букв
-     * @var color
+     * @var color $color_from
      */
     protected $color_from = 0x000000;
 
     /**
      * Максимальный цвет букв
-     * @var color
+     * @var color $color_to
      */
     protected $color_to = 0x333333;
 

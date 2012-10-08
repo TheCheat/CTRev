@@ -17,7 +17,7 @@ final class allowed {
 
     /**
      * Разрешённые модули 
-     * @var array
+     * @var array $allowed
      */
     private $allowed = array(
         "acp_modules" => array("bans",
@@ -55,7 +55,7 @@ final class allowed {
 
     /**
      * Разрешённые классы
-     * @var array
+     * @var array $classes
      */
     private $classes = array(
         "cache",
@@ -148,7 +148,7 @@ final class allowed {
     
     /**
      * Объект данного класса
-     * @var allowed
+     * @var allowed $o
      */
     protected static $o = null;
 

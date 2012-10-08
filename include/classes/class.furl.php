@@ -20,13 +20,13 @@ final class furl extends pluginable_object {
 
     /**
      * Запретить переадресации?
-     * @var bool
+     * @var bool $denied_locations
      */
     private $denied_locations = false;
 
     /**
      * Правила правильного расположения параметров
-     * @var array
+     * @var array $resort
      */
     protected $resort = array(
         'news' => array(
@@ -72,7 +72,7 @@ final class furl extends pluginable_object {
 
     /**
      * Постфиксы в ЧПУ
-     * @var array
+     * @var array $postfixes
      */
     protected $postfixes = array(
         'torrents' => array(
@@ -82,7 +82,7 @@ final class furl extends pluginable_object {
 
     /**
      * Замена для модулей при отключенном ЧПУ
-     * @var array
+     * @var array $rmodules
      */
     protected $rmodules = array(
         'polls' => 'polls_manage',
@@ -94,7 +94,7 @@ final class furl extends pluginable_object {
 
     /**
      * Проверка для метода location
-     * @var array
+     * @var array $forlocation
      */
     private $forlocation = array();
 
@@ -468,7 +468,7 @@ final class furl extends pluginable_object {
      * ключ slashes экранирует результат для JavaScript, иначе & заменяется на &amp;
      * @param bool $page является ли указанный модуль ссылкой на документ?
      * @param bool $no_end нужно ли в конец добавлять .html/index.html?
-     * @param bool $nobaseurl не добавлять в начала $BASEURL
+     * @param bool $nobaseurl не добавлять в начало $BASEURL
      * @return string ЧПУ
      */
     public function construct($module, $params = array(), $page = false, $no_end = false, $nobaseurl = false) {
@@ -591,13 +591,13 @@ final class furl extends pluginable_object {
 
     /**
      * Объект данного класса
-     * @var furl
+     * @var furl $o
      */
     private static $o = null;
 
     /**
      * Переменная для создания объекта только через функцию o
-     * @var bool
+     * @var bool $singletoned
      */
     protected static $singletoned = false;
 

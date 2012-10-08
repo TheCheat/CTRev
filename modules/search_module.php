@@ -17,7 +17,7 @@ class search_module {
 
     /**
      * Поля сортировки
-     * @var array
+     * @var array $orderby_types
      */
     protected $orderby_types = array(
         "posted_time",
@@ -33,7 +33,7 @@ class search_module {
 
     /**
      * Заголовок модуля
-     * @var string
+     * @var string $title
      */
     public $title = "";
 
@@ -173,7 +173,7 @@ class search_module {
         else
             $orderby = "";
         if (!$where)
-            mess('search_nothing_searching');
+            message('search_nothing_searching');
         if ($category && is_array($category)) {
             /* @var $cats categories */
             $cats = n("categories");
@@ -222,7 +222,7 @@ class search_module_ajax {
 
     /**
      * Поля сортировки
-     * @var array
+     * @var array $orderby
      */
     protected $orderby = array(
         "username",
@@ -342,7 +342,7 @@ class search_module_ajax {
         }
 
         if (!$inadmin && !$where)
-            mess('nothing_selected');
+            message('nothing_selected');
         if ($orderby) {
             $sort = explode(",", $orderby);
             $c = count($sort);

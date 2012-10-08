@@ -17,7 +17,7 @@ class cats_man {
     
     /**
      * Объект категорий
-     * @var categories
+     * @var categories $cats
      */
     private $cats = null;
 

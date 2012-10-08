@@ -36,7 +36,7 @@ class EngineException extends Exception {
 
     /**
      * Переменные
-     * @var array
+     * @var array $vars
      */
     protected $vars = array();
 
@@ -85,22 +85,41 @@ class EngineException extends Exception {
         if ($eajax)
             die($this->getEMessage());
         else
-            mess($this->getMessage(), $this->getVars());
+            message($this->getMessage(), $this->getVars());
     }
 
 }
 
-// пустой класс
+/**
+ * @usage пустой класс
+ */
 class empty_class {
 
+    /**
+     * Вызов произовльного метода
+     * @param mixed $v1 параметр 1
+     * @param mixed $v2 параметр 2
+     * @return null
+     */
     public function __call($v1, $v2) {
         
     }
 
+    /**
+     * Получение произовльной переменной
+     * @param string $v1 имя переменной
+     * @return null 
+     */
     public function __get($v1) {
         
     }
 
+    /**
+     * Установка значения произвольной переменной
+     * @param string $v1 имя переменной
+     * @param mixed $v2 значение
+     * @return null 
+     */
     public function __set($v1, $v2) {
         
     }

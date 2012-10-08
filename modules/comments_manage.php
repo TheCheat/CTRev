@@ -17,7 +17,7 @@ class comments_manage {
     
     /**
      * Объект комментариев
-     * @var comments
+     * @var comments $comments
      */
     protected $comments = null;
 

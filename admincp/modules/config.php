@@ -15,8 +15,7 @@ if (!defined('INSITE'))
 
 class config_man extends pluginable_object {
     /**
-     * Префикс полей конфига
-     * @const string config_prefix
+     * @const config_prefix префикс полей конфига
      */
 
     const config_prefix = 'config_';

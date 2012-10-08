@@ -17,13 +17,13 @@ final class cache {
 
     /**
      * Статус кеш-системы
-     * @var bool
+     * @var bool $state
      */
     private $state = true;
 
     /**
      * Кешируемые файлы
-     * @var array
+     * @var array $cache_files
      */
     private $cache_files = array();
 
@@ -35,7 +35,7 @@ final class cache {
 
     /**
      * Время кеширования по-умолчанию
-     * @var int
+     * @var int $time
      */
     private $time = 86400;
 
@@ -166,7 +166,7 @@ final class cache {
 
     /**
      * Объект данного класса
-     * @var cache
+     * @var cache $o
      */
     private static $o = null;
 

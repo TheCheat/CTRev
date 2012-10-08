@@ -38,7 +38,7 @@
 class Config_File {
 	/**#@+
 	 * Options
-	 * @var boolean
+	 * @var boolean $overwrite
 	 */
 	/**
 	 * Controls whether variables with the same name overwrite each other.

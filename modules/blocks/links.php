@@ -17,7 +17,7 @@ class links_block {
 
     /**
      * Настройки блока
-     * @var array
+     * @var array $settings
      */
     public $settings = array(
         "links[string]" => "string");

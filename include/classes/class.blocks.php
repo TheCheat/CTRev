@@ -15,40 +15,40 @@ if (!defined('INSITE'))
 
 final class blocks {
     /**
-     * @const allblock - общий шаблон для блоков, в случае отсутсвия иных
+     * @const allblock общий шаблон для блоков, в случае отсутсвия иных
      */
 
     const allblock = "all_blocks";
     /**
-     * @const blocks_path - путь к блокам в теме(без слеша в конце и в начале)
+     * @const blocks_path путь к блокам в теме(без слеша в конце и в начале)
      */
     const blocks_path = "blocks";
     /**
-     * @const blocks_standart - постфикс к стандартному блоку
+     * @const blocks_standart постфикс к стандартному блоку
      */
     const block_standart = "_block_standart";
 
     /**
      * Сохранённый массив всех блоков
-     * @var array
+     * @var array $blocks
      */
     private $blocks = array();
 
     /**
      * Массив настроек
-     * @var array
+     * @var array $settings
      */
     private $settings = array();
 
     /**
      * Загруженный модуль
-     * @var string
+     * @var string $module
      */
     private static $module = "";
 
     /**
      * Статус блочной системы
-     * @var bool
+     * @var bool $state
      */
     private $state = true;
 
@@ -138,7 +138,7 @@ final class blocks {
         try {
             $content = plugins::o()->call_init($object);
         } catch (EngineException $e) {
-            mess($e->getEMessage(), null, "error", false);
+            message($e->getEMessage(), null, "error", false);
         }
         if (!$content)
             $content = ob_get_contents();

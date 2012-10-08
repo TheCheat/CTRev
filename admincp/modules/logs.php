@@ -17,7 +17,7 @@ class logs_man {
 
     /**
      * Типы логов
-     * @var array
+     * @var array $types
      */
     protected $types = array('system',
         'admin',
@@ -26,7 +26,7 @@ class logs_man {
 
     /**
      * Сортировка
-     * @var array
+     * @var array $orderby
      */
     protected $orderby = array(
         'subject',

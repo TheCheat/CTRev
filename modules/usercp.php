@@ -17,13 +17,13 @@ class usercp {
 
     /**
      * Заголовок модуля
-     * @var string
+     * @var string $title
      */
     public $title = "";
 
     /**
      * Верхнее меню панели
-     * @var array
+     * @var array $menu
      */
     protected $menu = array(
         "index",

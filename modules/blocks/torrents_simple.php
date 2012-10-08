@@ -17,7 +17,7 @@ class torrents_simple_block {
 
     /**
      * Настройки блока
-     * @var array
+     * @var array $settings
      */
     public $settings = array(
         "cats[string]" => "string",
@@ -27,7 +27,7 @@ class torrents_simple_block {
 
     /**
      * Языковой файл для настроек
-     * @var string
+     * @var string $settings_lang
      */
     public $settings_lang = "torrents";
 

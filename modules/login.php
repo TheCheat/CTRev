@@ -17,7 +17,7 @@ class login {
 
     /**
      * Заголовок модуля
-     * @var string
+     * @var string $title
      */
     public $title = "";
 

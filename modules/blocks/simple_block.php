@@ -20,7 +20,7 @@ class simple_block_block {
 
     /**
      * Настройки блока
-     * @var array
+     * @var array $settings
      */
     public $settings = array(
         "par1" => "string", // простой параметр-строка
@@ -42,13 +42,13 @@ class simple_block_block {
      * blocks_[имя файла]_settings_[имя параметра]_[значение]
      * для описания под значениями:
      * blocks_[имя файла]_settings_[имя параметра]_descr
-     * @var string
+     * @var string $settings_lang
      */
     public $settings_lang = "main";
 
     /**
      * Настройки по-умолчанию
-     * @var array
+     * @var array $defaults
      */
     public $defaults = array("par1" => "simple string",
         "par1t" => "Long, long, long text, with [b]BOLD[/b] word.",

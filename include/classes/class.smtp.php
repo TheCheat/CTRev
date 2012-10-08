@@ -17,61 +17,61 @@ final class smtp {
 
     /**
      * Адрес SMTP сервера
-     * @var string
+     * @var string $smtpServer
      */
     public $smtpServer = 'you.smtp_server.com';
 
     /**
      * Порт SMTP сервера
-     * @var int
+     * @var int $port
      */
     public $port = 25;
 
     /**
      * Таймаут
-     * @var int
+     * @var int $timeout
      */
     public $timeout = 45;
 
     /**
      * Имя STMP пользователя
-     * @var string
+     * @var string $username
      */
     public $username = 'address@you_domain.com';
 
     /**
      * Пароль SMTP пользователя
-     * @var string
+     * @var string $password
      */
     public $password = 'YouPassword';
 
     /**
      * Переход на новую линию
-     * @var string
+     * @var string $newline
      */
     public $newline = "\r\n";
 
     /**
      * Домен сайта
-     * @var string
+     * @var string $localdomain
      */
     public $localdomain = 'you_domain.com';
 
     /**
      * Кодировка
-     * @var string
+     * @var string $charset
      */
     public $charset = 'utf-8';
 
     /**
      * Энкодинг содержимого
-     * @var bool
+     * @var bool $contentTransferEncoding
      */
     public $contentTransferEncoding = false;
 
     /**
      * Окончательная ошибка
-     * @var string
+     * @var string $endError
      */
     public $endError = '';
     // Промежуточные переменные
@@ -88,6 +88,7 @@ final class smtp {
      * @param string $to конечный адресат
      * @param string $subject тема сообщения
      * @param string $message сообщение
+     * @param array $params массив параметров
      * @return bool true, если успешно подключился к серверу
      */
     public function __construct($to, $subject, $message, $params = array()) {

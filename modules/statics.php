@@ -17,7 +17,7 @@ class statics {
 
     /**
      * Заголовок стат. страницы
-     * @var string
+     * @var string $title
      */
     public $title = '';
 

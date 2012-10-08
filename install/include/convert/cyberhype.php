@@ -22,13 +22,13 @@ class get_convert {
 
     /**
      * Конвертируемая база данных
-     * @var string
+     * @var string $db
      */
     private $db = 'cyberhype';
 
     /**
      * Сопоставление групп
-     * @var array
+     * @var array $groups
      */
     private $groups = array();
 

@@ -17,7 +17,7 @@ class blocks_man {
 
     /**
      * Типы блоков
-     * @var array
+     * @var array $types
      */
     public static $types = array('left', 'top', 'bottom', 'right');
 

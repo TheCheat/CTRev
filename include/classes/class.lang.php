@@ -15,40 +15,39 @@ if (!defined('INSITE'))
 
 final class lang {
     /**
-     * Префикс для сплиттера
-     * @const string presplitter
+     * @const presplitter префикс для сплиттера
      */
 
     const presplitter = '{lang_splitted}';
 
     /**
      * Дирректория для языка
-     * @var string
+     * @var string $folder
      */
     private $folder = '';
 
     /**
      * Подключённые языки
-     * @var array
+     * @var array $included
      */
     private $included = array();
 
     /**
      * Языковые переменные
      * @tutorial protected, ибо предполагается, что неизменно в процессе работы. 
-     * @var array
+     * @var array $vars
      */
     private $vars = array();
 
     /**
      * Последний используемый язык
-     * @var string
+     * @var string $last
      */
     private $last = null;
 
     /**
      * Соединяемые языковые файлы
-     * @var array
+     * @var array $binding
      */
     private $binding = array();
 
@@ -216,7 +215,7 @@ final class lang {
 
     /**
      * Объект данного класса
-     * @var lang
+     * @var lang $o
      */
     private static $o = null;
 

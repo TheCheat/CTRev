@@ -17,13 +17,13 @@ class categories {
 
     /**
      * Массив категорий
-     * @var array
+     * @var array $c
      */
     protected static $c = null;
 
     /**
      * Данный тип категорий
-     * @var type 
+     * @var type $curtype 
      */
     protected $curtype = "torrents";
 

@@ -17,7 +17,7 @@ class messages {
 
     /**
      * Заголовок модуля
-     * @var string
+     * @var string $title
      */
     public $title = "";
 
@@ -175,6 +175,7 @@ class messages_ajax {
     /**
      * Просмотр ЛС
      * @param bool $out если true - исходящие, иначе - входящие
+     * @param bool $sended отправлено?
      * @return null
      * @throws EngineException
      */
@@ -294,7 +295,7 @@ class messages_ajax {
 
     /**
      * Функция удаления ЛС
-     * @param int $uid ID пользователя
+     * @param int $id ID пользователя
      * @return null
      * @throws EngineException
      */

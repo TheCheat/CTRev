@@ -1,5 +1,16 @@
 <?php
 
+/**
+ * Project:            	CTRev
+ * File:                php_config.php
+ *
+ * @link 	  	http://ctrev.cyber-tm.ru/
+ * @copyright         	(c) 2008-2012, Cyber-Team
+ * @author 	  	The Cheat <cybertmdev@gmail.com>
+ * @name 		Насройка PHP
+ * @version           	1.00
+ */
+
 define('ROOT', dirname(dirname(dirname(__FILE__))) . "/");
 require_once ROOT . 'include/system/config_global.php';
 if (IN_DEVELOPMENT) {

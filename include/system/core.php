@@ -1,17 +1,25 @@
 <?php
 
-if (!defined('INSITE'))
-    die('Remote access denied!');
-
 /**
- * Ниже будет реализовано в следующих версиях уже после релиза:
- * @todo recaptcha, массовая рассылка почты, управление странами,
+ * Project:            	CTRev
+ * File:                core.php
+ *
+ * @link 	  	http://ctrev.cyber-tm.ru/
+ * @copyright         	(c) 2008-2012, Cyber-Team
+ * @author 	  	The Cheat <cybertmdev@gmail.com>
+ * @name 		"Ядро" системы
+ * @version           	1.00
+ * @todo                recaptcha, массовая рассылка почты, управление странами,
  * магазин бонусов, проверка на отключенные модули вне их самих, 
  * отключение нек. модулей в папке modules(напр. messages, statics, chat, news, 
  * search_module и class.search в т.ч.) и части модулей(напр. invites, 
  * bookmarks(в т.ч. и кнопки) в usercp)
- * @todo апдейтер, магазин плагинов
+ * @todo                апдейтер, магазин плагинов
  */
+
+if (!defined('INSITE'))
+    die('Remote access denied!');
+
 // $preloaded = array("cache", "db", "users", "lang");
 
 require_once (ROOT . 'include/system/allowed.php');

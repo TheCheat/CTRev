@@ -18,13 +18,13 @@ class mailer extends pluginable_object {
 
     /**
      * Статус системы подписок
-     * @var bool
+     * @var bool $state
      */
     protected $state = true;
 
     /**
      * Допустимые интервалы подписок
-     * @var array
+     * @var array $allowed_interval
      */
     public static $allowed_interval = array(
         '0' => "no",
@@ -34,13 +34,13 @@ class mailer extends pluginable_object {
 
     /**
      * Тип подписок
-     * @var string
+     * @var string $type
      */
     protected $type = 'torrents';
 
     /**
      * Допустимые типы
-     * @var array
+     * @var array $allowed_types
      */
     protected $allowed_types = array(
         'torrents',

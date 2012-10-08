@@ -1,10 +1,22 @@
 <?php
 
+/**
+ * Project:            	CTRev
+ * File:                functions.php
+ *
+ * @link 	  	http://ctrev.cyber-tm.ru/
+ * @copyright         	(c) 2008-2012, Cyber-Team
+ * @author 	  	The Cheat <cybertmdev@gmail.com>
+ * @name 		Функции, которые не нуждаются в помещении в класс
+ * @version           	1.00
+ */
+
 if (!defined('INSITE'))
     die('Remote access denied!');
 
 /**
  * Пустая функция, для обозначения чего-то в будущем
+ * @return null
  */
 function fNULL() {
     
@@ -225,7 +237,7 @@ function strip_magic_quotes($arr) {
  * @param bool $only_box если параметр установлен на true, то выводится только message.tpl
  * @return null
  */
-function mess($lang_var, $vars = array(), $type = "error", $die = true, $title = false, $align = 'left', $no_image = false, $only_box = false) {
+function message($lang_var, $vars = array(), $type = "error", $die = true, $title = false, $align = 'left', $no_image = false, $only_box = false) {
     global $ajax;
     if (is_array($lang_var)) {
         if ($lang_var ['vars'])
@@ -278,7 +290,7 @@ function mess($lang_var, $vars = array(), $type = "error", $die = true, $title =
 
 /**
  * Функция вывода ошибки(именно ошибки типа fatal error, а не сообщения об ошибке,
- * которое выводится через функцию mess)
+ * которое выводится через функцию message)
  * @global bool $ajax
  * @param string|array $lang_var языковая переменная, в соответствии с коорой будет выводится на экран сообщение,
  * либо цельный текст, так же, может содержать в себе все остальные паремтры в качестве ассоциативного массива.
@@ -632,7 +644,7 @@ function array_value_append($array, $value, $what, $key = null) {
  * @return null
  */
 function disabled() {
-    mess('function_was_disabled_by_admin', null, "info", false);
+    message('function_was_disabled_by_admin', null, "info", false);
 }
 
 if (!function_exists('class_alias')) {
@@ -689,7 +701,7 @@ final class arr2obj {
 
     /**
      * Массив переменных
-     * @var array
+     * @var array $vars
      */
     private $vars = array();
 

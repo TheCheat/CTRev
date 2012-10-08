@@ -17,7 +17,7 @@ class polls_manage {
 
     /**
      * Заголовок модуля
-     * @var string
+     * @var string $title
      */
     public $title = "";
 
@@ -50,7 +50,7 @@ class polls_manage_ajax {
     
     /**
      * Объект опросов
-     * @var polls
+     * @var polls $polls
      */
     protected $polls = null;
 

@@ -18,7 +18,7 @@ final class PReturn extends Exception {
 
     /**
      * Возвращаемое значение
-     * @var mixed
+     * @var mixed $return
      */
     private $return = null;
 
@@ -52,19 +52,19 @@ abstract class pluginable_object {
 
     /**
      * Доп. методы
-     * @var array
+     * @var array $_methods
      */
     private $_methods = array();
 
     /**
      * Защищённые переменные
-     * @var array
+     * @var array $_pvars
      */
     private $_pvars = array();
 
     /**
      * Массив допустимых действий в конструкторе
-     * @var array
+     * @var array $_actions
      */
     private $_actions = array(
         "add_method",
@@ -219,19 +219,19 @@ final class plugins_manager {
 
     /**
      * Массив плагинов
-     * @var array
+     * @var array $plugins
      */
     private $plugins = array();
 
     /**
      * Объект плагиновой системы
-     * @var plugins
+     * @var plugins $p
      */
     private $p = null;
 
     /**
      * Массив спарсенных настроек
-     * @var array
+     * @var array $parsed
      */
     private $parsed = array();
 
@@ -441,25 +441,25 @@ class plugins_modifier {
 
     /**
      * Временная перменная для записи, чем заменяем
-     * @var string
+     * @var string $tmp_with
      */
     private $tmp_with = null;
 
     /**
      * Список заменённого в шаблонах
-     * @var string
+     * @var string $replaced
      */
     private $replaced = array();
 
     /**
      * Список заменённого в шаблоне
-     * @var string
+     * @var string $treplaced
      */
     private $treplaced = array();
 
     /**
      * Разрешить/запретить добавлять комментарий для замены
-     * @var bool
+     * @var bool $comment
      */
     private $comment = false;
 
@@ -624,61 +624,61 @@ final class plugins extends plugins_modifier {
 
     /**
      * Статус плагиновой системы
-     * @var bool
+     * @var bool $state
      */
     private $state = true;
 
     /**
      * Для классов, наследующих pluginable_object создаём копию и копируем её
-     * @var array
+     * @var array $pluginable
      */
     private $pluginable = array();
 
     /**
      * Алиасы классов инициализированы?
-     * @var bool
+     * @var bool $aliases_inited
      */
     private $aliases_inited = false;
 
     /**
      * Массивы данных
-     * @var array
+     * @var array $data
      */
     private $data = array();
 
     /**
      * Массивы хуков
-     * @var array
+     * @var array $hooks
      */
     private $hooks = array();
 
     /**
      * Добавление методов, модифицирование перменных в классе в конструкторе
-     * @var array
+     * @var array $preloaded
      */
     private $preloaded = array();
 
     /**
      * Массив переопределённых объектов
-     * @var array
+     * @var array $redefined
      */
     private $redefined = array();
 
     /**
      * Массив расширенных функций инициализации
-     * @var array
+     * @var array $init
      */
     private $init = array();
 
     /**
      * Данное имя плагина
-     * @var string
+     * @var string $current_plugin
      */
     private $current_plugin = null;
 
     /**
      * Управлятор плагинами
-     * @var plugins_manager
+     * @var plugins_manager $manager
      */
     public $manager = null;
 
@@ -964,7 +964,7 @@ final class plugins extends plugins_modifier {
 
     /**
      * Объект данного класса
-     * @var plugins
+     * @var plugins $o
      */
     private static $o = null;
 

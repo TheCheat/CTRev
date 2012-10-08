@@ -17,7 +17,7 @@ class styles_man {
 
     /**
      * Доступные папки
-     * @var array
+     * @var array $spaths
      */
     public static $spaths = array(
         TEMPLATES_PATH,
@@ -26,7 +26,7 @@ class styles_man {
 
     /**
      * Разрешённые типы файлов для шаблонов
-     * @var array
+     * @var array $allowed_types
      */
     protected $allowed_types = array(
         TEMPLATES_PATH => array('tpl', 'xtpl'),

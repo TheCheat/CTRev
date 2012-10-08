@@ -5,10 +5,10 @@
  * File:                index.php
  *
  * @link 	  	http://ctrev.cyber-tm.ru/
- * @copyright         	(c) 2009-2012, Cyber-Team
+ * @copyright         	(c) 2008-2012, Cyber-Team
  * @author 	  	The Cheat <cybertmdev@gmail.com>
  * @name 		Основной файл, загружающий модули АЦ
- * @version           	1.00b
+ * @version           	1.00
  */
 if (!defined('INSITE'))
     die("Remote access denied!");

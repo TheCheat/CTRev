@@ -17,7 +17,7 @@ final class cleanup extends pluginable_object {
 
     /**
      * Методы клинапа
-     * @var array
+     * @var array $methods
      */
     protected $methods = array(
         "sessions",

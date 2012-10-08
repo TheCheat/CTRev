@@ -7,7 +7,6 @@
  * @link 	  	http://ctrev.cyber-tm.ru/
  * @copyright         	(c) 2008-2012, Cyber-Team
  * @author 	  	The Cheat <cybertmdev@gmail.com>
- * @package             display
  * @name		Класс для вывода различных инпатов на экран
  * @version           	1.00
  */
@@ -18,7 +17,7 @@ class input {
 
     /**
      * Все месяца года на английском, для языковых переменных
-     * @var array
+     * @var array $months
      */
     public static $months = array(
         "january",
@@ -36,7 +35,7 @@ class input {
 
     /**
      * Доступные периоды
-     * @var array
+     * @var array $periods
      */
     protected static $periods = array(
         1 => "hour",
@@ -467,7 +466,7 @@ class input {
 
     /**
      * Объект данного класса
-     * @var input
+     * @var input $o
      */
     protected static $o = null;
 

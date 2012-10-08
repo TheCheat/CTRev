@@ -69,28 +69,28 @@ class Smarty {
     /**
      * The name of the directory where templates are located.
      *
-     * @var string
+     * @var string $template_dir
      */
     var $template_dir    =  'templates';
 
     /**
      * The directory where compiled templates are located.
      *
-     * @var string
+     * @var string $compile_dir
      */
     var $compile_dir     =  'templates_c';
 
     /**
      * The directory where config files are located.
      *
-     * @var string
+     * @var string $config_dir
      */
     var $config_dir      =  'configs';
 
     /**
      * An array of directories searched for plugins.
      *
-     * @var array
+     * @var array $plugins_dir
      */
     var $plugins_dir     =  array('plugins');
 
@@ -99,14 +99,14 @@ class Smarty {
      * when the page loads (make sure your browser allows unrequested
      * popup windows)
      *
-     * @var boolean
+     * @var boolean $debugging
      */
     var $debugging       =  false;
 
     /**
      * When set, smarty does uses this value as error_reporting-level.
      *
-     * @var integer
+     * @var integer $error_reporting
      */
     var $error_reporting  =  null;
 
@@ -114,7 +114,7 @@ class Smarty {
      * This is the path to the debug console template. If not set,
      * the default one will be used.
      *
-     * @var string
+     * @var string $debug_tpl
      */
     var $debug_tpl       =  '';
 
@@ -125,7 +125,7 @@ class Smarty {
      *  <li>URL => enable debugging when SMARTY_DEBUG is found in the URL.</li>
      * </ul>
      * @link http://www.foo.dom/index.php?SMARTY_DEBUG
-     * @var string
+     * @var string $debugging_ctrl
      */
     var $debugging_ctrl  =  'NONE';
 
@@ -135,7 +135,7 @@ class Smarty {
      * Typically you enable this during development, and disable for
      * production.
      *
-     * @var boolean
+     * @var boolean $compile_check
      */
     var $compile_check   =  true;
 
@@ -143,7 +143,7 @@ class Smarty {
      * This forces templates to compile every time. Useful for development
      * or debugging.
      *
-     * @var boolean
+     * @var boolean $force_compile
      */
     var $force_compile   =  false;
 
@@ -154,14 +154,14 @@ class Smarty {
      *  <li>1 = use class cache_lifetime value</li>
      *  <li>2 = use cache_lifetime in cache file</li>
      * </ul>
-     * @var integer
+     * @var integer $caching
      */
     var $caching         =  0;
 
     /**
      * The name of the directory for cache files.
      *
-     * @var string
+     * @var string $cache_dir
      */
     var $cache_dir       =  'cache';
 
@@ -172,7 +172,7 @@ class Smarty {
      *  <li>-1 = never expires</li>
      * </ul>
      *
-     * @var integer
+     * @var integer $cache_lifetime
      */
     var $cache_lifetime  =  3600;
 
@@ -182,7 +182,7 @@ class Smarty {
      * This way repeated hits to a cached page do not send the entire page to the
      * client every time.
      *
-     * @var boolean
+     * @var boolean $cache_modified_check
      */
     var $cache_modified_check = false;
 
@@ -196,7 +196,7 @@ class Smarty {
      *  <li>SMARTY_PHP_ALLOW    -> execute php tags</li>
      * </ul>
      *
-     * @var integer
+     * @var integer $php_handling
      */
     var $php_handling    =  SMARTY_PHP_PASSTHRU;
 
@@ -206,7 +206,7 @@ class Smarty {
      * untrusted parties are editing templates and you want a reasonable level
      * of security. (no direct execution of PHP in templates for example)
      *
-     * @var boolean
+     * @var boolean $security
      */
     var $security       =   false;
 
@@ -215,7 +215,7 @@ class Smarty {
      * is used only if {@link $security} is enabled. One directory per array
      * element.  {@link $template_dir} is in this list implicitly.
      *
-     * @var array
+     * @var array $secure_dir
      */
     var $secure_dir     =   array();
 
@@ -223,7 +223,7 @@ class Smarty {
      * These are the security settings for Smarty. They are used only when
      * {@link $security} is enabled.
      *
-     * @var array
+     * @var array $security_settings
      */
     var $security_settings  = array(
                                     'PHP_HANDLING'    => false,
@@ -243,21 +243,21 @@ class Smarty {
      * This is an array of directories where trusted php scripts reside.
      * {@link $security} is disabled during their inclusion/execution.
      *
-     * @var array
+     * @var array $trusted_dir
      */
     var $trusted_dir        = array();
 
     /**
      * The left delimiter used for the template tags.
      *
-     * @var string
+     * @var string $left_delimiter
      */
     var $left_delimiter  =  '{';
 
     /**
      * The right delimiter used for the template tags.
      *
-     * @var string
+     * @var string $right_delimiter
      */
     var $right_delimiter =  '}';
 
@@ -266,7 +266,7 @@ class Smarty {
      * variables_order in php.ini E = Environment, G = GET, P = POST,
      * C = Cookies, S = Server
      *
-     * @var string
+     * @var string $request_vars_order
      */
     var $request_vars_order    = 'EGPCS';
 
@@ -276,7 +276,7 @@ class Smarty {
      * request_use_auto_globals is true, then $request_vars_order has
      * no effect, but the php-ini-value "gpc_order"
      *
-     * @var boolean
+     * @var boolean $request_use_auto_globals
      */
     var $request_use_auto_globals      = true;
 
@@ -286,7 +286,7 @@ class Smarty {
      * Instead of creating separate sets of templates per language, you
      * set different compile_ids like 'en' and 'de'.
      *
-     * @var string
+     * @var string $compile_id
      */
     var $compile_id            = null;
 
@@ -295,7 +295,7 @@ class Smarty {
      * templates_c/ directories. sub directories better organized, but
      * may not work well with PHP safe mode enabled.
      *
-     * @var boolean
+     * @var boolean $use_sub_dirs
      *
      */
     var $use_sub_dirs          = false;
@@ -305,7 +305,7 @@ class Smarty {
      * Put each modifier in a separate array element in the order you want
      * them applied. example: <code>array('escape:"htmlall"');</code>
      *
-     * @var array
+     * @var array $default_modifiers
      */
     var $default_modifiers        = array();
 
@@ -319,7 +319,7 @@ class Smarty {
      * {include file="db:index.tpl"}
      * {include file="index.tpl"} {* will use default resource type *}
      *
-     * @var array
+     * @var array $default_resource_type
      */
     var $default_resource_type    = 'file';
 
@@ -338,7 +338,7 @@ class Smarty {
     var $autoload_filters = array();
 
     /**#@+
-     * @var boolean
+     * @var boolean $config_overwrite
      */
     /**
      * This tells if config file vars of the same name overwrite each other or not.
@@ -380,21 +380,21 @@ class Smarty {
      * The file that contains the compiler class. This can a full
      * pathname, or relative to the php_include path.
      *
-     * @var string
+     * @var string $compiler_file
      */
     var $compiler_file        =    'Smarty_Compiler.class.php';
 
     /**
      * The class used for compiling templates.
      *
-     * @var string
+     * @var string $compiler_class
      */
     var $compiler_class        =   'Smarty_Compiler';
 
     /**
      * The class used to load config vars.
      *
-     * @var string
+     * @var string $config_class
      */
     var $config_class          =   'Config_File';
 
@@ -406,7 +406,7 @@ class Smarty {
     /**
      * where assigned template vars are kept
      *
-     * @var array
+     * @var array $_tpl_vars
      */
     var $_tpl_vars             = array();
 
@@ -420,112 +420,112 @@ class Smarty {
     /**
      * keeps track of sections
      *
-     * @var array
+     * @var array $_sections
      */
     var $_sections             = array();
 
     /**
      * keeps track of foreach blocks
      *
-     * @var array
+     * @var array $_foreach
      */
     var $_foreach              = array();
 
     /**
      * keeps track of tag hierarchy
      *
-     * @var array
+     * @var array $_tag_stack
      */
     var $_tag_stack            = array();
 
     /**
      * configuration object
      *
-     * @var Config_file
+     * @var Config_file $_conf_obj
      */
     var $_conf_obj             = null;
 
     /**
      * loaded configuration settings
      *
-     * @var array
+     * @var array $_config
      */
     var $_config               = array(array('vars'  => array(), 'files' => array()));
 
     /**
      * md5 checksum of the string 'Smarty'
      *
-     * @var string
+     * @var string $_smarty_md5
      */
     var $_smarty_md5           = 'f8d698aea36fcbead2b9d5359ffca76f';
 
     /**
      * Smarty version number
      *
-     * @var string
+     * @var string $_version
      */
     var $_version              = '2.6.26';
 
     /**
      * current template inclusion depth
      *
-     * @var integer
+     * @var integer $_inclusion_depth
      */
     var $_inclusion_depth      = 0;
 
     /**
      * for different compiled templates
      *
-     * @var string
+     * @var string $_compile_id
      */
     var $_compile_id           = null;
 
     /**
      * text in URL to enable debug mode
      *
-     * @var string
+     * @var string $_smarty_debug_id
      */
     var $_smarty_debug_id      = 'SMARTY_DEBUG';
 
     /**
      * debugging information for debug console
      *
-     * @var array
+     * @var array $_smarty_debug_info
      */
     var $_smarty_debug_info    = array();
 
     /**
      * info that makes up a cache file
      *
-     * @var array
+     * @var array $_cache_info
      */
     var $_cache_info           = array();
 
     /**
      * default file permissions
      *
-     * @var integer
+     * @var integer $_file_perms
      */
     var $_file_perms           = 0644;
 
     /**
      * default dir permissions
      *
-     * @var integer
+     * @var integer $_dir_perms
      */
     var $_dir_perms               = 0771;
 
     /**
      * registered objects
      *
-     * @var array
+     * @var array $_reg_objects
      */
     var $_reg_objects           = array();
 
     /**
      * table keeping track of plugins
      *
-     * @var array
+     * @var array $_plugins
      */
     var $_plugins              = array(
                                        'modifier'      => array(),
@@ -542,14 +542,14 @@ class Smarty {
     /**
      * cache serials
      *
-     * @var array
+     * @var array $_cache_serials
      */
     var $_cache_serials = array();
 
     /**
      * name of optional cache include file
      *
-     * @var string
+     * @var string $_cache_include
      */
     var $_cache_include = null;
 
@@ -557,7 +557,7 @@ class Smarty {
      * indicate if the current code is used in a compiled
      * include
      *
-     * @var string
+     * @var string $_cache_including
      */
     var $_cache_including = false;
 

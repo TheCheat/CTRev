@@ -17,13 +17,13 @@ class user {
 
     /**
      * Заголовок модуля
-     * @var string
+     * @var string $title
      */
     public $title = "";
 
     /**
      * Массив эл-в меню
-     * @var array
+     * @var array $menu
      */
     protected $menu = array(
         "torrents",

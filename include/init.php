@@ -1,7 +1,16 @@
 <?php
 
 /**
- * @tutorial перед отправкой AJAX формы с input_form, необходимо первоначально вызвать make_tobbcode(); !
+ * Project:            	CTRev
+ * File:                init.php
+ *
+ * @link 	  	http://ctrev.cyber-tm.ru/
+ * @copyright         	(c) 2008-2012, Cyber-Team
+ * @author 	  	The Cheat <cybertmdev@gmail.com>
+ * @name 		Инициализация функций и модификаторов для Smarty,
+ * а так же защита от XSS
+ * @version           	1.00
+ * @tutorial            перед отправкой AJAX формы с input_form, необходимо первоначально вызвать make_tobbcode();
  */
 if (!defined('INSITE'))
     die('Remote access denied!');
@@ -91,10 +100,11 @@ tpl::o()->register_modifier("is_writable", array(
 tpl::o()->register_modifier('rnl', 'replace_newline');
 
 /**
- * Создание тега для atom:id(для торрентов)
- * @param int time - время постинга
- * @param string title - заголовок
- * @param int id - ID
+ * @tutorial Создание тега для atom:id(для торрентов)(atom_tag)
+ * params:
+ * int time время постинга
+ * string title заголовок
+ * int id ID
  */
 tpl::o()->register_function("atom_tag", "smarty_make_atom_tag");
 /*
@@ -102,54 +112,59 @@ tpl::o()->register_function("atom_tag", "smarty_make_atom_tag");
   display::o(),
   'parse_smarty_array')); */
 /**
- * Вывод статистики запросов 
+ * @tutorial Вывод статистики запросов(query_stat)
  */
 tpl::o()->register_function("query_stat", "query_stat");
 /**
- * Получение ключа формы 
- * @param int ajax - 2, если в AJAX, возвращается, как элемент объекта(напр. fk:'1',)
- * 1 - если в AJAX, возвращается, как часть строки запроса(напр. ?fk=1&)
- * иначе - если элемент формы(напр. <input type='hidden' value='1' name='fk'>)
+ * @tutorial Получение ключа формы(fk)
+ * params:
+ * int ajax 2, если в AJAX, возвращается, как элемент объекта(напр. fk:'1',)
+ * 1 если в AJAX, возвращается, как часть строки запроса(напр. ?fk=1&)
+ * иначе если элемент формы(напр. <input type='hidden' value='1' name='fk'>)
  * по-умолчанию возвращается лишь значение ключа
- * @param string var - имя ключа
+ * string var имя ключа
  */
 tpl::o()->register_function("fk", "get_formkey");
 /**
- * Отображение блоков
- * @param string pos - положение
+ * @tutorial Отображение блоков(display_blocks)
+ * params:
+ * string pos положение
  */
 tpl::o()->register_function("display_blocks", array(
     $blocks,
     'display'));
 /**
- * Вывод сообщения на экран
- * @param string lang_var - языковая переменная, в соответствии с которой будет выводится на экран сообщение,
+ * @tutorial Вывод сообщения на экран(message)
+ * params:
+ * string lang_var языковая переменная, в соответствии с которой будет выводится на экран сообщение,
  * либо цельный текст.
- * @param array vars - массив значений, включаемых в сообщение, работают, блягодаря функции vsprintf
- * @param string type - тип выводимого значения, в зависимости от него будут выбраны различные стили вывода сообщения(error|success|info)
- * @param bool die - если параметр установлен на true, то сразу после выведения сообщения, скрипт останавливается
- * @param string title - заголовок, выше сообщения
- * @param string align - расположение текста в сообщении(left|right|center)
- * @param bool no_image - если параметр установлен на true, то статусная картинка не выводится
- * @param bool only_box - если параметр установлен на true, то выводится только message.tpl
+ * array vars массив значений, включаемых в сообщение, работают, блягодаря функции vsprintf
+ * string type тип выводимого значения, в зависимости от него будут выбраны различные стили вывода сообщения(error|success|info)
+ * bool die если параметр установлен на true, то сразу после выведения сообщения, скрипт останавливается
+ * string title заголовок, выше сообщения
+ * string align расположение текста в сообщении(left|right|center)
+ * bool no_image если параметр установлен на true, то статусная картинка не выводится
+ * bool only_box если параметр установлен на true, то выводится только message.tpl
  */
-tpl::o()->register_function('message', 'mess');
+tpl::o()->register_function('message', 'message');
 /**
- * BBCode форма для ввода текста 
- * @param string name - имя формы
- * @param string text - текст формы
+ * @tutorial BBCode форма для ввода текста(input_form)
+ * params:
+ * string name имя формы
+ * string text текст формы
  */
 tpl::o()->register_function("input_form", array(
     $bbcodes,
     'input_form'));
 /**
- * Генерация ЧПУ * 
- * @param string module - имя модуля
- * @param bool page - является ли указанный модуль ссылкой на документ?
- * @param bool no_end - нужно ли в конец добавлять .html/index.html?
- * @param bool nobaseurl - не добавлять в начала $BASEURL
- * @param bool slashes - экранирует результат для JavaScript, иначе & заменяется на &amp;
- * @param mixed параметры ссылки
+ * @tutorial Генерация ЧПУ(gen_link)
+ * params:
+ * string module имя модуля
+ * bool page является ли указанный модуль ссылкой на документ?
+ * bool no_end нужно ли в конец добавлять .html/index.html?
+ * bool nobaseurl не добавлять в начало $BASEURL
+ * bool slashes экранирует результат для JavaScript, иначе & заменяется на &amp;
+ * mixed параметры ссылки
  */
 tpl::o()->register_function("gen_link", array(
     furl::o(),
@@ -158,9 +173,10 @@ tpl::o()->register_modifier("genlink", array(
     furl::o(),
     'construct'));
 /**
- * Форматирование времени UNIXTIME в человекопонятный формат
- * @param int time - время
- * @param string format - формат вывода(ymd или ymdhis, к примеру)
+ * @tutorial Форматирование времени UNIXTIME в человекопонятный формат(date)
+ * params:
+ * int time время
+ * string format формат вывода(ymd или ymdhis, к примеру)
  */
 tpl::o()->register_function("date", array(
     display::o(),
@@ -169,108 +185,118 @@ tpl::o()->register_modifier("date_time", array(
     display::o(),
     'date'));
 /**
- * Поле выбора даты
- * @param string name - префикс полей
- * @param string type - тип формы(ymd, ymdhis, к примеру)
- * @param int time - данное время в формате UNIXTIME
- * @param bool fromnull - начинать с 0?
+ * @tutorial Поле выбора даты(select_date)
+ * params:
+ * string name префикс полей
+ * string type тип формы(ymd, ymdhis, к примеру)
+ * int time данное время в формате UNIXTIME
+ * bool fromnull начинать с 0?
  */
 tpl::o()->register_function("select_date", array(
     $input,
     "select_date"));
 
 /**
- * Поле выбора часового пояса
- * @param string name - имя поля
- * @param float current - текущее значение
+ * @tutorial Поле выбора часового пояса(select_gmt)
+ * params:
+ * string name имя поля
+ * float current текущее значение
  */
 tpl::o()->register_function("select_gmt", array(
     $input,
     'select_gmt'));
 /**
- * Поле выбора страны
- * @param array country - выводимая страна(не для списка)(вкл. в себя name и image)
- * @param string name - имя поля
- * @param int current - текущее значение
+ * @tutorial Поле выбора страны(select_countries)
+ * params:
+ * array country выводимая страна(не для списка)(вкл. в себя name и image)
+ * string name имя поля
+ * int current текущее значение
  */
 tpl::o()->register_function("select_countries", array(
     $input,
     'select_countries'));
 /**
- * Получение кол-во используемой памяти 
+ * @tutorial Получение кол-во используемой памяти(get_memory_usage)
  */
 tpl::o()->register_function("get_memory_usage", "smarty_get_memory_usage");
 
 /**
- * Поле выбора дирректорий
- * @param string name - имя поля
- * @param string folder - имя дирректории в корне
- * @param int current - текущее значение
- * @param bool onlydir - только дирректории?
- * @param bool empty - пустое значение?
- * @param string regexp - рег. выражение
- * @param int match - номер группы рег. выражения
+ * @tutorial Поле выбора дирректорий(select_folder)
+ * params:
+ * string name имя поля
+ * string folder имя дирректории в корне
+ * int current текущее значение
+ * bool onlydir только дирректории?
+ * bool empty пустое значение?
+ * string regexp рег. выражение
+ * int match номер группы рег. выражения
  */
 tpl::o()->register_function("select_folder", array(
     $input,
     'select_folder'));
 /**
- * Поле выбора групп
- * @param string name - имя поля
- * @param int current - текущее значение
- * @param bool guest - в т.ч. и гость?
- * @param bool not_null - без пустого значение?
- * @param bool multiple - множественная выборка?
+ * @tutorial Поле выбора групп(select_groups)
+ * params:
+ * string name имя поля
+ * int current текущее значение
+ * bool guest в т.ч. и гость?
+ * bool not_null без пустого значение?
+ * bool multiple множественная выборка?
  */
 tpl::o()->register_function("select_groups", array(
     $input,
     'select_groups'));
 /**
- * Поле выбора интервала подписок
- * @param string name - имя поля
- * @param int current - текущее значение
+ * @tutorial Поле выбора интервала подписок(select_mailer)
+ * params:
+ * string name имя поля
+ * int current текущее значение
  */
 tpl::o()->register_function("select_mailer", array(
     $input,
     'select_mailer'));
 /**
- * Поле выбора периода
- * @param string name - имя поля
- * @param int current - текущее значение
+ * @tutorial Поле выбора периода(select_periods)
+ * params:
+ * string name имя поля
+ * int current текущее значение
  */
 tpl::o()->register_function("select_periods", array(
     $input,
     'select_periods'));
 /**
- * Генератор пароля
- * @param string pname - имя поля пароля
- * @param string paname - имя поля повтора пароля 
+ * @tutorial Генератор пароля(passgen)
+ * params:
+ * string pname имя поля пароля
+ * string paname имя поля повтора пароля 
  */
 tpl::o()->register_function("passgen", 'smarty_passgen');
 /**
- * Поле выбора категорий
- * @param string name - имя поля
- * @param int size - размер поля(если больше 1 - множественная выборка)
- * @param int current - текущее значение
- * @param bool not_null - без пустого значение?
+ * @tutorial Поле выбора категорий(select_categories)
+ * params:
+ * string name имя поля
+ * int size размер поля(если больше 1 множественная выборка)
+ * int current текущее значение
+ * bool not_null без пустого значение?
  */
 tpl::o()->register_function("select_categories", array(
     $input,
     'select_categories'));
 /**
- * Простой селектор
- * @param string name - имя поля
- * @param array values - массив значений
- * @param bool keyed - ключи в качестве значения опций?
- * @param mixed current - текущее значение
- * @param int size - размер поля(если больше 1 - множественная выборка)
- * @param bool empty - пустое значение?
+ * @tutorial Простой селектор(simple_selector)
+ * params:
+ * string name имя поля
+ * array values массив значений
+ * bool keyed ключи в качестве значения опций?
+ * mixed current текущее значение
+ * int size размер поля(если больше 1 множественная выборка)
+ * bool empty пустое значение?
  */
 tpl::o()->register_function("simple_selector", array(
     $input,
     'simple_selector'));
 /**
- * Создание настроек для модуля
+ * @tutorial Создание настроек для модуля(modsettings_create)
  */
 tpl::o()->register_function("modsettings_create", array(
     modsettings::o(),
@@ -305,11 +331,9 @@ if (function_exists("get_magic_quotes_gpc") && get_magic_quotes_gpc()) {
     }
 }
 // INCLUDE BACK-END
-if (XSS_PROTECT) {
-    $POST = $_POST;
-    $GET = $_GET;
-    $_POST = xss_array_protect($_POST);
-    $_GET = xss_array_protect($_GET);
-    $_REQUEST = $_POST + $_GET;
-}
+$POST = $_POST;
+$GET = $_GET;
+$_POST = xss_array_protect($_POST);
+$_GET = xss_array_protect($_GET);
+$_REQUEST = $_POST + $_GET;
 ?>

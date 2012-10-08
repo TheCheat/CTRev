@@ -20,7 +20,7 @@ class users_checker {
      * @tutorial protected, ибо предполагается, что неизменно в процессе работы. 
      * Ибо это данные из БД и для изменения юзать соотв. функции {@link db}.
      * Если необходимо какое-то доп. поле, его можно получить через groups
-     * @var array
+     * @var array $perms
      */
     protected $perms = array();
 
@@ -29,19 +29,19 @@ class users_checker {
      * @tutorial protected, ибо предполагается, что неизменно в процессе работы. 
      * Ибо это данные из БД и для изменения юзать соотв. функции {@link db}.
      * Если необходимо временно переопределить, юзаем {@see users::set_tmpvars()}
-     * @var array
+     * @var array $vars
      */
     protected $vars = array();
 
     /**
      * Массив всех групп юзерей
-     * @var array
+     * @var array $groups
      */
     protected $groups = array();
 
     /**
      * Режим администратора(проверка на права и formkey не действует)
-     * @var bool
+     * @var bool $admin_mode
      */
     protected $admin_mode = false;
 
@@ -49,13 +49,13 @@ class users_checker {
      * Столбцы для автоапдейта групп
      * В таблице groups и users должны иметь вид:
      * столбец_count
-     * @var array
+     * @var array $update_columns
      */
     protected $update_columns = array("torrents", "karma", "bonus");
 
     /**
      * Целочисленные настройки пользователя
-     * @var array
+     * @var array $isettings
      */
     protected $isettings = array("icq", "country", "show_age");
 
@@ -67,7 +67,8 @@ class users_checker {
 
     /**
      * Генерация хеша пароля
-     * @param array $row массив пользовательских параметров
+     * @param string $password пароль пользователя
+     * @param string $salt соль пользователя
      * @return string пассхеш
      */
     public function generate_pwd_hash($password, $salt) {
@@ -429,32 +430,31 @@ class users_getter extends users_checker {
 
     /**
      * Группа пользователя по-умолчанию
-     * @var int
+     * @var int $def_group
      */
     protected $def_group = 0;
 
     /**
      * Группа гостя по-умолчанию
-     * @var int
+     * @var int $guest_group
      */
     protected $guest_group = 0;
 
     /**
-     * Группа заблокированных
-     * @const int $banned_group
+     * @const banned_group группа заблокированных
      */
 
     const banned_group = -1;
 
     /**
      * Язык данного юзера
-     * @var string
+     * @var string $lang
      */
     protected $lang = "";
 
     /**
      * Тема данного юзера
-     * @var string
+     * @var string $theme
      */
     protected $theme = "";
 
@@ -557,7 +557,7 @@ class users_modifier extends users_getter {
 
     /**
      * Временные переменные пользователя
-     * @var array
+     * @var array $tmp_vars
      */
     protected $tmp_vars = null;
 
@@ -680,15 +680,14 @@ class users_modifier extends users_getter {
 
 class users extends users_modifier {
     /**
-     * Префикс для бота
-     * @const string bot_prefix 
+     * @const bot_prefix префикс для бота
      */
 
     const bot_prefix = '[BOT]';
 
     /**
      * Пара ID=>право
-     * @var array
+     * @var array $pid
      */
     protected $pid = array();
 
@@ -988,7 +987,7 @@ class users extends users_modifier {
 
     /**
      * Объект данного класса
-     * @var users
+     * @var users $o
      */
     protected static $o = null;
 

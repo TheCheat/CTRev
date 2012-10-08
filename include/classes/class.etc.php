@@ -20,7 +20,7 @@ class etc {
 
     /**
      * Знаковый счётчик?
-     * @var bool
+     * @var bool $signed_res
      */
     protected $signed_res = false;
 

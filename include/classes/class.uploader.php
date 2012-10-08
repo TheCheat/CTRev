@@ -7,7 +7,6 @@
  * @link 	  	http://ctrev.cyber-tm.ru/
  * @copyright         	(c) 2008-2012, Cyber-Team
  * @author 	  	The Cheat <cybertmdev@gmail.com>
- * @package             file
  * @name           	Загрузка/скачивание файлов
  * @version           	1.00
  */
@@ -18,13 +17,13 @@ class uploader extends image {
 
     /**
      * Инициализировано?
-     * @var bool
+     * @var bool $inited
      */
     protected static $inited = false;
 
     /**
      * Массив файловых типов
-     * @var array
+     * @var array $file_types
      */
     protected static $file_types = array();
 
@@ -163,9 +162,8 @@ class uploader extends image {
      * @param string $type имя файлового типа
      * @param string $new_name новое имя файла
      * @param bool $na_type не добавлять тип файла в новое имя
-     * @param boolean&string $preview - создание превью к изображению, после - имя файла для превью,
+     * @param bool|string $preview - создание превью к изображению, после - имя файла для превью,
      * в случае успешного создания
-     * @param string $suberror ошибки для превью
      * @return null
      * @throws EngineException 
      */

@@ -23,78 +23,74 @@ db::o()->connect();
 
 class convert {
     /**
-     * Путь к файлу таблицы с расширением
-     * @const string fpath
+     * @const fpath путь к файлу таблицы с расширением
      */
 
     const fpath = 'install/database/%s.conv';
     /**
-     * Путь к файлу геттеров с расширением
-     * @const string fpath
+     * @const fpath путь к файлу геттеров с расширением
      */
     const gpath = 'install/include/convert/%s.php';
     /**
-     * Имя плагина конвертации
-     * @const string pname
+     * @const pname имя плагина конвертации
      */
     const pname = 'convert_%s';
     /**
-     * Временное поле stats для макс. ID категорий
-     * @const string stfield
+     * @const stfield временное поле stats для макс. ID категорий
      */
     const stfield = 'convert_maxcatid';
 
     /**
      * Таблица конвертации
-     * @var string
+     * @var string $cfile
      */
     private $cfile = 'cyberhype';
 
     /**
      * Кол-во записей за раз
-     * @var int
+     * @var int $peronce
      */
     private $peronce = 100;
 
     /**
      * Массив запрашиваемых столбцов
-     * @var array
+     * @var array $columns
      */
     private $columns = array();
 
     /**
      * Массив вставок
-     * @var array
+     * @var array $insert
      */
     private $insert = array();
 
     /**
      * Временные данные
-     * @var mixed
+     * @var mixed $tmp
      */
     private $tmp = null;
 
     /**
      * Класс геттеров
-     * @var object
+     * @var object $getter
      */
     private $getter = null;
 
     /**
      * Конвертируемая база данных
-     * @var string
+     * @var string $db
      */
     private $db = 'cyberhype';
 
     /**
      * Сопоставление групп
-     * @var string
+     * @var string $groups
      */
     private $groups = '';
 
     /**
      * Уже конвертировано?
-     * @var bool
+     * @var bool $converted
      */
     private $converted = false;
 

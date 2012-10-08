@@ -17,13 +17,13 @@ class comments extends pluginable_object {
 
     /**
      * Статус системы комментариев
-     * @var bool
+     * @var bool $state
      */
     protected $state = true;
 
     /**
      * Столбцы с заголовками для таблиц
-     * @var array
+     * @var array $title_cols
      */
     protected $title_cols = array(
         'torrents' => 'title',
@@ -31,13 +31,13 @@ class comments extends pluginable_object {
 
     /**
      * Тип комментариев
-     * @var string
+     * @var string $type
      */
     protected $type = 'torrents';
 
     /**
      * Допустимые типы
-     * @var array
+     * @var array $allowed_types
      */
     protected $allowed_types = array(
         'torrents',
@@ -52,11 +52,12 @@ class comments extends pluginable_object {
         $this->access_var('title_cols', PVAR_ADD);
         $this->access_var('allowed_types', PVAR_ADD);
         /**
-         * Отображение комментариев
-         * @param int resid - ID ресурса
-         * @param string type - тип ресурса
-         * @param string name - имя формы
-         * @param bool no_form - без формы добавления
+         * @tutorial Отображение комментариев(display_comments)
+         * params: 
+         * int resid ID ресурса
+         * string type тип ресурса
+         * string name имя формы
+         * bool no_form без формы добавления
          */
         tpl::o()->register_function("display_comments", array(
             $this,
@@ -99,7 +100,7 @@ class comments extends pluginable_object {
         $type = $this->type;
         lang::o()->get("comments");
         if (!users::o()->perm('comment')) {
-            mess('comment_you_cannt_view', null, 'error', false);
+            message('comment_you_cannt_view', null, 'error', false);
             return;
         }
         if (!longval($resid))
@@ -144,7 +145,7 @@ class comments extends pluginable_object {
         $type = $this->type;
         lang::o()->get("comments");
         if (!users::o()->perm('comment', 2)) {
-            mess('comment_you_cannt_add', null, 'error', false);
+            message('comment_you_cannt_add', null, 'error', false);
             return;
         }
         if ((!longval($resid) && $resid) || (!longval($id) && $id) || (!$id && !$resid))

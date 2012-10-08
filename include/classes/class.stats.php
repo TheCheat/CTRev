@@ -17,7 +17,7 @@ final class stats {
 
     /**
      * Массив значений статистики
-     * @var array
+     * @var array $res
      */
     private $res = array();
 
@@ -65,7 +65,7 @@ final class stats {
 
     /**
      * Объект данного класса
-     * @var tpl
+     * @var tpl $o
      */
     private static $o = null;
 

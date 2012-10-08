@@ -17,7 +17,7 @@ class rating_manage {
     
     /**
      * Объект рейтинга
-     * @var rating
+     * @var rating $rating
      */
     protected $rating = null;
 

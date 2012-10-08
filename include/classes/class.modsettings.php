@@ -15,31 +15,31 @@ if (!defined('INSITE'))
 
 final class modsettings {
     /**
-     * @const nocache_id - ID модуля, при котором настройки не кешируются 
+     * @const nocache_id ID модуля, при котором настройки не кешируются 
      */
 
     const nocache_id = "::nocache::";
 
     /**
-     * @const unlimited - неограниченный массив
+     * @const unlimited неограниченный массив
      */
     const unlimited = "unlimited";
 
     /**
      * Тип настроек
-     * @var string
+     * @var string $type
      */
     private $type = 'blocks';
 
     /**
      * Значения ENUM параметра
-     * @var array
+     * @var array $enum_vals
      */
     private $enum_vals = array();
 
     /**
      * Типы ключей
-     * @var array
+     * @var array $key_types
      */
     private $key_types = array(
         'simple',
@@ -50,7 +50,7 @@ final class modsettings {
 
     /**
      * Типы значений
-     * @var array
+     * @var array $val_types
      */
     private $val_types = array('integer',
         'string',
@@ -59,7 +59,7 @@ final class modsettings {
 
     /**
      * Значения инициализованы?
-     * @var bool
+     * @var bool $tinited
      */
     private $tinited = false;
 
@@ -559,7 +559,7 @@ final class modsettings {
 
     /**
      * Объект данного класса
-     * @var modsettings
+     * @var modsettings $o
      */
     private static $o = null;
 

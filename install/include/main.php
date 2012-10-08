@@ -17,7 +17,7 @@ class main {
 
     /**
      * Проверка CHMOD для
-     * @var array
+     * @var array $chmod
      */
     protected $chmod = array(
         'include/cache',
@@ -29,8 +29,7 @@ class main {
         'install/lock');
 
     /**
-     * Необходимый объём загружаемых файлов(в МБ.)
-     * @const int need_filesize
+     * @const need_filesize необходимый объём загружаемых файлов(в МБ.)
      */
 
     const need_filesize = 5;

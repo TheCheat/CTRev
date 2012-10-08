@@ -1,5 +1,17 @@
 <?php
 
+/**
+ * Project:            	CTRev
+ * File:                functions_smarty.php
+ *
+ * @link 	  	http://ctrev.cyber-tm.ru/
+ * @copyright         	(c) 2008-2012, Cyber-Team
+ * @author 	  	The Cheat <cybertmdev@gmail.com>
+ * @name 		Функции для Smarty
+ * @version           	1.00
+ */
+
+
 if (!defined('INSITE'))
     die('Remote access denied!');
 

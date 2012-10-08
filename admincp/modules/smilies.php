@@ -17,7 +17,7 @@ class smilies_man {
 
     /**
      * Разрешённые типы изображений
-     * @var array
+     * @var array $allowed_types
      */
     protected $allowed_types = array('gif', 'png', 'jpg', 'jpeg');
 

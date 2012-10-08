@@ -63,20 +63,17 @@ class announce_parser extends fbenc {
 
 class bittorrent extends announce_parser {
     /**
-     * Паттерн для именования файлов в зависимости от времени загрузки
-     * @const string files_pattern
+     * @const files_pattern паттерн для именования файлов в зависимости от времени загрузки
      */
 
     const files_pattern = 's%d_%de';
     /**
-     * Префикс в имени торрент файла, хранимого на сервере
-     * @const string torrent_prefix
+     * @const torrent_prefix префикс в имени торрент файла, хранимого на сервере
      */
     const torrent_prefix = "t";
 
     /**
-     * Макс. кол-во файлов, записываемых в БД
-     * @const int max_filelist
+     * @const max_filelist макс. кол-во файлов, записываемых в БД
      */
     const max_filelist = 100;
 
@@ -95,7 +92,7 @@ class bittorrent extends announce_parser {
     /**
      * Замена passkey в URL трекера на настройки пользователя
      * @param string $url URL трекера
-     * @param string|array строка из конфига
+     * @param string|array $pk строка из конфига
      * @return bool true, в случае успешной замены
      */
     protected function pk_replace(&$url, &$pk) {

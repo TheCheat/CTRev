@@ -17,7 +17,7 @@ class registration {
 
     /**
      * Заголовок модуля
-     * @var string
+     * @var string $title
      */
     public $title = "";
 
@@ -96,7 +96,7 @@ class registration {
         $update ['confirm_key'] = "";
         db::o()->update($update, 'users', 'WHERE id=' . users::o()->v('id') . " LIMIT 1");
         furl::o()->location('', 5);
-        mess("successfull_confirmed_email", null, "success", false);
+        message("successfull_confirmed_email", null, "success", false);
     }
 
     /**

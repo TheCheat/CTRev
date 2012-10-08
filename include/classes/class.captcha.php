@@ -15,14 +15,14 @@ if (!defined('INSITE'))
 
 final class captcha implements captcha_interface {
     /**
-     * @const time - время очистки капч(в сек.)
+     * @const time время очистки капч(в сек.)
      */
 
     const time = 1800;
 
     /**
      * Массив возможных бэкграундов
-     * @var array
+     * @var array $bckgrnds
      */
     private $bckgrnds = array(
         "captcha1.jpg");
@@ -52,7 +52,7 @@ final class captcha implements captcha_interface {
         /* @var $uploader uploader */
         $uploader = n("uploader");
         $uploader->watermark($background, $code, 'auto', false, '', 'cc', true, false);
-    }
+    }    
 
     /**
      * Функция проверки кода captcha

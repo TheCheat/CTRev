@@ -17,13 +17,13 @@ class polls extends pluginable_object {
 
     /**
      * Статус системы опросов
-     * @var bool
+     * @var bool $state
      */
     protected $state = true;
 
     /**
      * Цвета опросов
-     * @var array
+     * @var array $styles
      */
     protected $styles = array(
         "gray_votes",
@@ -32,13 +32,13 @@ class polls extends pluginable_object {
 
     /**
      * Тип опросов
-     * @var string
+     * @var string $type
      */
     protected $type = 'torrents';
 
     /**
      * Допустимые типы
-     * @var array
+     * @var array $allowed_types
      */
     protected $allowed_types = array(
         'torrents');
@@ -53,22 +53,24 @@ class polls extends pluginable_object {
         $this->access_var('styles', PVAR_ADD);
 
         /**
-         * Форма добавления опроса
-         * @param int toid - ID ресурса
-         * @param string type - тип ресурса
-         * @param int pollid - ID опроса
-         * @param bool full - полностью загружать страницу с опросом?
+         * @tutorial Добавление опроса(add_polls)
+         * params:
+         * int toid ID ресурса
+         * string type тип ресурса
+         * int pollid ID опроса 
+         * bool full полностью загружать страницу с опросом?
          */
         tpl::o()->register_function("add_polls", array(
             $this,
             "add_form"));
         /**
-         * Отображение опроса
-         * @param int toid - ID ресурса
-         * @param string type - тип ресурса
-         * @param int pollid - ID опроса
-         * @param bool votes - показывать результат опроса?
-         * @param bool short - показывать результаты опроса как в блоке?
+         * @tutorial Отображение опроса(display_polls)
+         * params:
+         * int toid ID ресурса
+         * string type тип ресурса
+         * int pollid ID опроса
+         * bool votes показывать результат опроса?
+         * bool short показывать результаты опроса как в блоке?
          */
         tpl::o()->register_function("display_polls", array(
             $this,
@@ -191,7 +193,7 @@ class polls extends pluginable_object {
         if (!$count && !$toid && !$short) {
             $var = lang::o()->v('polls_no_exists') . (users::o()->perm('polls', 3) ? ' ' . sprintf(lang::o()->v('polls_want_add'), furl::o()->construct("polls", array(
                                         'act' => 'add'))) : '');
-            mess($var, null, 'info', false);
+            message($var, null, 'info', false);
             return;
         }
         if (!$count)

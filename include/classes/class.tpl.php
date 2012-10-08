@@ -17,25 +17,25 @@ final class tpl extends Smarty {
 
     /**
      * Массив показанных шаблонов
-     * @var array
+     * @var array $displayed
      */
     private $displayed = array();
 
     /**
      * Конфиг. инициализирована?
-     * @var bool
+     * @var bool $conf_inited
      */
     private $conf_inited = false;
 
     /**
      * Временный(старый) путь
-     * @var string
+     * @var string $tmp
      */
     private $tmp = '';
 
     /**
      * Тема
-     * @var string 
+     * @var string $theme 
      */
     private $theme = '';
 
@@ -200,7 +200,7 @@ final class tpl extends Smarty {
 
     /**
      * Объект данного класса
-     * @var tpl
+     * @var tpl $o
      */
     private static $o = null;
 

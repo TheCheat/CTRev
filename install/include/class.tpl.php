@@ -17,7 +17,7 @@ class tpl {
 
     /**
      * Массив данных
-     * @var array
+     * @var array $data
      */
     private $data = array();
 
@@ -59,7 +59,7 @@ class tpl {
 
     /**
      * Объект данного класса
-     * @var tpl
+     * @var tpl $o
      */
     private static $o = null;
 

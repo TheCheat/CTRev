@@ -17,55 +17,55 @@ final class db {
 
     /**
      * Свой обработчик ошибок БД
-     * @var callback
+     * @var callback $error_handler
      */
     protected $error_handler = null;
 
     /**
      * Подлючена ли БД?
-     * @var bool
+     * @var bool $connected
      */
     protected $connected = false;
 
     /**
      * Статистика по запросам
-     * @var array
+     * @var array $query_stat
      */
     public $query_stat = array();
 
     /**
      * Не выводить ошибки? о_О
-     * @var bool
+     * @var bool $no_error
      */
     protected $no_error = false;
 
     /**
      * Ошибки без шаблона?
-     * @var bool
+     * @var bool $nt_error
      */
     protected $nt_error = false;
 
     /**
      * Не обнулять no_error и no_csupc по окончании запроса
-     * @var bool
+     * @var bool $no_reset
      */
     protected $no_reset = false;
 
     /**
      * ID последнего запроса
-     * @var resid
+     * @var resid $last_resource
      */
     protected $last_resource = null;
 
     /**
      * Последняя запрос для вставки
-     * @var string
+     * @var string $last_query
      */
     protected $last_query = "";
 
     /**
      * Последняя таблица для вставки
-     * @var string
+     * @var string $last_table
      */
     protected $last_table = "";
 
@@ -77,13 +77,13 @@ final class db {
 
     /**
      * Вставка/обновление/удаление/выборка таблицы с AS
-     * @var string
+     * @var string $astable
      */
     protected $astable = "";
 
     /**
      * Добавление IGNORE в UPDATE/INSERT
-     * @var bool
+     * @var bool $ignore
      */
     protected $ignore = false;
 
@@ -620,7 +620,7 @@ final class db {
 
     /**
      * Объект данного класса
-     * @var db
+     * @var db $o
      */
     private static $o = null;
 

@@ -17,7 +17,7 @@ class patterns_man {
 
     /**
      * Типы полей
-     * @var array
+     * @var array $types
      */
     protected $types = array(
         'input',

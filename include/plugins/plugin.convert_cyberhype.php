@@ -18,43 +18,43 @@ class plugin_convert_cyberhype {
 
     /**
      * Версия плагина
-     * @var string
+     * @var string $version
      */
     public $version = '1.00';
 
     /**
      * Имя плагина
-     * @var string
+     * @var string $name
      */
     public $name = 'Cyberhype Convert';
 
     /**
      * Описание плагина
-     * @var string
+     * @var string $descr
      */
     public $descr = 'Реализация входа конв. пользователя';
 
     /**
      * Совместимость с движком. Наилучшая
-     * @var string
+     * @var string $compatibility
      */
     public $compatibility = '1.00';
 
     /**
      * Совместимость с движком.  Мин. версия.
-     * @var string
+     * @var string $compatibility_min
      */
     public $compatibility_min = '1.00';
 
     /**
      * Совместимость с движком. Макс. версия.
-     * @var string
+     * @var string $compatibility_max
      */
     public $compatibility_max = '1.00';
 
     /**
      * Автор плагина
-     * @var string
+     * @var string $author
      */
     public $author = 'The Cheat';
 

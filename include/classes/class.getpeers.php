@@ -17,19 +17,18 @@ class getpeers {
     
     /**
      * Объект bittorrent
-     * @var bittorrent 
+     * @var bittorrent $bt 
      */
     protected $bt = null;
 
     /**
      * Параметры, отсылаемые аннонсеру
-     * @var string
+     * @var string $announce_url
      */
     protected $announce_url = "";
 
     /**
-     * Ограничение на запрос по времени в секундах
-     * @const int time_limit
+     * @const time_limit ограничение на запрос по времени в секундах
      */
 
     const time_limit = 2;
