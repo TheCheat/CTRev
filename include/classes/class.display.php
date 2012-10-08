@@ -59,8 +59,6 @@ class display_html {
 
     /**
      * Отображение инициализации jQuery Uploadify
-     * @global tpl $tpl
-     * @global uploader $uploader
      * @param string $id_postfix постфикс к ID(uploadify_$postfix)
      * @param string $type_desc описание к типу
      * @param string $file_type файловый тип
@@ -71,17 +69,17 @@ class display_html {
      * @return null
      */
     public function display_uploadify($id_postfix, $type_desc = "", $file_type = "", $scriptData = null, $onComplete = "", $print = false, $auto = true) {
-        global $tpl, $uploader;
         if (!is_array($scriptData))
             return;
         if ($file_type) {
-            $uploader->init_ft();
+            /* @var $uploader uploader */
+            $uploader = n("uploader");
             if (!$uploader->filetypes($file_type))
                 return;
             $file_types = $uploader->filetypes($file_type);
             $file_types ["types"] = $uploader->convert_filetypes($file_type);
-            $tpl->assign("type_desc", $type_desc);
-            $tpl->assign("file_type", $file_types);
+            tpl::o()->assign("type_desc", $type_desc);
+            tpl::o()->assign("file_type", $file_types);
         }
         $n = 0;
         $scriptData ["from_ajax"] = 1;
@@ -94,12 +92,12 @@ class display_html {
             $scriptData_str .= ( $n ? ", " : "") . "'" . addslashes($key) . "': '" . addslashes($value) . "'";
             $n++;
         }
-        $tpl->assign("postfix", $id_postfix);
-        $tpl->assign("print_divs", $print);
-        $tpl->assign("scriptData", $scriptData_str);
-        $tpl->assign("onComplete", $onComplete);
-        $tpl->assign("auto", $auto);
-        $tpl->display("uploadify_init.tpl");
+        tpl::o()->assign("postfix", $id_postfix);
+        tpl::o()->assign("print_divs", $print);
+        tpl::o()->assign("scriptData", $scriptData_str);
+        tpl::o()->assign("onComplete", $onComplete);
+        tpl::o()->assign("auto", $auto);
+        tpl::o()->display("uploadify_init.tpl");
     }
 
     /**
@@ -148,7 +146,6 @@ class display_html {
 
     /**
      * Вывод JS скрипта пейджинатора
-     * @global lang $lang
      * @param int $count см. назначение из функции pages
      * @param int $perpage см. назначение из функции pages
      * @param string $file см. назначение из функции pages
@@ -158,7 +155,6 @@ class display_html {
      * @return string JS скрипт пейджинатора
      */
     public function pagintator_js($count, $perpage = 50, $file = "", $var = "page", $page_on_this = 5, $ajax = false) {
-        global $lang;
         if (!is_numeric($perpage) || !$perpage)
             $perpage = 50;
         if (!is_numeric($page_on_this) || !$page_on_this)
@@ -184,10 +180,10 @@ class display_html {
 				'pagesSpan':" . $page_on_this . ",
 				'pageCurrent':" . $page . ",
 				'baseurl': '" . $base_url . "',
-				'lang' : {next : '" . slashes_smarty($lang->v('paginator_next')) . "',
-				last : '" . slashes_smarty($lang->v('paginator_last')) . "',
-				prior : '" . slashes_smarty($lang->v('paginator_prev')) . "',
-				first : '" . slashes_smarty($lang->v('paginator_first')) . "',
+				'lang' : {next : '" . slashes_smarty(lang::o()->v('paginator_next')) . "',
+				last : '" . slashes_smarty(lang::o()->v('paginator_last')) . "',
+				prior : '" . slashes_smarty(lang::o()->v('paginator_prev')) . "',
+				first : '" . slashes_smarty(lang::o()->v('paginator_first')) . "',
 				arrowRight : String.fromCharCode(8594),
 				arrowLeft : String.fromCharCode(8592)}});
 		</script>";
@@ -196,43 +192,38 @@ class display_html {
     /**
      * Функция для показа пользовательского аватара
      * @global string $BASEURL
-     * @global lang $lang
-     * @global users $users
      * @global string $theme_path
-     * @global config $config
-     * @global uploader $uploader
      * @param string $avatar_path путь к аватару
      * @return string HTML код аватары
      */
     public function display_user_avatar($avatar_path) {
-        global $BASEURL, $lang, $users, $theme_path, $config, $uploader;
-        $uploader->init_ft();
+        global $BASEURL, $theme_path;
+        /* @var $uploader uploader */
+        $uploader = n("uploader");
         $avatar_path = trim($avatar_path);
         $aft = $uploader->filetypes('avatars');
         $av_allowed = str_replace(";", "|", $aft ['types']);
         if (preg_match('/^' . display::url_pattern . '\.(' . $av_allowed . ')$/siu', $avatar_path))
             $url = $avatar_path;
-        elseif (preg_match('/^' . self::avatar_prefix . $users->v('id') . '\.(' . $av_allowed . ')$/siu', $avatar_path))
-            $url = $BASEURL . $config->v('avatars_folder') . '/' . $avatar_path;
+        elseif (preg_match('/^' . self::avatar_prefix . users::o()->v('id') . '\.(' . $av_allowed . ')$/siu', $avatar_path))
+            $url = $BASEURL . config::o()->v('avatars_folder') . '/' . $avatar_path;
         else
             $url = $theme_path . 'images/default_avatar.png';
         $max_width = $aft ['max_width'];
         $max_height = $aft ['max_height'];
         $style = ($max_width ? 'max-width: ' . $max_width . 'px;' : "") . ($max_height ? 'max-height: ' . $max_height . 'px;' : "");
-        return '<img src="' . $url . '" alt="' . $lang->v('avatar') . '" style="' . $style . '">';
+        return '<img src="' . $url . '" alt="' . lang::o()->v('avatar') . '" style="' . $style . '">';
     }
 
     /**
      * Вывод изображения знака зодиака, согласно ДР пользователя
      * @global string $BASEURL
-     * @global config $config
-     * @global lang $lang
      * @param int $birthday день рождения в формате UNIXTIME
      * @return string HTML код картинки
      */
     public function get_zodiac_image($birthday) {
-        global $BASEURL, $config, $lang;
-        $lang->get('zodiac');
+        global $BASEURL;
+        lang::o()->get('zodiac');
         $month = date("m", $birthday);
         $day = date("d", $birthday);
         $time = @mktime(null, null, null, $month, $day);
@@ -256,17 +247,14 @@ class display_html {
             if ($time >= $curtime && $time < $nexttime)
                 break;
         }
-        return '<img src="' . $BASEURL . $config->v('zodiac_folder') . '/' . $word . '.png"
-                 height="11" alt="' . $lang->v('zodiac_sign_' . $word) . '"
-		 title="' . $lang->v('zodiac_sign_' . $word) . '">&nbsp;' . $lang->v('zodiac_sign_' . $word);
+        return '<img src="' . $BASEURL . config::o()->v('zodiac_folder') . '/' . $word . '.png"
+                 height="11" alt="' . lang::o()->v('zodiac_sign_' . $word) . '"
+		 title="' . lang::o()->v('zodiac_sign_' . $word) . '">&nbsp;' . lang::o()->v('zodiac_sign_' . $word);
     }
 
     /**
      * Выборка файлов(для АЦ)
-     * @global file $file
-     * @global tpl $tpl
      * @global bool $ajax
-     * @global lang $lang
      * @param string $path путь к дирректории
      * @param string $name имя дирректории
      * @param string $folder выбранная дирректория
@@ -274,10 +262,10 @@ class display_html {
      * @return null
      */
     public function filechooser($path, $name, $folder = null, $apaths = null) {
-        global $file, $tpl, $ajax, $lang;
+        global $ajax;
         if (!validfolder($name, $path))
             return;
-        $lang->get('admin/filechooser');
+        lang::o()->get('admin/filechooser');
         $npath = ($path ? $path . '/' : '') . $name;
         if ($apaths)
             $apaths = (array) $apaths;
@@ -289,10 +277,10 @@ class display_html {
             if ($folder)
                 $npath .= "/" . rtrim($folder, '/');
         }
-        $rows = $file->open_folder($npath, false, '^.+(\.[a-z]+)?$');
+        $rows = file::o()->open_folder($npath, false, '^.+(\.[a-z]+)?$');
         if ($rows === false)
             return;
-        $file->sort($npath, $rows);
+        file::o()->sort($npath, $rows);
         $arr = array();
         foreach ($rows as $row) {
             $f = ROOT . $npath . '/' . $row;
@@ -302,16 +290,16 @@ class display_html {
                 continue;
             $arr[$row] = array(is_dir($f), is_writable($f), filesize($f), filemtime($f));
         }
-        $tpl->assign('id', $name);
-        $tpl->assign('files', $arr);
-        $tpl->assign('deny_add', false);
+        tpl::o()->assign('id', $name);
+        tpl::o()->assign('files', $arr);
+        tpl::o()->assign('deny_add', false);
         if ($folder)
-            $tpl->assign('parent', $folder . '/');
+            tpl::o()->assign('parent', $folder . '/');
         elseif ($apaths)
-            $tpl->assign('deny_modify', true);
+            tpl::o()->assign('deny_modify', true);
         if ($ajax)
             print("OK!");
-        $tpl->display('admin/filechooser.tpl');
+        tpl::o()->display('admin/filechooser.tpl');
     }
 
     /**
@@ -358,13 +346,11 @@ class display_time extends display_html {
 
     /**
      * Функция для форматирования времени
-     * @global lang $lang
      * @param int $unixtime время в формате UNIXTIME
      * @param string $format формат отображения(y - год, m - месяц, d - день, h - час, i - минута, s - секунда)
      * @return string отформатированная дата
      */
     public function date($unixtime = null, $format = "ymd") {
-        global $lang;
         if (is_array($unixtime)) {
             $format = $unixtime ['format'];
             $unixtime = $unixtime ['time'];
@@ -385,7 +371,7 @@ class display_time extends display_html {
                 $format = strtolower($format);
                 $year = date("Y", $unixtime);
                 $month = (date("m", $unixtime) - 1);
-                $month = $lang->v("month_" . input::$months [$month] . "_s");
+                $month = lang::o()->v("month_" . input::$months [$month] . "_s");
                 $day = date("j", $unixtime);
                 $h_m = array();
                 if (strpos($format, "h") !== false)
@@ -408,15 +394,13 @@ class display_time extends display_html {
 
     /**
      * Функция для изменения времени, в соответствии с часовым поясом и DST
-     * @global users $users
      * @param int $time время, формат UNIXTIME
      * @return null
      */
     public function time_diff(&$time) {
-        global $users;
         $time = longval($time);
-        $user_timezone = $users->v('timezone');
-        $dst = $users->v('dst');
+        $user_timezone = users::o()->v('timezone');
+        $dst = users::o()->v('dst');
         $now_dst = date("I");
         if ($now_dst && $dst)
             $user_timezone += 1;
@@ -428,13 +412,11 @@ class display_time extends display_html {
 
     /**
      * Вывод разницы времени
-     * @global lang $lang
      * @param int $from начальное время
      * @param int $to конечное время
      * @return string текст разницы
      */
     public function get_estimated_time($from, $to = 0) {
-        global $lang;
         if ($to === "c")
             $to = time();
         if (!$to)
@@ -442,7 +424,7 @@ class display_time extends display_html {
         else
             $d = $to - $from;
         if ($d < 60)
-            return $lang->v('et_seconds');
+            return lang::o()->v('et_seconds');
         $ret = array(abs($d));
         $week = false;
         $weekstr = "et_weeks";
@@ -480,7 +462,7 @@ class display_time extends display_html {
             if ($be >= 2)
                 break;
             if ($ret[$i] > 0 || ($i == 0 && !$be)) {
-                $answ .= ( $answ ? " " : "") . ($i != 0 ? $ret[$i] . " " : "") . $lang->v($lg[$i]);
+                $answ .= ( $answ ? " " : "") . ($i != 0 ? $ret[$i] . " " : "") . lang::o()->v($lg[$i]);
                 $be++;
             }
         }
@@ -727,27 +709,25 @@ class display extends display_modifier {
 
     /**
      * Функция для "окрашивания" группы пользователя
-     * @global users $users
      * @param int $group_id ID группы
      * @param string $group_name имя группы
      * @param bool $bbcode BBCode?
      * @return string HTML код окрашенной группы
      */
     public function group_color($group_id, $group_name = '', $bbcode = false) {
-        global $users;
         if (!$group_id)
-            $group_id = $users->guest_group;
+            $group_id = users::o()->guest_group;
         $quote = $this->html_encode('"');
         $bopen = $bbcode ? "[b]" : "<b>";
         $bclose = $bbcode ? "[/b]" : "</b>";
         $sopen = $bbcode ? "[s]" : "<s>";
         $sclose = $bbcode ? "[/s]" : "</s>";
         $fopen = $bbcode ? "[color=" . $quote : "<font color='";
-        $fopen2 = $bbcode ? $quote . "]" : "' title=\"" . ($group_name ? $users->get_group_name($group_id) : "") . "\">";
+        $fopen2 = $bbcode ? $quote . "]" : "' title=\"" . ($group_name ? users::o()->get_group_name($group_id) : "") . "\">";
         $fclose = $bbcode ? "[/color]" : '</font>';
         return $bopen . ($group_id == users::banned_group ? $sopen : "") .
-                $fopen . $users->get_group_color($group_id) . $fopen2 . ($group_name ? $group_name :
-                        $users->get_group_name($group_id)) . $fclose .
+                $fopen . users::o()->get_group_color($group_id) . $fopen2 . ($group_name ? $group_name :
+                        users::o()->get_group_name($group_id)) . $fclose .
                 ($group_id == users::banned_group ? $sclose : "") . $bclose;
     }
 
@@ -796,41 +776,84 @@ class display extends display_modifier {
 
     /**
      * Автовключение сайта
-     * @global config $config
-     * @global furl $furl
      * @return null
      */
     public function site_autoon() {
-        global $config, $furl;
-        if (!$config->v('site_autoon') || $config->v('site_online'))
+        if (!config::o()->v('site_autoon') || config::o()->v('site_online'))
             return;
         $time = time();
-        if ($time >= $config->v('site_autoon')) {
-            $config->set('site_autoon', 0);
-            $config->set('site_online', 1);
-            $furl->location();
+        if ($time >= config::o()->v('site_autoon')) {
+            config::o()->set('site_autoon', 0);
+            config::o()->set('site_online', 1);
+            furl::o()->location();
         }
     }
 
     /**
      * Проверка, является ли сайт offline на данный момент
-     * @global users $users
-     * @global config $config
-     * @global tpl $tpl
-     * @global lang $lang
      * @return null
      */
     public function siteoffline_check() {
-        global $users, $config, $tpl, $lang;
-        if ($users->perm('acp', 2))
+        if (users::o()->perm('acp', 2))
             return;
-        elseif (!$config->v('site_online')) {
-            $lang->get("site_offline");
-            $offline_reason = $config->v('siteoffline_reason');
-            $tpl->assign("reason", $offline_reason);
-            $tpl->display("site_offline.tpl");
+        elseif (!config::o()->v('site_online')) {
+            lang::o()->get("site_offline");
+            $offline_reason = config::o()->v('siteoffline_reason');
+            tpl::o()->assign("reason", $offline_reason);
+            tpl::o()->display("site_offline.tpl");
             die();
         }
+    }
+
+    // Реализация Singleton для переопределяемого класса
+
+    /**
+     * Объект данного класса
+     * @var display
+     */
+    protected static $o = null;
+
+    /**
+     * Конструктор? А где конструктор? А нет его.
+     * @return null 
+     */
+    protected function __construct() {
+        
+    }
+
+    /**
+     * Не клонируем
+     * @return null 
+     */
+    protected function __clone() {
+        
+    }
+
+    /**
+     * И не десериализуем
+     * @return null 
+     */
+    protected function __wakeup() {
+        
+    }
+
+    /**
+     * Получение объекта класса
+     * @return display $this
+     */
+    public static function o() {
+        if (!self::$o) {
+            $cn = 'display';
+            $c = n('display', true);
+            if ($c != $cn) {
+                if (is_callable(array($c, 'o')))
+                    self::$o = $c::o();
+                else
+                    self::$o = new $c();
+            } else
+                self::$o = new self();
+        }
+        return self::$o;
     }
 
 }

@@ -235,15 +235,12 @@ final class modsettings {
 
     /**
      * Функция обработки параметров модуля
-     * @global cache $cache
-     * @global config $config
      * @param int|string $id ID модуля
      * @param object $object объект модуля
      * @param array $settings параметры модуля
      * @return array обработанные настройки модуля
      */
     public function parse($id, &$object, $settings) {
-        global $cache, $config;
         if (!isset($object->settings) || !is_array($object->settings))
             return;
         if (!$this->check_id($id))
@@ -252,9 +249,9 @@ final class modsettings {
         if (!$type)
             $type = 'block';
         $cached = false;
-        if ($id !== self::nocache_id && $config->v('cache_on') && $config->v('cache_modsettings')) {
+        if ($id !== self::nocache_id && config::o()->v('cache_on') && config::o()->v('cache_modsettings')) {
             $crc32 = crc32(serialize($object->settings));
-            $a = $cache->read('modsettings/' . $type . '-id' . $id);
+            $a = cache::o()->read('modsettings/' . $type . '-id' . $id);
             $cached = true;
             if ($a && $a[0] != $crc32)
                 $a = null;
@@ -280,21 +277,16 @@ final class modsettings {
         }
         $a = array($crc32, $object->settings, $parsed);
         if ($cached)
-            $cache->write($a);
+            cache::o()->write($a);
         return $parsed;
     }
 
     /**
      * Обработчик параметров
-     * @global tpl $tpl
-     * @global bbcodes $bbcodes
-     * @global input $input
-     * @global lang $lang
      * @param array $params массив параметров
      * @return string HTML код параметров
      */
     public function selector($params) {
-        global $tpl, $bbcodes, $input, $lang;
         $val = $params['val'];
         $key = $params['key'];
         $k = $params['k'];
@@ -326,7 +318,7 @@ final class modsettings {
                                size="' . ($cs == 'integer' ? 7 : 25) . '" value="' . $val . '">';
                 break;
             case "text":
-                $html .= $bbcodes->input_form($name, $val);
+                $html .= bbcodes::o()->input_form($name, $val);
                 break;
             default:
                 if (!is_array($cs))
@@ -337,14 +329,14 @@ final class modsettings {
                 else {
                     $a = array();
                     foreach ($cs as $i) {
-                        $lv = $lang->v($langvar . '_' . $i, true);
+                        $lv = lang::o()->v($langvar . '_' . $i, true);
                         $a[$i] = $lv ? $lv : $i;
                     }
-                    $html .= $input->simple_selector($namea, $a, true, $val);
+                    $html .= input::o()->simple_selector($namea, $a, true, $val);
                 }
                 break;
         }
-        $tpl->assign('unlim', $unlim);
+        tpl::o()->assign('unlim', $unlim);
         return $html;
     }
 
@@ -373,8 +365,6 @@ final class modsettings {
 
     /**
      * Отображение настроек для их редактирования
-     * @global lang $lang
-     * @global tpl $tpl
      * @param int|string $id ID модуля
      * @param object $object объект с полями settings и settings_lang
      * @param array $settings массив настроенного
@@ -385,7 +375,6 @@ final class modsettings {
      * где {$type} - тип настроек, а {->settings_lang} - переменная в объекте
      */
     public function display($id, $object, $settings, $langprefix, $parsed = false) {
-        global $lang, $tpl;
         $lng = 'main';
         if (!$this->check_id($id))
             return;
@@ -396,19 +385,19 @@ final class modsettings {
         $type = $this->type;
         if (!$type)
             $type = 'block';
-        $lang->get($type . '/' . $lng);
+        lang::o()->get($type . '/' . $lng);
         if (!$parsed)
             $parsed = $this->parse($id, $object, $settings);
         else
             $parsed = $settings;
-        $tpl->assign('parsed_settings', $parsed);
+        tpl::o()->assign('parsed_settings', $parsed);
         if (isset($object->settings))
             $settings = $object->settings;
         $this->prepare($parsed, $settings);
-        $tpl->register_function('parameters_compiler', array($this, 'selector'));
-        $tpl->assign('used_settings', $settings);
-        $tpl->assign('settings_langprefix', $langprefix);
-        return $tpl->fetch('modsettings/index.tpl');
+        tpl::o()->register_function('parameters_compiler', array($this, 'selector'));
+        tpl::o()->assign('used_settings', $settings);
+        tpl::o()->assign('settings_langprefix', $langprefix);
+        return tpl::o()->fetch('modsettings/index.tpl');
     }
 
     /**
@@ -445,44 +434,38 @@ final class modsettings {
 
     /**
      * Удаление кеша настроек
-     * @global cache $cache
      * @param int|string $id ID модуля
      * @return null
      */
     public function uncache($id) {
-        global $cache;
         if (!$this->check_id($id))
             return;
         $type = $this->type;
         if (!$type)
             $type = 'block';
-        $cache->remove('modsettings/' . $type . '-id' . $id);
+        cache::o()->remove('modsettings/' . $type . '-id' . $id);
     }
 
     /**
      * Создание настроек модуля
-     * @global tpl $tpl 
-     * @global lang $lang
-     * @global input $input
      * @return null
      */
     public function create() {
-        global $tpl, $lang, $input;
-        $lang->get('modsettings');
+        lang::o()->get('modsettings');
         if (!$this->tinited) {
             $t = array();
             foreach ($this->key_types as $type)
-                $t[$type] = $lang->v('modsettings_keytype_' . $type);
-            $this->key_types = $input->simple_selector('keytype[]', $t, true);
+                $t[$type] = lang::o()->v('modsettings_keytype_' . $type);
+            $this->key_types = input::o()->simple_selector('keytype[]', $t, true);
             $t = array();
             foreach ($this->val_types as $type)
-                $t[$type] = $lang->v('modsettings_valtype_' . $type);
-            $this->val_types = $input->simple_selector('valtype[]', $t, true);
+                $t[$type] = lang::o()->v('modsettings_valtype_' . $type);
+            $this->val_types = input::o()->simple_selector('valtype[]', $t, true);
             $this->tinited = true;
         }
-        $tpl->assign('mkeytypes', $this->key_types);
-        $tpl->assign('mvaltypes', $this->val_types);
-        $tpl->display('modsettings/add.tpl');
+        tpl::o()->assign('mkeytypes', $this->key_types);
+        tpl::o()->assign('mvaltypes', $this->val_types);
+        tpl::o()->display('modsettings/add.tpl');
     }
 
     /**
@@ -558,13 +541,11 @@ final class modsettings {
 
     /**
      * Вывод для настроек параметров по-умолчанию
-     * @global users $users
      * @param array $data массив данных
      * @return null
      */
     public function make_demo($data) {
-        global $users;
-        $users->check_perms('acp', 2);
+        users::o()->check_perms('acp', 2);
         $settings = $this->make($data);
         if (!$settings)
             return;
@@ -572,6 +553,48 @@ final class modsettings {
         $arr = array("settings" => $settings, "settings_lang" => "__doesnotexists");
         $obj = new arr2obj($arr);
         print($this->display(self::nocache_id, $obj, $defaults, ''));
+    }
+
+    // Реализация Singleton
+
+    /**
+     * Объект данного класса
+     * @var modsettings
+     */
+    private static $o = null;
+
+    /**
+     * Конструктор? А где конструктор? А нет его.
+     * @return null 
+     */
+    private function __construct() {
+        
+    }
+
+    /**
+     * Не клонируем
+     * @return null 
+     */
+    private function __clone() {
+        
+    }
+
+    /**
+     * И не десериализуем
+     * @return null 
+     */
+    private function __wakeup() {
+        
+    }
+
+    /**
+     * Получение объекта класса
+     * @return modsettings $this
+     */
+    public static function o() {
+        if (!self::$o)
+            self::$o = new self();
+        return self::$o;
     }
 
 }

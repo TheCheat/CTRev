@@ -142,8 +142,6 @@ class image {
 
     /**
      * Метода наложения текста на изображение
-     * @global file $file
-     * @global lang $lang
      * @param string $image_path путь к изображению
      * @param string $text накладываемый текст
      * @param string $color цвет изображения
@@ -156,8 +154,7 @@ class image {
      * @throws EngineException 
      */
     public function watermark($image_path, $text, $color = 'auto', $rewrite = false, $font = "upload/fonts/watermark.ttf", $pos = "rb", $random_color = false, $random_size = false) {
-        global $file, $lang;
-        $lang->get('file');
+        lang::o()->get('file');
         $font = ($font ? $font : "upload/fonts/watermark.ttf");
         $image_path = ROOT . $image_path;
         if (!preg_match("/^[lrc][tbc]$/siu", $pos))
@@ -165,7 +162,7 @@ class image {
         $pos1 = $pos [0];
         $pos2 = $pos [1];
         if ($text && $image_path) {
-            $type = strtolower($file->get_filetype($image_path));
+            $type = strtolower(file::o()->get_filetype($image_path));
             $shrift_weight = $this->size_def;
             $shrift_rotate = 0;
             $shrift_template = ROOT . $font;
@@ -235,7 +232,6 @@ class image {
 
     /**
      * Функция для изменения размера изображения
-     * @global lang $lang
      * @param string $filepath путь к файлу
      * @param int $maxwidth макс. ширина изображения
      * @param int $maxheight макс. высота изображения
@@ -247,8 +243,7 @@ class image {
      * @throws EngineException 
      */
     public function resize($filepath, $maxwidth = "", $maxheight = "", $curwidth = "", $curheight = "", $tmp_name = "", $new_name = "") {
-        global $lang;
-        $lang->get('file');
+        lang::o()->get('file');
         if (!$curwidth || !$curheight) {
             $wh = $this->is_image(ROOT . $filepath, true);
             $curwidth = $wh [0];
@@ -269,10 +264,10 @@ class image {
         $imagecftype = 'imagecreatefrom' . $type;
         $imagetype = 'image' . $type;
         if (!function_exists($imagecftype) || !function_exists($imagetype))
-            throw new EngineException($lang->v('file_unknown_type') . $lang->v('file_ft_images'));
+            throw new EngineException(lang::o()->v('file_unknown_type') . lang::o()->v('file_ft_images'));
         $source = @$imagecftype($filepath);
         if (!$source)
-            throw new EngineException($lang->v('file_unknown_type') . $lang->v('file_ft_images'));
+            throw new EngineException(lang::o()->v('file_unknown_type') . lang::o()->v('file_ft_images'));
         $new_w = (($maxwidth && $curwidth > $curheight) || !$maxheight ? $maxwidth : longval($maxheight * ($curwidth / $curheight)));
         $new_h = (($maxheight && $curheight > $curwidth) || !$maxwidth ? $maxheight : longval($maxwidth * ($curheight / $curwidth)));
         $target = imagecreatetruecolor($new_w, $new_h);

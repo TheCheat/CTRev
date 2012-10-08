@@ -73,13 +73,11 @@ abstract class pluginable_object {
 
     /**
      * Конструктор
-     * @global plugins $plugins
      * @return null 
      */
     final public function __construct() {
-        global $plugins;
         $this->plugin_construct();
-        $plugins->get_preloaded($this, $this->_actions);
+        plugins::o()->get_preloaded($this, $this->_actions);
     }
 
     /**
@@ -239,15 +237,13 @@ final class plugins_manager {
 
     /**
      * Конструктор
-     * @global db $db
      * @param plugins $plugins объект плагинов
      * @param string $plugin_name имя загружаемого плагина
      * @return null
      */
     public function __construct($plugins, &$plugin_name) {
-        global $db;
         $this->p = $plugins;
-        $this->plugins = $db->query('SELECT file,settings FROM plugins', array('n' => 'plugins',
+        $this->plugins = db::o()->query('SELECT file,settings FROM plugins', array('n' => 'plugins',
             'k' => array('file' => 'settings')));
         foreach ($this->plugins as $plugin => $settings) {
             $plugin_name = $plugin;
@@ -336,34 +332,30 @@ final class plugins_manager {
 
     /**
      * Добавление плагина
-     * @global db $db
      * @param string $plugin имя плагина
      * @return bool статус выполнения
      */
     public function add($plugin) {
-        global $db;
         if (!validword($plugin))
             return false;
         if (!$this->install($plugin))
             return false;
-        $db->insert(array('file' => $plugin), 'plugins');
+        db::o()->insert(array('file' => $plugin), 'plugins');
         $this->uncache();
         return true;
     }
 
     /**
      * Удаление плагина
-     * @global db $db
      * @param string $plugin имя плагина
      * @return bool статус выполнения
      */
     public function delete($plugin) {
-        global $db;
         if (!validword($plugin))
             return false;
         if (!$this->uninstall($plugin))
             return false;
-        $db->delete("plugins", 'WHERE file=' . $db->esc($plugin));
+        db::o()->delete("plugins", 'WHERE file=' . db::o()->esc($plugin));
         if (function_exists('clear_aliases'))
             clear_aliases();
         $this->uncache($plugin);
@@ -419,33 +411,28 @@ final class plugins_manager {
 
     /**
      * Получение и парсинг настроек плагина
-     * @global modsettings $modsettings
      * @param string $plugin имя плагина
      * @param string $settings сериализованный массив настроек
      * @return bool статус выполнения
      */
     private function settings($plugin, $settings) {
-        global $modsettings;
         $object = $this->plugins[$plugin];
         if (!$object)
             return false;
         $settings = unserialize($settings);
-        $this->parsed[$plugin] = $modsettings->change_type('plugins')->parse($plugin, $object, $settings);
+        $this->parsed[$plugin] = modsettings::o()->change_type('plugins')->parse($plugin, $object, $settings);
         return true;
     }
 
     /**
      * Удаление кеша
-     * @global cache $cache 
-     * @global modsettings $modsettings
      * @param string $plugin имя плагина
      * @return null
      */
     public function uncache($plugin = null) {
-        global $cache, $modsettings;
-        $cache->remove('plugins');
+        cache::o()->remove('plugins');
         if ($plugin)
-            $modsettings->change_type('plugins')->uncache($plugin);
+            modsettings::o()->change_type('plugins')->uncache($plugin);
     }
 
 }
@@ -503,8 +490,6 @@ class plugins_modifier {
 
     /**
      * Модификация шаблона 
-     * @global file $file
-     * @global config $config
      * @param string $f файл шаблона(относительно дирректории, с расширением)
      * @param string $what что заменять? (рег. выражение без делимиттеров)
      * @param string $with чем заменять? Чтобы добавить, достаточно дописать 
@@ -520,11 +505,10 @@ class plugins_modifier {
      * @see function join_css()
      */
     public function modify_template($f, $what, $with, $regexp = false, $folder = null) {
-        global $file, $config;
         if (!$what)
             return false;
         $f = validpath($f);
-        $ft = $file->get_filetype($f);
+        $ft = file::o()->get_filetype($f);
         if (!$f || ($ft != 'tpl' && $ft != 'xtpl'))
             return false;
         if (!$regexp) {
@@ -534,13 +518,13 @@ class plugins_modifier {
         }
         if (!$folder) {
             $b = 0;
-            $dir = $file->open_folder(THEMES_PATH, true);
+            $dir = file::o()->open_folder(THEMES_PATH, true);
             $c = count($dir);
             $cb = true;
             for ($i = 0; $i < $c; $i++) {
                 $cur = $dir[$i];
                 $r = $this->modify_template($f, $what, $with, $regexp, $cur);
-                if ($cur == $config->v('default_style'))
+                if ($cur == config::o()->v('default_style'))
                     $cb = $r;
                 $b += $r;
             }
@@ -560,7 +544,7 @@ class plugins_modifier {
         if (!$this->replaced[$p])
             $this->replaced[$p] = array();
         $this->replaced[$p][] = $this->treplaced;
-        return $file->write_file($ftpl, $p);
+        return file::o()->write_file($ftpl, $p);
     }
 
     /**
@@ -585,28 +569,24 @@ class plugins_modifier {
 
     /**
      * Сохранение заменённых частей файла
-     * @global file $file
      * @param string $plugin_name имя плагина
      * @return bool статус
      */
     public function save_replaced($plugin_name) {
-        global $file;
         if (!validword($plugin_name))
             return false;
         $path = PLUGINS_PATH . '/' . PLUGINS_REPLACED . '/repl.' . $plugin_name . '.back';
         $s = serialize($this->replaced);
         $this->replaced = array();
-        return $file->write_file($s, $path);
+        return file::o()->write_file($s, $path);
     }
 
     /**
      * Обратная замена
-     * @global file $file
      * @param string $plugin_name имя плагина
      * @return bool статус
      */
     public function revert_replace($plugin_name) {
-        global $file;
         $b = ROOT . PLUGINS_PATH . '/' . PLUGINS_REPLACED . '/repl.' . $plugin_name . '.back';
         if (!file_exists($b))
             return true;
@@ -630,7 +610,7 @@ class plugins_modifier {
                     $contents = str_replace($with, $what, $contents, $c);
                 }
             }
-            $r += $file->write_file($contents, $f);
+            $r += file::o()->write_file($contents, $f);
             $i++;
         }
         $r += @unlink($b);
@@ -647,6 +627,12 @@ final class plugins extends plugins_modifier {
      * @var bool
      */
     private $state = true;
+
+    /**
+     * Для классов, наследующих pluginable_object создаём копию и копируем её
+     * @var array
+     */
+    private $pluginable = array();
 
     /**
      * Алиасы классов инициализированы?
@@ -697,19 +683,6 @@ final class plugins extends plugins_modifier {
     public $manager = null;
 
     /**
-     * Конструктор
-     * @global config $config
-     * @return null 
-     */
-    public function __construct() {
-        global $config;
-        $this->state = (bool) $config->v('plugins_on');
-        if (!$this->state)
-            return;
-        $this->manager = new plugins_manager($this, $this->current_plugin);
-    }
-
-    /**
      * Вызов хука
      * @param string $name имя хука
      * @return null
@@ -752,7 +725,7 @@ final class plugins extends plugins_modifier {
      * @return plugins $this
      * @tutorial если необходимо передать переменную по ссылке, 
      * так и указываем в массиве, например:
-     * $plugins->pass_data(array('a' => &$linktoa,
+     * plugins::o()->pass_data(array('a' => &$linktoa,
      * 'b' => $simplevar))
      */
     public function pass_data($data, $clear = false) {
@@ -876,6 +849,11 @@ final class plugins extends plugins_modifier {
             if (class_exists($this->redefined[$class], false))
                 $class = $this->redefined[$class];
         }
+        if (!$name && $class instanceof pluginable_object) {
+            if (!$this->pluginable[$class])
+                $this->pluginable[$class] = new $class();
+            return clone $this->pluginable[$class];
+        }
         return $name ? $class : new $class();
     }
 
@@ -980,6 +958,51 @@ final class plugins extends plugins_modifier {
             return new $o1();
         else
             return new $o2();
+    }
+
+    // Реализация Singleton
+
+    /**
+     * Объект данного класса
+     * @var plugins
+     */
+    private static $o = null;
+
+    /**
+     * Конструктор? А где конструктор? А нет его.
+     * @return null 
+     */
+    private function __construct() {
+        $this->state = (bool) config::o()->v('plugins_on');
+        if (!$this->state)
+            return;
+        $this->manager = new plugins_manager($this, $this->current_plugin);
+    }
+
+    /**
+     * Не клонируем
+     * @return null 
+     */
+    private function __clone() {
+        
+    }
+
+    /**
+     * И не десериализуем
+     * @return null 
+     */
+    private function __wakeup() {
+        
+    }
+
+    /**
+     * Получение объекта класса
+     * @return plugins $this
+     */
+    public static function o() {
+        if (!self::$o)
+            self::$o = new self();
+        return self::$o;
     }
 
 }

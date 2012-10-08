@@ -63,15 +63,12 @@ class main {
 
     /**
      * Выполнение одного запроса из дампа
-     * @global db $db
-     * @global lang $lang
      * @param int $offset позиция, где заканчивается последний запрос
      * @return null 
      */
     protected function run_query($offset = 0) {
-        global $db, $lang;
-        $db->connect();
-        $db->no_error();
+        db::o()->connect();
+        db::o()->no_error();
         $offset = (int) $offset;
         // файл не должен содержать комментариев
         $matches = array();
@@ -97,17 +94,17 @@ class main {
         $query = preg_replace('/^--.*$/m', '', $query);
         $query = trim($query);
         if ($query) {
-            $db->query($query);
+            db::o()->query($query);
             preg_match('/((?:CREATE|ALTER)\s+TABLE(?:\s+IF\s+NOT\s+EXISTS)?|UPDATE|(?:REPLACE|INSERT)(?:\s+IGNORE)?(?:\s+INTO)?)\s+`?(\w+)`?/is', $query, $matches);
             $qtype = strtolower($matches[1][0]);
             $qtype = 'install_import_query_type' . $qtype;
-            if ($lang->visset($qtype)) {
+            if (lang::o()->visset($qtype)) {
                 $table = strtolower($matches[2]);
-                if ($db->errno())
-                    $status = sprintf($lang->v('install_import_query_error'), $db->errno());
+                if (db::o()->errno())
+                    $status = sprintf(lang::o()->v('install_import_query_error'), db::o()->errno());
                 else
-                    $status = $lang->v('install_import_query_success');
-                printf($lang->v('install_import_query'), $lang->v($qtype), $table, $status);
+                    $status = lang::o()->v('install_import_query_success');
+                printf(lang::o()->v('install_import_query'), lang::o()->v($qtype), $table, $status);
             }
         }
         print('<script type="text/javascript">
@@ -117,34 +114,30 @@ class main {
 
     /**
      * Перезаписываем?
-     * @global lang $lang
      * @param int|bool $c ответ функции
      * @return string текст
      */
     public function rewritable($c) {
-        global $lang;
         if ($c === 2 || $c === true)
-            $s = $lang->v('install_check_writable_yes');
+            $s = lang::o()->v('install_check_writable_yes');
         elseif ($c === 1)
-            $s = $lang->v('install_check_writable_part');
+            $s = lang::o()->v('install_check_writable_part');
         else
-            $s = $lang->v('install_check_writable_no');
+            $s = lang::o()->v('install_check_writable_no');
         return $s;
     }
 
     /**
      * Вывод "цветного" текста
-     * @global lang $lang
      * @param bool $cond условие
      * @param string $ytext текст при верном условии
      * @param string $ntext текст при неверном условии
      * @return string "окращенный" текст
      */
     public function colored($cond, $ytext = null, $ntext = null) {
-        global $lang;
         if (!$ytext) {
-            $ytext = $lang->v('yes_simple');
-            $ntext = $lang->v('no_simple');
+            $ytext = lang::o()->v('yes_simple');
+            $ntext = lang::o()->v('no_simple');
         }
         if (!$ntext)
             $ntext = $ytext;
@@ -156,19 +149,17 @@ class main {
 
     /**
      * Проверка перезаписываемости шаблонов/языковых пакетов
-     * @global file $file 
      * @param string $dir проверяемая дирректория
      * @return int 2 - полностью перезаписываемы, 1 - частично, 0 - не перезаписываемы
      */
     public function check_dir($dir = 'themes') {
-        global $file;
-        $f = $file->open_folder($dir, true);
+        $f = file::o()->open_folder($dir, true);
         $n = !$y = true;
         foreach ($f as $d) {
             $sd = '';
             if ($dir == 'themes')
                 $sd = '/templates';
-            $r = $file->is_writable($dir . '/' . $d . $sd, true, true);
+            $r = file::o()->is_writable($dir . '/' . $d . $sd, true, true);
             $y = $y || $r === true || $r === 2;
             $n = $n || !$r || $r === 1;
         }
@@ -180,12 +171,11 @@ class main {
      * @return null 
      */
     protected function show_license() {
-        global $tpl, $lang;
-        $f = $lang->v('install_license');
+        $f = lang::o()->v('install_license');
         if (!$f || !validword($f))
             $f = 'LICENSE_EN';
-        $tpl->assign('license', file_get_contents(ROOT . $f));
-        $tpl->display('license');
+        tpl::o()->assign('license', file_get_contents(ROOT . $f));
+        tpl::o()->display('license');
     }
 
     /**
@@ -224,31 +214,25 @@ class main {
 
     /**
      * Отображение проверки на перезаписываемость
-     * @global file $file
-     * @global db $db
-     * @global tpl $tpl
      * @return null 
      */
     protected function show_check() {
-        global $file, $tpl, $db;
-        $tpl->assign('file', $file);
+        tpl::o()->assign('file', file::o());
         $ufs = ini_get('upload_max_filesize');
         $pms = ini_get('post_max_size');
-        $tpl->assign('maxfilesize', $this->check_filesize($ufs, $pms) ? $pms : $ufs);
-        $tpl->assign('needfilesize', self::need_filesize);
-        //$tpl->assign('dbversion', $db->version());
-        $tpl->assign('chmod', $this->chmod);
-        $tpl->assign('this', $this);
-        $tpl->display('check');
+        tpl::o()->assign('maxfilesize', $this->check_filesize($ufs, $pms) ? $pms : $ufs);
+        tpl::o()->assign('needfilesize', self::need_filesize);
+        //tpl::o()->assign('dbversion', db::o()->version());
+        tpl::o()->assign('chmod', $this->chmod);
+        tpl::o()->assign('this', $this);
+        tpl::o()->display('check');
     }
 
     /**
      * Отображение настройки коннекта к БД
-     * @global tpl $tpl
      * @return null 
      */
     protected function show_database() {
-        global $tpl;
         $f = 'include/dbconn.php';
         if (file_exists($f))
             include_once ROOT . $f;
@@ -260,69 +244,58 @@ class main {
             $dbname = 'ctrev';
         if (!$charset)
             $charset = 'utf8';
-        $tpl->assign('dbhost', $dbhost);
-        $tpl->assign('dbuser', $dbuser);
-        $tpl->assign('dbpass', $dbpass);
-        $tpl->assign('dbname', $dbname);
-        $tpl->assign('charset', $charset);
-        $tpl->display('database');
+        tpl::o()->assign('dbhost', $dbhost);
+        tpl::o()->assign('dbuser', $dbuser);
+        tpl::o()->assign('dbpass', $dbpass);
+        tpl::o()->assign('dbname', $dbname);
+        tpl::o()->assign('charset', $charset);
+        tpl::o()->display('database');
     }
 
     /**
      * Отображение импорта данных в БД
-     * @global tpl $tpl
      * @return null 
      */
     protected function show_import() {
-        global $tpl;
-        $tpl->display('import');
+        tpl::o()->display('import');
     }
 
     /**
      * Отображение панели создания администратора
-     * @global tpl $tpl
      * @return null 
      */
     protected function show_admin() {
-        global $tpl;
-        $tpl->display('admin');
+        tpl::o()->display('admin');
     }
 
     /**
      * Отображение конфигурации сайта
-     * @global tpl $tpl
      * @global string $PREBASEURL
      * @return null 
      */
     protected function show_config() {
-        global $tpl, $PREBASEURL;
+        global $PREBASEURL;
         init_baseurl();
         $PREBASEURL = $PREBASEURL == "/" ? "/" : rtrim($PREBASEURL, '/');
-        $tpl->assign('baseurl', $PREBASEURL);
-        $tpl->display('config');
+        tpl::o()->assign('baseurl', $PREBASEURL);
+        tpl::o()->display('config');
     }
 
     /**
      * Отображение последней стадии установки
-     * @global tpl $tpl
-     * @global file $file
-     * @global cache $cache
      * @return null 
      */
     protected function show_finish() {
-        global $tpl, $file;
-        $file->write_file('1', ILOCK_FILE);
-        $tpl->display('finish');
+        file::o()->write_file('1', ILOCK_FILE);
+        tpl::o()->display('finish');
     }
 
     /**
      * Запись данных в БД
-     * @global file $file
      * @param array $data массив данных
      * @return bool true, если успешно записано
      */
     protected function write_db($data) {
-        global $file;
         extract(rex($data, array('dbhost',
                     'dbuser',
                     'dbpass',
@@ -342,60 +315,53 @@ $dbpass = ' . var_export($dbpass, true) . ';
 $dbname = ' . var_export($dbname, true) . ';
 $charset = ' . var_export($charset, true) . ';
 ?>';
-        return $file->write_file($contents, $f);
+        return file::o()->write_file($contents, $f);
     }
 
     /**
      * Проверка импорта дампа в БД
-     * @global db $db
-     * @global lang $lang
      * @param array $error массив ошибок
      * @return null
      */
     protected function import_db(&$error) {
-        global $db, $lang;
         $dump = $this->get_dump();
         $c = preg_match_all('/(?:^|\n)CREATE\s+TABLE(?:\s+IF\s+NOT\s+EXISTS)?\s+`?(\w+)`?/s', $dump, $matches);
         for ($i = 0; $i < $c; $i++) {
             $table = $matches[1][$i];
-            $r = $db->query('SHOW TABLES LIKE ' . $db->esc($table));
-            if (!$db->num_rows($r))
-                $error[] = sprintf($lang->v('install_error_table_non_exists'), $table);
+            $r = db::o()->query('SHOW TABLES LIKE ' . db::o()->esc($table));
+            if (!db::o()->num_rows($r))
+                $error[] = sprintf(lang::o()->v('install_error_table_non_exists'), $table);
         }
     }
 
     /**
      * Создание администратора
-     * @global db $db
-     * @global lang $lang
      * @param array $data массив данных
      * @param array $error массив ошибок
      * @return null
      */
     protected function create_admin($data, &$error) {
-        global $db, $lang;
         $group = 6; // группа админа
         extract(rex($data, array('username',
                     'password',
                     'passagain',
                     'email')));
         include_once ROOT . 'include/classes/class.users.php';
-        $users = new users();
         if ($password != $passagain)
-            $error[] = $lang->v('install_error_passwords_not_match');
-        if (!$users->check_login($username))
-            $error[] = $lang->v('install_error_wrong_username');
-        if (!$users->check_password($password))
-            $error[] = $lang->v('install_error_wrong_password');
+            $error[] = lang::o()->v('install_error_passwords_not_match');
+        if (!users::o()->check_login($username))
+            $error[] = lang::o()->v('install_error_wrong_username');
+        if (!users::o()->check_password($password))
+            $error[] = lang::o()->v('install_error_wrong_password');
         $tmp = false; // reference
-        if (!$users->check_email($email, $tmp))
-            $error[] = $lang->v('install_error_wrong_email');
+        if (!users::o()->check_email($email, $tmp))
+            $error[] = lang::o()->v('install_error_wrong_email');
         if ($error)
             return;
-        $db->truncate_table('users');
-        $salt = $users->generate_salt();
-        $salt2 = $users->generate_salt();
-        $passhash = $users->generate_pwd_hash($password, $salt);
+        db::o()->truncate_table('users');
+        $salt = users::o()->generate_salt();
+        $salt2 = users::o()->generate_salt();
+        $passhash = users::o()->generate_pwd_hash($password, $salt);
         $insert = array('username' => $username,
             'username_lower' => mb_strtolower($username),
             'confirmed' => 3,
@@ -405,28 +371,21 @@ $charset = ' . var_export($charset, true) . ';
             'registered' => time(),
             'group' => $group,
             'passkey' => $salt2);
-        $users->write_cookies($username, $passhash);
-        $db->insert($insert, "users");
+        users::o()->write_cookies($username, $passhash);
+        db::o()->insert($insert, "users");
     }
 
     /**
      * Настройка сайта
-     * @global cache $cache
-     * @global config $config
      * @param array $data массив данных
      * @param array $error массив ошибок
      * @return null
      */
     protected function config($data, &$error) {
-        global $cache, $config;
         include_once ROOT . 'include/classes/class.cache.php';
-        $cache = new cache();
         include_once ROOT . 'include/classes/class.users.php';
-        $users = new users();
         include_once ROOT . 'include/classes/class.config.php';
-        $config = new config();
-        $cache->init();
-        $cache->clear();
+        cache::o()->clear();
         $params = array('site_title',
             'baseurl',
             'contact_email',
@@ -448,58 +407,54 @@ $charset = ' . var_export($charset, true) . ';
         else
             $upd['cache_on'] = (bool) $upd['cache_on'];
 
-        $upd['secret_key'] = $users->generate_salt();
+        $upd['secret_key'] = users::o()->generate_salt();
         foreach ($upd as $k => $v)
-            $config->set($k, $v);
+            config::o()->set($k, $v);
     }
 
     /**
      * Проверка стадий
-     * @global db $db
-     * @global lang $lang
-     * @global file $file
      * @param array $data массив данных
      * @return null
      */
     protected function check_steps($data) {
-        global $db, $lang, $file;
         $error = array();
-        $db->no_reset()->no_error();
+        db::o()->no_reset()->no_error();
         switch (INSTALL_PAGE) {
             case "license":
             case "finish":
                 break;
             case "config":
-                $db->connect();
+                db::o()->connect();
                 $this->config($data, $error);
                 break;
             case "admin":
-                $db->connect();
+                db::o()->connect();
                 $this->create_admin($data, $error);
                 break;
             case "import":
-                $db->connect();
+                db::o()->connect();
                 $this->import_db($error);
                 break;
             case "database":
                 if (!$this->write_db($data))
-                    $error[] = $lang->v('install_error_cant_write_dbconn');
-                $db->connect();
+                    $error[] = lang::o()->v('install_error_cant_write_dbconn');
+                db::o()->connect();
             case "check":
                 foreach ($this->chmod as $f) {
-                    $r = $file->is_writable($f, true, true, true);
+                    $r = file::o()->is_writable($f, true, true, true);
                     if ($r !== 2 && $r !== true)
-                        $error [] = sprintf($lang->v('install_error_not_rewritable'), $f);
+                        $error [] = sprintf(lang::o()->v('install_error_not_rewritable'), $f);
                 }
                 $ufs = ini_get('upload_max_filesize');
                 $pms = ini_get('post_max_size');
                 $s = $this->check_filesize($ufs, $pms) ? $pms : $ufs;
                 if (!$this->check_filesize($s, self::need_filesize . 'M'))
-                    $error[] = $lang->v('install_error_upload_filesize');
+                    $error[] = lang::o()->v('install_error_upload_filesize');
                 if (!version_compare(PHP_VERSION, '5.0', '>='))
-                    $error[] = $lang->v('install_error_php_version');
+                    $error[] = lang::o()->v('install_error_php_version');
                 if (!in_array('mbstring', get_loaded_extensions()))
-                    $error[] = $lang->v('install_error_mbstring');
+                    $error[] = lang::o()->v('install_error_mbstring');
                 break;
         }
         if ($error)

@@ -17,13 +17,10 @@ class warnings_man {
 
     /**
      * Инициализация модуля предупреждений
-     * @global lang $lang
-     * @global tpl $tpl
      * @return null
      */
     public function init() {
-        global $lang, $tpl;
-        $lang->get('admin/bans');
+        lang::o()->get('admin/bans');
         $act = $_GET["act"];
         switch ($act) {
             case "save":
@@ -31,7 +28,7 @@ class warnings_man {
                 die();
                 break;
             case "add":
-                $tpl->display('admin/warnings/add.tpl');
+                tpl::o()->display('admin/warnings/add.tpl');
                 break;
             default:
                 $this->show();
@@ -41,32 +38,27 @@ class warnings_man {
 
     /**
      * Функция показа предупреждений
-     * @global db $db
-     * @global tpl $tpl
      * @param int $id ID предупреждения
      * @return null
      */
     protected function show($id = null) {
-        global $db, $tpl;
-        $r = $db->query('SELECT b.*, u.username AS bu, u.group AS bg, u2.username, u2.group FROM warnings AS b
+        $r = db::o()->query('SELECT b.*, u.username AS bu, u.group AS bg, u2.username, u2.group FROM warnings AS b
             LEFT JOIN users AS u ON u.id=b.uid
             LEFT JOIN users AS u2 ON u2.id=b.byuid' .
                 ($id ? " WHERE b.id=" . longval($id) . ' LIMIT 1' : ""));
-        $tpl->assign('res', $db->fetch2array($r));
-        $tpl->display('admin/warnings/index.tpl');
+        tpl::o()->assign('res', db::o()->fetch2array($r));
+        tpl::o()->display('admin/warnings/index.tpl');
     }
 
     /**
      * Сохранение предупреждения
-     * @global etc $etc
-     * @global furl $furl
      * @global string $admin_file
      * @param array $data массив данных
      * @param int $id ID предупреждения
      * @return null
      */
     protected function save($data) {
-        global $etc, $furl, $admin_file;
+        global $admin_file;
         $id = (int) $data['id'];
         $cols = array(
             'user' => 'username',
@@ -74,6 +66,8 @@ class warnings_man {
             'notify');
         extract(rex($data, $cols));
         $notify = (bool) $notify;
+        /* @var $etc etc */
+        $etc = n("etc");
         if ($user || !$id) {
             $r = $etc->select_user(null, $user, "id,email,warnings_count");
             $uid = $r["id"];
@@ -87,7 +81,7 @@ class warnings_man {
             $this->show($id);
             return;
         } else
-            $furl->location($admin_file);
+            furl::o()->location($admin_file);
     }
 
 }
@@ -96,12 +90,10 @@ class warnings_man_ajax {
 
     /**
      * Инициализация AJAX-части модуля
-     * @global lang $lang
      * @return null
      */
     public function init() {
-        global $lang;
-        $lang->get('admin/bans');
+        lang::o()->get('admin/bans');
         $act = $_GET["act"];
         $id = (int) $_POST["id"];
         switch ($act) {
@@ -117,31 +109,28 @@ class warnings_man_ajax {
 
     /**
      * Удаление предупреждения
-     * @global etc $etc
      * @param int $id ID предупреждения
      * @return null
      */
     protected function delete($id) {
-        global $etc;
         $id = (int) $id;
+        /* @var $etc etc */
+        $etc = n("etc");
         $etc->unwarn_user(null, null, $id);
     }
 
     /**
      * Функция редактирования предупреждений
-     * @global db $db
-     * @global tpl $tpl
      * @param int $id ID предупреждения
      * @return null
      */
     protected function edit($id) {
-        global $db, $tpl;
         $id = (int) $id;
-        $r = $db->query('SELECT b.*, u.username FROM warnings AS b
+        $r = db::o()->query('SELECT b.*, u.username FROM warnings AS b
             LEFT JOIN users AS u ON u.id=b.uid
             WHERE b.id=' . $id . ' LIMIT 1');
-        $tpl->assign("res", $db->fetch_assoc($r));
-        $tpl->display('admin/warnings/edit.tpl');
+        tpl::o()->assign("res", db::o()->fetch_assoc($r));
+        tpl::o()->display('admin/warnings/edit.tpl');
     }
 
 }

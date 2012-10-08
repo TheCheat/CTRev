@@ -19,7 +19,7 @@ class categories {
      * Массив категорий
      * @var array
      */
-    protected $c = null;
+    protected static $c = null;
 
     /**
      * Данный тип категорий
@@ -29,47 +29,43 @@ class categories {
 
     /**
      * Конструктор категорий
-     * @global cache $cache 
      * @return null
      */
     public function __construct() {
-        global $cache;
-        if (($this->c = $cache->read('categories')) === false) {
-            $this->cats2array();
-            $cache->write($this->c);
+        if (!self::$c && (self::$c = cache::o()->read('categories')) === false) {
+            self::cats2array();
+            cache::o()->write(self::$c);
         }
     }
 
     /**
      * Преобразование списка категорий в массив
-     * @global db $db
      * @param int $pid ID родителя
      * @param string $type тип категории
      * @return array массив категорий данного родителя
      */
-    protected function cats2array($pid = 0, $type = 'torrents') {
-        global $db;
-        $r = $db->query('SELECT * FROM categories 
-            WHERE ' . ($pid ? 'type=' . $db->esc($type) . ' AND' : "") . ' 
+    protected static function cats2array($pid = 0, $type = 'torrents') {
+        $r = db::o()->query('SELECT * FROM categories 
+            WHERE ' . ($pid ? 'type=' . db::o()->esc($type) . ' AND' : "") . ' 
                 parent_id=' . $pid);
         $ret = array();
-        while ($row = $db->fetch_assoc($r)) {
+        while ($row = db::o()->fetch_assoc($r)) {
             $type = $row['type'];
             $id = $row['id'];
             unset($row['type']);
             //unset($row['id']);
             unset($row['parent_id']);
-            $this->c['e'][$type][$id] = $row; // данные категории с ID $id
+            self::$c['e'][$type][$id] = $row; // данные категории с ID $id
             if (!$pid)
-                $this->c['t'][$type][] = &$this->c['e'][$type][$id]; // массив категорий верхнего уровня
-            $this->c['n'][$type][$row['transl_name']] = &$this->c['e'][$type][$id]; // для поиска категории по имени
-            if ($this->c['e'][$type][$pid])
-                $this->c['p'][$type][$id] = &$this->c['e'][$type][$pid]; // родитель, если есть
-            $a = $this->cats2array($id, $type);
+                self::$c['t'][$type][] = &self::$c['e'][$type][$id]; // массив категорий верхнего уровня
+            self::$c['n'][$type][$row['transl_name']] = &self::$c['e'][$type][$id]; // для поиска категории по имени
+            if (self::$c['e'][$type][$pid])
+                self::$c['p'][$type][$id] = &self::$c['e'][$type][$pid]; // родитель, если есть
+            $a = self::cats2array($id, $type);
             if ($a)
-                $this->c['c'][$type][$id] = $a; // дети, если есть
+                self::$c['c'][$type][$id] = $a; // дети, если есть
             if ($pid)
-                $ret[] = &$this->c['e'][$type][$id]; // записываем для детей, если нужно
+                $ret[] = &self::$c['e'][$type][$id]; // записываем для детей, если нужно
         }
         return $ret;
     }
@@ -91,12 +87,12 @@ class categories {
             case 'c':
                 break;
             case 'z':
-                return array_keys($this->c['e']);
+                return array_keys(self::$c['e']);
             default:
                 $type = $e;
                 break;
         }
-        return $type == 't' ? $this->c[$type][$this->curtype] : $this->c[$type][$this->curtype][$id];
+        return $type == 't' ? self::$c[$type][$this->curtype] : self::$c[$type][$this->curtype][$id];
     }
 
     /**
@@ -105,7 +101,7 @@ class categories {
      * @return categories $this
      */
     public function change_type($type) {
-        if (!$this->c['e'][$type])
+        if (!self::$c['e'][$type])
             return $this;
         $this->curtype = $type;
         return $this;
@@ -113,20 +109,17 @@ class categories {
 
     /**
      * Создание условия для выборки всего из данной категории и всех подкатегорий
-     * @global db $db
-     * @global display $display
      * @param integer|string $cur имя или ID данной категории
      * @param array $cat_row массив верхней категории
      * @return string условие
      */
     public function condition($cur, &$cat_row = null) {
-        global $db, $display;
         if (!$cur)
             return null;
         if (is_numeric($cur))
             $cat = (int) $cur;
         else {
-            $cat = mb_strtolower($display->strip_subpath($cur));
+            $cat = mb_strtolower(display::o()->strip_subpath($cur));
             if (preg_match('/^(.*?)\//siu', $cat, $matches))
                 $cat = $matches[1];
         }
@@ -173,14 +166,12 @@ class categories {
 
     /**
      * Получение массива категорий
-     * @global db $db
      * @param string $category_id ID категорий
      * @param int $level уровень категорий(1 - верхний, 0 - все)
      * @return array массив категорий, 1-ый элемент - массив данных категорий, а 0, если указан,
      * массив родителей категории, по-порядку, в которых ключ - transl_name, значение - название категории,
      */
     public function cid2arr($category_id, $level = 1) {
-        global $db;
         $cats = array_map("intval", explode(",", trim($category_id, ",")));
         if (!$cats)
             return;
@@ -223,29 +214,27 @@ class categories {
 
     /**
      * AJAX селектор категорий
-     * @global tpl $tpl
      * @param string $cat ID'ы категорий или имя категории
      * @return string HTML код селектора
      */
     public function ajax_selector($cat = null) {
-        global $tpl;
         if ($cat && $cat[0] == ',') {
             $row_cats = explode(',', trim($cat, ","));
             $cat = $row_cats [0];
-            $tpl->assign('row_cats', $row_cats);
+            tpl::o()->assign('row_cats', $row_cats);
         } elseif ($cat) {
             $cat = $this->get($cat);
             $cat = $cat['id'];
         }
         if (!$cat)
-            $tpl->assign("cats", $this->get(null, 't'));
+            tpl::o()->assign("cats", $this->get(null, 't'));
         else {
             $categories = $this->get_parents($cat);
-            $tpl->assign("categories", $categories[0]);
-            $tpl->assign("cids", $categories[1]);
+            tpl::o()->assign("categories", $categories[0]);
+            tpl::o()->assign("cids", $categories[1]);
         }
-        $tpl->assign("cattype", $this->curtype);
-        $r = $tpl->fetch('categories.tpl');
+        tpl::o()->assign("cattype", $this->curtype);
+        $r = tpl::o()->fetch('categories.tpl');
         return $r;
     }
 
@@ -270,25 +259,26 @@ class categories {
 
     /**
      * Вывод категорий с родителями
-     * @global furl $furl
      * @param array $cat_arr массив данных категорий
      * @param array $parents массив родителей вида transl_name=>name
+     * @param string $type тип категорий
      * @return string HTML код
      */
-    public function print_selected($cat_arr, $parents = null) {
-        global $furl;
+    public function print_selected($cat_arr, $parents = null, $type = "torrents") {
         if (!$cat_arr)
             return;
+        if (!$type)
+            $type = 'torrents';
         $html = '';
         if ($parents) {
             $html = '<b>&nbsp;&raquo;&nbsp;</b>';
             foreach ($parents as $trcat => $cat)
-                $html .= '<a href="' . $furl->construct($this->curtype, array(
+                $html .= '<a href="' . furl::o()->construct($type, array(
                             'cat' => $trcat)) . '">' . $cat . '</a><b>&nbsp;&raquo;&nbsp;</b>';
         }
         $b = false;
         foreach ($cat_arr as $cat) {
-            $html .= ($b ? ",&nbsp;" : "") . '<a href="' . $furl->construct($this->curtype, array(
+            $html .= ($b ? ",&nbsp;" : "") . '<a href="' . furl::o()->construct($type, array(
                         'cat' => $cat['transl_name'])) . '">' . $cat['name'] . '</a>';
             $b = true;
         }

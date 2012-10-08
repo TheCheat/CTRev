@@ -21,16 +21,12 @@ include "include/classes/class.db.php";
 include "include/classes/class.lang.php";
 include "install/include/class.tpl.php";
 
-$file = new file();
-$db = new db();
-$lang = new lang();
-$tpl = new tpl();
 define('ILOCK_FILE', 'install/lock');
 if (file_exists(ILOCK_FILE))
     define('INSTALL_LOCKED', true);
 else
     define('INSTALL_LOCKED', false);
-$db->nt_error();
+db::o()->nt_error();
 $pages = array(
     'license',
     'check',
@@ -52,11 +48,11 @@ if (!validfolder($_COOKIE['lang'], LANGUAGES_PATH)) {
     $lng = DEFAULT_LANG;
 } else
     $lng = $_COOKIE['lang'];
-$lang->change_folder($lng);
+lang::o()->change_folder($lng);
 
-$lang->get('system');
-$lang->get('main');
-$lang->get('install/main');
+lang::o()->get('system');
+lang::o()->get('main');
+lang::o()->get('install/main');
 if (!defined('INCONVERT')) {
     if (INSTALL_LOCKED) {
         $page = end($pages);
@@ -64,7 +60,7 @@ if (!defined('INCONVERT')) {
     }
     define('INSTALL_FILE', 'install');
 } else {
-    $lang->get('install/convert');
+    lang::o()->get('install/convert');
     $pages = array(
         "notice",
         "database",
@@ -104,9 +100,9 @@ if ($_GET['page'])
     $main->init();
 else {
     include 'include/classes/class.input.php';
-    $tpl->assign('pages', $pages);
-    $tpl->assign('clang', $lng);
-    $tpl->assign('input', new input());
-    $tpl->display('contents');
+    tpl::o()->assign('pages', $pages);
+    tpl::o()->assign('clang', $lng);
+    tpl::o()->assign('input', input::o());
+    tpl::o()->display('contents');
 }
 ?>

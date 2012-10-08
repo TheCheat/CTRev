@@ -99,16 +99,6 @@ final class furl extends pluginable_object {
     private $forlocation = array();
 
     /**
-     * Конструктор класса
-     * @return null 
-     */
-    protected function plugin_construct() {
-        $this->access_var('postfixes', PVAR_ADD | PVAR_MOD);
-        $this->access_var('resort', PVAR_ADD | PVAR_MOD);
-        $this->access_var('rmodules', PVAR_ADD);
-    }
-
-    /**
      * Включить/Выключить запрет переадресации
      * @return furl $this
      */
@@ -400,16 +390,14 @@ final class furl extends pluginable_object {
 
     /**
      * Метод обработки параметров для не-ЧПУ торрентов
-     * @global display $display
      * @param string $param имя параметра
      * @param mixed $value значение параметра
      * @return string часть не-URL
      */
     protected function torrents_nfurl_rules($param, $value) {
-        global $display;
         switch ($param) {
             case "title":
-                $value = $display->translite($value, 100);
+                $value = display::o()->translite($value, 100);
             default:
                 return $param . '=' . $value;
                 break;
@@ -418,13 +406,11 @@ final class furl extends pluginable_object {
 
     /**
      * Метод обработки параметров для ЧПУ торрентов
-     * @global display $display
      * @param string $param имя параметра
      * @param mixed $value значение параметра
      * @return string часть ЧПУ
      */
     protected function torrents_furl_rules($param, $value) {
-        global $display;
         switch ($param) {
             //case "attr" :
             //    return $value;
@@ -441,7 +427,7 @@ final class furl extends pluginable_object {
                 return "-cid" . longval($value);
                 break;
             case "title" :
-                return $display->translite($value, 100);
+                return display::o()->translite($value, 100);
                 break;
             case "cat" :
                 return $value . "/";
@@ -476,7 +462,6 @@ final class furl extends pluginable_object {
      * Функция создания Человекопонятного URL, исходя из заданных параметров, 
      * по предустановленным правилам
      * @global string $BASEURL
-     * @global config $config
      * @param string $module имя модуля
      * @param array $params массив параметров, например:
      * array('id' => 1, 'name' => 'CTRev', 'cat' => 'demo')
@@ -487,7 +472,7 @@ final class furl extends pluginable_object {
      * @return string ЧПУ
      */
     public function construct($module, $params = array(), $page = false, $no_end = false, $nobaseurl = false) {
-        global $BASEURL, $config;
+        global $BASEURL;
         $burl = true;
         if (is_array($module)) {
             $module_t = $module ['module'];
@@ -510,7 +495,7 @@ final class furl extends pluginable_object {
             $burl = false;
         /*
           if (!is_array($params) && $params)
-          $params = (array) $display->parse_smarty_array($params);
+          $params = (array) display::o()->parse_smarty_array($params);
           else */
         if (!is_array($params))
             $params = array();
@@ -519,7 +504,7 @@ final class furl extends pluginable_object {
         else
             $filetype = ".html";
         $url = ($burl ? $BASEURL : "");
-        if ($config->v('furl')) {
+        if (config::o()->v('furl')) {
             $url .= $module . ($page ? '' : "/");
             $function = $module . '_furl_rules';
         } else {
@@ -540,11 +525,11 @@ final class furl extends pluginable_object {
                     $postfix .= $this->postfixes[$module] [$param] . $value;
                 if ($b)
                     $r = $this->call_method($function, array($param, $value, !$slashes && !$noencode));
-                elseif (!$config->v('furl'))
+                elseif (!config::o()->v('furl'))
                     $r = $param . "=" . $value;
                 else
                     $r = $param . "-" . $value . "/";
-                if (!$config->v('furl') && $r) {
+                if (!config::o()->v('furl') && $r) {
                     $surl .= '&' . $r;
                     $r = ($slashes || $noencode ? '&' : '&amp;') . $r;
                 }
@@ -556,7 +541,7 @@ final class furl extends pluginable_object {
         else
             $surl = $ourl . $surl;
         $add = '';
-        if ($config->v('furl')) {
+        if (config::o()->v('furl')) {
             if (!$no_end && !$page && (!$params || !$b || $url [mb_strlen($url) - 1] == '/'))
                 $add .= "index";
             if (!$no_end)
@@ -600,6 +585,61 @@ final class furl extends pluginable_object {
             die();
         else
             print ($contents);
+    }
+
+    // Реализация Singleton для pluginable_object
+
+    /**
+     * Объект данного класса
+     * @var furl
+     */
+    private static $o = null;
+
+    /**
+     * Переменная для создания объекта только через функцию o
+     * @var bool
+     */
+    protected static $singletoned = false;
+
+    /**
+     * Не клонируем
+     * @return null 
+     */
+    protected function __clone() {
+        
+    }
+
+    /**
+     * И не десериализуем
+     * @return null 
+     */
+    protected function __wakeup() {
+        
+    }
+
+    /**
+     * Получение объекта класса
+     * @return furl $this
+     */
+    public static function o() {
+        if (!self::$o) {
+            self::$singletoned = true;
+            self::$o = new self();
+            self::$singletoned = false;
+        }
+        return self::$o;
+    }
+
+    /**
+     * Конструктор класса
+     * @return null 
+     */
+    protected function plugin_construct() {
+        if (!self::$singletoned)
+            die("To get an object use furl::o()");
+        $this->access_var('postfixes', PVAR_ADD | PVAR_MOD);
+        $this->access_var('resort', PVAR_ADD | PVAR_MOD);
+        $this->access_var('rmodules', PVAR_ADD);
     }
 
 }

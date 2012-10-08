@@ -19,13 +19,7 @@ require_once ROOT . 'include/classes/class.plugins.php';
 require_once ROOT . 'include/classes/class.config.php';
 require_once ROOT . 'include/classes/class.stats.php';
 
-$db->connect();
-$config = new config();
-$cache = new cache();
-$cache->init();
-$stats = new stats();
-$modsettings = new modsettings();
-$plugins = new plugins();
+db::o()->connect();
 
 class convert {
     /**
@@ -116,22 +110,16 @@ class convert {
 
     /**
      * Инициализация AJAX части конвертации
-     * @global cache $cache
-     * @global lang $lang
-     * @global tpl $tpl
-     * @global config $config
      * @return null 
      */
     public function init() {
-        global $cache, $lang, $tpl, $config;
-        $lang->get('install/convert');
-        $cache->init();
+        lang::o()->get('install/convert');
         if ($_GET['check']) {
             if (INSTALL_PAGE == "database")
                 $this->check_settings();
             die('OK!');
         } else {
-            $tpl->assign("config", $config);
+            tpl::o()->assign("config", config::o());
             switch (INSTALL_PAGE) {
                 case "database":
                     $this->show_database();
@@ -140,62 +128,52 @@ class convert {
                     $this->show_convert();
                     break;
                 case "notice":
-                    $cache->clear();
+                    cache::o()->clear();
                     break;
             }
-            $tpl->display("convert/" . INSTALL_PAGE);
+            tpl::o()->display("convert/" . INSTALL_PAGE);
         }
     }
 
     /**
      * Запрос настроек конвертации
-     * @global db $db
      * @return null
      */
     private function request_settings() {
-        global $db;
-        $r = $db->no_error()->query('SELECT `field`, `value` FROM `convert`');
+        $r = db::o()->no_error()->query('SELECT `field`, `value` FROM `convert`');
         if (!$r)
             return;
-        while (list($field, $value) = $db->fetch_row($r))
+        while (list($field, $value) = db::o()->fetch_row($r))
             $this->$field = $value;
     }
 
     /**
      * Отображение настроек БД
-     * @global tpl $tpl
-     * @global db $db
      * @return null
      */
     private function show_database() {
-        global $tpl, $db;
         require_once ROOT . 'include/classes/class.input.php';
-        $input = new input();
-        $cfiles = $input->select_folder("file", 'install/database', $this->cfile, false, false, "/^(.*)\.conv$/siu", 1);
-        $tpl->assign('cfiles', $cfiles);
-        $r = $db->query('SELECT id, name FROM groups');
-        $tpl->assign('groups', $db->fetch2array($r, 'assoc', array('id' => 'name')));
+        $cfiles = input::o()->select_folder("file", 'install/database', $this->cfile, false, false, "/^(.*)\.conv$/siu", 1);
+        tpl::o()->assign('cfiles', $cfiles);
+        $r = db::o()->query('SELECT id, name FROM groups');
+        tpl::o()->assign('groups', db::o()->fetch2array($r, 'assoc', array('id' => 'name')));
     }
 
     /**
      * Отображение конвертации
-     * @global plugins $plugins
-     * @global lang $lang
-     * @global stats $stats
      * @return null
      */
     private function show_convert() {
-        global $plugins, $lang, $db, $stats;
         require_once ROOT . sprintf(self::gpath, $this->cfile);
         $this->getter = new get_convert($this->db, unserialize($this->groups));
         if ($_GET['convert']) {
             if ($_GET['finish']) {
-                $db->update(array('value' => '1'), 'convert', 'WHERE field="converted" LIMIT 1');
-                $stats->remove(self::stfield);
+                db::o()->update(array('value' => '1'), 'convert', 'WHERE field="converted" LIMIT 1');
+                stats::o()->remove(self::stfield);
                 $pname = sprintf(self::pname, $this->db);
-                $plugins->manager->delete($pname);
-                $plugins->manager->add($pname);
-                printf($lang->v('convert_plugin_installed'));
+                plugins::o()->manager->delete($pname);
+                plugins::o()->manager->add($pname);
+                printf(lang::o()->v('convert_plugin_installed'));
                 print("<script type='text/javascript'>stop_loading();</script>");
                 die();
             }
@@ -206,24 +184,21 @@ class convert {
 
     /**
      * Проверка настроек
-     * @global lang $lang
-     * @global db $db
      * @return null
      */
     private function check_settings() {
-        global $lang, $db;
         $peronce = (int) $_POST['peronce'];
         if ($peronce < 20)
             $peronce = 20;
         $cdb = $_POST['db'];
         $cfile = $_POST['file'];
-        $r = $db->query("SHOW DATABASES LIKE " . $db->esc($cdb));
-        if (!$db->num_rows($r) || !$cdb)
-            die(sprintf($lang->v('convert_wrong_db'), $cdb));
+        $r = db::o()->query("SHOW DATABASES LIKE " . db::o()->esc($cdb));
+        if (!db::o()->num_rows($r) || !$cdb)
+            die(sprintf(lang::o()->v('convert_wrong_db'), $cdb));
         if (!file_exists(ROOT . sprintf(self::fpath, $cfile)) || !file_exists(ROOT . sprintf(self::gpath, $cfile)))
-            die(sprintf($lang->v('convert_cfile_not_exists'), $cfile));
-        $db->query('DROP TABLE IF EXISTS `convert`');
-        $db->query('CREATE TABLE `convert`(`field` VARCHAR( 200 ) NOT NULL,`value` TEXT NOT NULL, PRIMARY KEY ( `field` ))');
+            die(sprintf(lang::o()->v('convert_cfile_not_exists'), $cfile));
+        db::o()->query('DROP TABLE IF EXISTS `convert`');
+        db::o()->query('CREATE TABLE `convert`(`field` VARCHAR( 200 ) NOT NULL,`value` TEXT NOT NULL, PRIMARY KEY ( `field` ))');
         $groups = array();
         foreach ((array) $_POST['groups'] as $id => $grs) {
             $id = (int) $id;
@@ -244,8 +219,8 @@ class convert {
             'groups' => serialize($groups),
             'converted' => '0');
         foreach ($i as $f => $v)
-            $db->insert(array("field" => $f, "value" => $v), "convert", true);
-        $db->save_last_table();
+            db::o()->insert(array("field" => $f, "value" => $v), "convert", true);
+        db::o()->save_last_table();
     }
 
     /**
@@ -258,31 +233,24 @@ class convert {
 
     /**
      * Очистка таблиц перед вставкой
-     * @global db $db
-     * @global lang $lang
-     * @global stats $stats
      * @return null
      */
     private function truncate_tables() {
-        global $db, $lang, $stats;
         $content = $this->convert_tables();
         $c = preg_match_all('/\s*?^table\s+(\w+)/miu', $content, $matches);
         for ($i = 0; $i < $c; $i++)
-            $db->truncate_table($matches[1][$i]);
-        $stats->remove(self::stfield);
-        printf($lang->v('convert_truncated_tables'), $c);
+            db::o()->truncate_table($matches[1][$i]);
+        stats::o()->remove(self::stfield);
+        printf(lang::o()->v('convert_truncated_tables'), $c);
     }
 
     /**
      * Парсинг таблицы конвертации
-     * @global cache $cache
-     * @global db $db
      * @param int $toffset позиция таблицы для конвертации
      * @param int $loffset позиция значений
      * @return null
      */
     private function parse($toffset = 0, $loffset = 0) {
-        global $cache, $db;
         $toffset = (int) $toffset;
         $loffset = (int) $loffset;
         if (!$toffset && !$loffset)
@@ -290,7 +258,7 @@ class convert {
         $a = array();
         $finish = "<script type='text/javascript'>continue_convert(0, 0, true);</script>";
         $cachefile = 'convert/cparse-off' . $toffset;
-        if (!($a = $cache->read($cachefile))) {
+        if (!($a = cache::o()->read($cachefile))) {
             $content = $this->convert_tables();
             $c = preg_match_all('/(^)\s*?table\s+(\w+)\/([\w\s,]+?)(?:\s*?\:\s*?(\w+))?(?:\s*?\?(.*?))?\s*?($)/miu', $content, $matches, PREG_OFFSET_CAPTURE, $toffset);
             $i = 0;
@@ -311,11 +279,11 @@ class convert {
             $data = trim($len ? mb_substr($content, $pos, $len) : mb_substr($content, $pos));
             $this->parse_columns($data);
             $a = array($table, $orderby, $ftable, $cond, $ntoffset, $this->columns, $this->insert);
-            $cache->write($a, $cachefile);
+            cache::o()->write($a, $cachefile);
         } else
             list($table, $orderby, $ftable, $cond, $ntoffset, $this->columns, $this->insert) = $a;
         $this->select4insert($table, $orderby, $ftable, $cond, $loffset);
-        $c = $db->prepend_db($this->db)->count_rows($ftable, $cond);
+        $c = db::o()->prepend_db($this->db)->count_rows($ftable, $cond);
         if ($c <= $loffset + $this->peronce) {
             if (!$ntoffset)
                 die($finish);
@@ -346,26 +314,22 @@ class convert {
 
     /**
      * Callback функция для препарсинга аргументов
-     * @global db $db
      * @param array $matches спарсенный массив данных
      * @param bool $nesc true, если не нужно экранировать значение столбца
      * @return mixed массив всех значений столбцов или одного
      */
     private function prepare_args_callback($matches, $nesc = false) {
-        global $db;
         $row = $this->tmp;
         $m = $matches[1];
         $m = preg_replace('/`(\w+)`/iu', '$1', $m);
         if ($nesc && mb_strtolower($m) == '$row')
             return $row;
         else
-            return $nesc ? $row[$m] : $db->esc($row[$m]);
+            return $nesc ? $row[$m] : db::o()->esc($row[$m]);
     }
 
     /**
      * Выборка и вставка значений из таблицы
-     * @global db $db
-     * @global lang $lang
      * @param string 
      * @param string $table имя таблицы вставки
      * @param string $orderby сортировка таблицы выборки
@@ -375,7 +339,6 @@ class convert {
      * @return array массив значений
      */
     private function select4insert($table, $orderby, $ftable, $cond, $limit) {
-        global $db, $lang;
         $query = "SELECT ";
         $c = count($this->columns);
         for ($i = 0; $i < $c; $i++)
@@ -384,19 +347,19 @@ class convert {
         $query .= " FROM `" . $this->db . "`.`" . $ftable . "`" . ($cond ? " WHERE " . $cond : "") . "
             ORDER BY " . $orderby . "
             LIMIT " . $limit . ',' . $this->peronce;
-        $r = $db->no_error()->query($query);
-        if ($db->errno()) {
-            printf($lang->v('convert_select_error'), $ftable, $db->errno(), $db->errtext());
+        $r = db::o()->no_error()->query($query);
+        if (db::o()->errno()) {
+            printf(lang::o()->v('convert_select_error'), $ftable, db::o()->errno(), db::o()->errtext());
             die();
         }
-        while ($row = $db->fetch_assoc($r))
-            $db->ignore()->insert($this->insert($row), $table, true);
-        $db->no_error()->save_last_table();
-        if ($db->errno()) {
-            printf($lang->v('convert_insert_error'), $table, $db->errno(), $db->errtext());
+        while ($row = db::o()->fetch_assoc($r))
+            db::o()->ignore()->insert($this->insert($row), $table, true);
+        db::o()->no_error()->save_last_table();
+        if (db::o()->errno()) {
+            printf(lang::o()->v('convert_insert_error'), $table, db::o()->errno(), db::o()->errtext());
             die();
         }
-        printf($lang->v('convert_inserted_table'), $limit, $limit + $this->peronce - 1, $table, $ftable);
+        printf(lang::o()->v('convert_inserted_table'), $limit, $limit + $this->peronce - 1, $table, $ftable);
     }
 
     /**

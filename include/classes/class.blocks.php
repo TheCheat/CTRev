@@ -44,7 +44,7 @@ final class blocks {
      * Загруженный модуль
      * @var string
      */
-    private $module = "";
+    private static $module = "";
 
     /**
      * Статус блочной системы
@@ -54,22 +54,18 @@ final class blocks {
 
     /**
      * Конструктор класса
-     * @global config $config
      * @return null 
      */
     public function __construct() {
-        global $config;
-        $this->state = $config->v('use_blocks');
+        $this->state = config::o()->v('use_blocks');
     }
 
     /**
      * Метод показывания блока
-     * @global db $db
      * @param string $pos положение блока(left, right, top, bottom)
      * @return null
      */
     public function display($pos) {
-        global $db;
         if (!$this->state)
             return;
         if (is_array($pos)) {
@@ -79,11 +75,11 @@ final class blocks {
             $pos = $spos;
         }
         if (!$this->blocks)
-            $this->blocks = $db->query('SELECT * FROM blocks WHERE enabled = true', 'blocks');
+            $this->blocks = db::o()->query('SELECT * FROM blocks WHERE enabled = true', 'blocks');
         foreach ($this->blocks as $index => $row) {
             if ($row ['module']) {
                 $row ['module'] = explode(';', $row ['module']);
-                if (!in_array($this->module, $row ['module']))
+                if (!in_array(self::$module, $row ['module']))
                     continue;
             }
             if ($row ['type'] != $pos)
@@ -96,27 +92,18 @@ final class blocks {
     /**
      * Установка отображемого модуля страницы для проверки в блоке
      * @param string $module имя модуля
-     * @return blocks $this
+     * @return null
      */
-    public function set_module($module) {
-        if (!$this->state)
-            return $this;
-        $this->module = $module;
-        return $this;
+    public static function set_module($module) {
+        self::$module = $module;
     }
 
     /**
      * Метод покпазывания блока
-     * @global tpl $tpl
-     * @global db $db
-     * @global plugins $plugins
-     * @global users $users
-     * @global modsettings $modsettings
      * @param array $row массив данных блока
      * @return null
      */
     public function show_single($row) {
-        global $tpl, $db, $plugins, $users, $modsettings;
         if (!$this->state)
             return;
         if (!$row)
@@ -128,67 +115,63 @@ final class blocks {
         $template = ($row ['tpl'] ? $row ['tpl'] : $row["type"] . self::block_standart);
         if ($row['group_allowed']) {
             $groups = explode(';', $row['group_allowed']);
-            if (!in_array($users->v('group'), $groups))
+            if (!in_array(users::o()->v('group'), $groups))
                 return;
         }
         if (!$title)
             return;
-        $object = $plugins->get_module($file, true);
+        $object = plugins::o()->get_module($file, true);
         if (!$object)
             return;
         $f = self::blocks_path . "/";
         $f1 = $f . $template . ".tpl";
         $f2 = $f . self::allblock . ".tpl";
-        if ($tpl->template_exists($f1))
+        if (tpl::o()->template_exists($f1))
             $template = $f1;
-        elseif ($tpl->template_exists($f2))
+        elseif (tpl::o()->template_exists($f2))
             $template = $f2;
         else
             return;
-        $modsettings->change_type('blocks')->parse($id, $object, $settings);
-        $db->nt_error();
+        modsettings::o()->change_type('blocks')->parse($id, $object, $settings);
+        db::o()->nt_error();
         ob_start();
         try {
-            $content = $plugins->call_init($object);
+            $content = plugins::o()->call_init($object);
         } catch (EngineException $e) {
             mess($e->getEMessage(), null, "error", false);
         }
         if (!$content)
             $content = ob_get_contents();
         ob_end_clean();
-        $db->nt_error(true);
+        db::o()->nt_error(true);
         if (!trim($content))
             return;
-        $tpl->assign("title", $title);
-        $tpl->assign("content", $content);
-        $tpl->display($template);
+        tpl::o()->assign("title", $title);
+        tpl::o()->assign("content", $content);
+        tpl::o()->display($template);
     }
 
     /**
      * Получение настроек блока
-     * @global plugins $plugins
-     * @global db $db
-     * @global modsettings $modsettings
      * @param string $file файл
      * @return array массив настроек
      */
     public function get_settings($file) {
-        global $plugins, $db, $modsettings;
         if (!$this->state)
             return;
         if ($this->settings[$file])
             return $this->settings[$file];
         if (!validword($file))
             return;
-        $r = $db->query('SELECT id,settings FROM blocks WHERE file=' . $db->esc($file) . ' LIMIT 1');
-        list($id, $settings) = $db->fetch_row($r);
+        $r = db::o()->query('SELECT id,settings FROM blocks WHERE file=' . db::o()->esc($file) . ' LIMIT 1');
+        list($id, $settings) = db::o()->fetch_row($r);
         if (!$id)
             return;
         $settings = unserialize($settings);
-        $object = $plugins->get_module($file, true);
+        $object = plugins::o()->get_module($file, true);
         if (!$object || !isset($object->settings))
             return;
-        $modsettings->change_type('blocks')->parse($id, $object, $settings);
+        modsettings::o()->change_type('blocks')->parse($id, $object, $settings);
         $this->settings[$file] = $object->settings;
         return $this->settings[$file];
     }

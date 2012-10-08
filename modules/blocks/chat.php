@@ -17,14 +17,11 @@ class chat_block {
 
     /**
      * Инициализация чата
-     * @global lang $lang
-     * @global tpl $tpl
      * @return null
      */
     public function init() {
-        global $lang, $tpl;
-        $lang->get("blocks/chat");
-        $tpl->display('chat/index.tpl');
+        lang::o()->get("blocks/chat");
+        tpl::o()->display('chat/index.tpl');
     }
 
 }

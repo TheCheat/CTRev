@@ -23,53 +23,46 @@ class login {
 
     /**
      * Инициализация логина
-     * @global tpl $tpl
-     * @global users $users
-     * @global furl $furl
-     * @global lang $lang
      * @return null
      */
     public function init() {
-        global $tpl, $users, $furl, $lang;
         $ref = $_GET ['ref'];
         $act = $_GET ['act'];
-        $tpl->assign('referer', $ref);
+        tpl::o()->assign('referer', $ref);
         if ($act != "out") {
-            if ($users->v() && ((!$ref && !$act) || $act) && $users->v('confirmed') == 3)
-                $furl->location('');
+            if (users::o()->v() && ((!$ref && !$act) || $act) && users::o()->v('confirmed') == 3)
+                furl::o()->location('');
         }
-        $lang->get('login');
+        lang::o()->get('login');
         switch ($act) {
             case "out":
-                $users->clear_cookies();
-                $furl->location('');
+                users::o()->clear_cookies();
+                furl::o()->location('');
             case "recover" :
-                $this->title = $lang->v('recovery_page');
+                $this->title = lang::o()->v('recovery_page');
                 if ($key = $_GET['key']) {
                     $email = $_GET ["email"];
                     $this->recover_save($key, $email);
                 } else
-                    $tpl->display('login/recover.tpl');
+                    tpl::o()->display('login/recover.tpl');
                 break;
             default :
-                $this->title = $lang->v('login_page');
-                $tpl->display('login/login.tpl');
+                $this->title = lang::o()->v('login_page');
+                tpl::o()->display('login/login.tpl');
                 break;
         }
     }
 
     /**
      * Форма смены пароля
-     * @global tpl $tpl
      * @param string $key ключ подтверждения
      * @param string $email E-mail подтверждения
      * @return null
      */
     protected function recover_save($key, $email) {
-        global $tpl;
-        $tpl->assign("key", $key);
-        $tpl->assign("email", $email);
-        $tpl->display('login/recover_save.tpl');
+        tpl::o()->assign("key", $key);
+        tpl::o()->assign("email", $email);
+        tpl::o()->display('login/recover_save.tpl');
     }
 
 }
@@ -78,13 +71,11 @@ class login_ajax {
 
     /**
      * Инициализация логина, в качестве Ajax-модуля
-     * @global lang $lang
      * @return null
      */
     public function init() {
-        global $lang;
         $act = $_GET ["act"];
-        $lang->get('login');
+        lang::o()->get('login');
         switch ($act) {
             case "recover_save" :
                 $key = $_POST ["key"];
@@ -110,10 +101,6 @@ class login_ajax {
 
     /**
      * Непосредственно, логин пользователя
-     * @global users $users
-     * @global lang $lang
-     * @global config $config
-     * @global db $db
      * @param string $login логин пользователя
      * @param string $password пароль пользователя
      * @param bool $short_session короткая сессия?
@@ -121,16 +108,15 @@ class login_ajax {
      * @throws Excpetion
      */
     protected function login($login, $password, $short_session = false) {
-        global $users, $lang, $config, $db;
-        $max_enter = (int) $config->v('max_trylogin') - 1;
-        $interval = (int) $config->v('logintime_interval');
-        //if ($users->v())
+        $max_enter = (int) config::o()->v('max_trylogin') - 1;
+        $interval = (int) config::o()->v('logintime_interval');
+        //if (users::o()->v())
         //	return;
         $sid = session_id();
         if ($max_enter >= 0) {
-            $res = $db->query('SELECT trying_time, login_trying FROM sessions WHERE sid=' . $db->esc($sid) . ' OR ip=' . $users->get_ip() . '
+            $res = db::o()->query('SELECT trying_time, login_trying FROM sessions WHERE sid=' . db::o()->esc($sid) . ' OR ip=' . users::o()->get_ip() . '
                 ORDER BY login_trying DESC LIMIT 1');
-            $res = $db->fetch_assoc($res);
+            $res = db::o()->fetch_assoc($res);
             $login_trying = $res ["login_trying"];
             $time = $res["trying_time"];
             if ($login_trying < longval($_COOKIE ["login_trying"]))
@@ -143,64 +129,58 @@ class login_ajax {
                     $max_enter + 1));
         }
         $short_session = (bool) $short_session;
-        $passhash = $users->check_data($login, $password, $error, $id);
+        $passhash = users::o()->check_data($login, $password, $error, $id);
         if ($error) {
             if ($max_enter >= 0) {
-                $error .= ("&nbsp; " . sprintf($lang->v('login_trying_of'), $login_trying + 1, $max_enter + 1));
-                $db->update(array(
+                $error .= ("&nbsp; " . sprintf(lang::o()->v('login_trying_of'), $login_trying + 1, $max_enter + 1));
+                db::o()->update(array(
                     "login_trying" => ++$login_trying,
-                    "trying_time" => time()), "sessions", 'WHERE sid=' . $db->esc($sid) . ' OR ip=' . $users->get_ip() . ' ORDER BY login_trying DESC LIMIT 1');
-                $users->setcookie("login_trying", $login_trying);
-                $users->setcookie("login_time", time());
+                    "trying_time" => time()), "sessions", 'WHERE sid=' . db::o()->esc($sid) . ' OR ip=' . users::o()->get_ip() . ' ORDER BY login_trying DESC LIMIT 1');
+                users::o()->setcookie("login_trying", $login_trying);
+                users::o()->setcookie("login_time", time());
             }
             throw new EngineException($error);
         } else {
             if ($max_enter >= 0) {
-                $db->update(array(
+                db::o()->update(array(
                     "login_trying" => 0,
-                    "trying_time" => 0), "sessions", 'WHERE sid=' . $db->esc($sid) . ' OR ip=' . $users->get_ip() . ' ORDER BY login_trying DESC LIMIT 1');
-                $users->setcookie("login_trying", 0);
-                $users->setcookie("login_time", 0);
+                    "trying_time" => 0), "sessions", 'WHERE sid=' . db::o()->esc($sid) . ' OR ip=' . users::o()->get_ip() . ' ORDER BY login_trying DESC LIMIT 1');
+                users::o()->setcookie("login_trying", 0);
+                users::o()->setcookie("login_time", 0);
             }
         }
-        $users->write_cookies($login, $passhash, $short_session);
+        users::o()->write_cookies($login, $passhash, $short_session);
     }
 
     /**
      * Функция восстановления пароля
-     * @global users $users
-     * @global db $db
-     * @global furl $furl
-     * @global etc $etc
      * @param string $login логин пользователя
      * @param string $email E-mail пользователя
      * @return null
      */
     protected function recover($login, $email) {
-        global $users, $db, $furl, $etc;
-        if ($users->v())
+        if (users::o()->v())
             return;
-        $where = 'username_lower=' . $db->esc(mb_strtolower($login)) . ' AND email=' . $db->esc($email);
-        $count = $db->count_rows("users", $where);
+        $where = 'username_lower=' . db::o()->esc(mb_strtolower($login)) . ' AND email=' . db::o()->esc($email);
+        $count = db::o()->count_rows("users", $where);
         if (!$count)
             throw new EngineException("recover_user_not_exists");
-        $key = $users->generate_salt();
-        $ok = $db->update(array(
+        $key = users::o()->generate_salt();
+        $ok = db::o()->update(array(
             "confirm_key" => $key,
             "new_email" => ""), "users", 'WHERE ' . $where);
-        $link = $furl->construct('login', array(
+        $link = furl::o()->construct('login', array(
             "act" => "recover",
             "key" => $key,
             "email" => $email));
+        /* @var $etc etc */
+        $etc = n("etc");
         $etc->send_mail($email, "recover_pass", array(
             "link" => $link));
     }
 
     /**
      * Сохранение нового пароля
-     * @global db $db
-     * @global users $users
-     * @global plugins $plugins
      * @param string $key ключ подтверждения
      * @param string $email E-mail пользователя
      * @param string $password новый пароль
@@ -208,20 +188,19 @@ class login_ajax {
      * @return null
      */
     protected function recover_save($key, $email, $password, $passagain) {
-        global $db, $users, $plugins;
-        if ($users->v())
+        if (users::o()->v())
             return;
-        if ($password != $passagain || !$users->check_password($password))
+        if ($password != $passagain || !users::o()->check_password($password))
             throw new EngineException("recover_pass_not_equals");
-        $salt = $users->generate_salt();
-        $password = $users->generate_pwd_hash($password, $salt);
+        $salt = users::o()->generate_salt();
+        $password = users::o()->generate_pwd_hash($password, $salt);
         $update = array(
             "confirm_key" => "",
             "new_email" => "",
             "password" => $password,
             "salt" => $salt);
-        $plugins->pass_data(array("update" => &$update), true)->run_hook('login_recover_save');
-        $count = $db->update($update, "users", ('WHERE confirm_key=' . $db->esc($key) . ' AND email=' . $db->esc($email)));
+        plugins::o()->pass_data(array("update" => &$update), true)->run_hook('login_recover_save');
+        $count = db::o()->update($update, "users", ('WHERE confirm_key=' . db::o()->esc($key) . ' AND email=' . db::o()->esc($email)));
         if (!$count)
             throw new EngineException("recover_user_not_exists");
     }

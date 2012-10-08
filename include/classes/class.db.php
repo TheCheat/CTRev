@@ -13,13 +13,18 @@
 if (!defined('INSITE'))
     die('Remote access denied!');
 
-class db { // не final, ибо err переопределяется в аннонсере
+final class db {
+
+    /**
+     * Свой обработчик ошибок БД
+     * @var callback
+     */
+    protected $error_handler = null;
 
     /**
      * Подлючена ли БД?
      * @var bool
      */
-
     protected $connected = false;
 
     /**
@@ -81,6 +86,16 @@ class db { // не final, ибо err переопределяется в анн�
      * @var bool
      */
     protected $ignore = false;
+
+    /**
+     * Свой обработчик ошибок
+     * @param callback $handler функция обработчика
+     * @return db $this
+     */
+    public function errhandler($handler) {
+        $this->error_handler = $handler;
+        return $this;
+    }
 
     /**
      * Коннект к БД
@@ -300,7 +315,6 @@ class db { // не final, ибо err переопределяется в анн�
 
     /**
      * Выполнение запроса к БД
-     * @global cache $cache
      * @param string $query строка запроса
      * @param array|string|bool $cparams true - если кешировать, если string -
      * аналогично массив с ключом n и значением этой строки, либо массив параметров кеша,
@@ -320,9 +334,8 @@ class db { // не final, ибо err переопределяется в анн�
      * для данного запроса.
      */
     public function query($query, $cparams = array()) {
-        global $cache;
         $query = trim($query);
-        if ($cparams && $cache) {
+        if ($cparams && class_exists('cache')) {
             $cached = true;
             if (is_array($cparams)) {
                 $my_cache_name = $cparams['n'];
@@ -336,13 +349,13 @@ class db { // не final, ибо err переопределяется в анн�
             $cached = false;
         if (!$function || ($function != 'row' && $function != 'assoc'))
             $function = 'assoc';
-        //$cached = $config->v('cache_on') && $cached;
+        //$cached = config::o()->v('cache_on') && $cached;
         if ($cached) {
             if (!$my_cache_name)
                 $name = $pathto . 'sql_' . md5($query);
             else
                 $name = $pathto . $my_cache_name;
-            $result = $cache->read($name, $mytime);
+            $result = cache::o()->read($name, $mytime);
         }
         if (!is_array($result)) {
             if (!defined('INANNOUNCE'))
@@ -367,7 +380,7 @@ class db { // не final, ибо err переопределяется в анн�
                   } else */
                 $rows = $this->fetch2array($result, $function, $k_v);
                 $result = $rows;
-                $cache->write($rows);
+                cache::o()->write($rows);
             }
         }
         if (!$this->no_reset)
@@ -468,19 +481,17 @@ class db { // не final, ибо err переопределяется в анн�
 
     /**
      * Вывод бэктрейса
-     * @global lang $lang
      * @return string бэктрейс
      */
     protected function print_backtrace() {
-        global $lang;
         $backtrace = debug_backtrace();
         foreach ($backtrace as $value) {
             if (!$value ['file'])
                 continue;
             //if (!($value ['file'] == __FILE__ && $value ['line'] == __LINE__)) {
             $path = cut_path($value ['file']);
-            $debug [] = "<b>" . $lang->v('file') . ":</b>&nbsp;" . $path . "<br>\n
-			<b>" . $lang->v('line') . ":</b>&nbsp;" . $value ['line'];
+            $debug [] = "<b>" . lang::o()->v('file') . ":</b>&nbsp;" . $path . "<br>\n
+			<b>" . lang::o()->v('line') . ":</b>&nbsp;" . $value ['line'];
             //}
         }
         $backtrace = implode("<br><font size=\"3\">&nbsp;&nbsp;&nbsp;&nbsp;&#8659;</font><br>", $debug);
@@ -497,25 +508,23 @@ class db { // не final, ибо err переопределяется в анн�
 
     /**
      * Вывод ошибки последнего запроса к БД
-     * @global furl $furl
-     * @global lang $lang
-     * @global tpl $tpl
-     * @param string $query
+     * @param string $query запрос
      * @return null
      */
     public function err($query = null) {
-        global $furl, $lang, $tpl;
-        if ($this->errno() == 145 && $furl) {
+        if ($this->error_handler)
+            return $this->error_handler($query);
+        if ($this->errno() == 145 && class_exists('furl')) {
             preg_match('/Table \'(.*)\' is marked as crashed and should be repaired$/siu', mysql_error(), $matches);
             //$table = substr ( $matches [1], strrpos ( $matches [1], "\\" ) + 1 );
             $table = mb_substr($matches [1], mb_strrpos($matches [1], "/") + 1);
             $this->query("REPAIR TABLE " . $table, true);
-            $furl->location('', 1);
+            furl::o()->location('', 1);
         }
         $error = $this->errtext();
-        $emess = $lang->v('db_error') . ": " . $error . (IN_DEVELOPMENT ? '(' . $query . ')' : "");
-        if (!$this->nt_error && $tpl && $this->connected) {
-            $tpl->assign('backtrace', $this->print_backtrace());
+        $emess = lang::o()->v('db_error') . ": " . $error . (IN_DEVELOPMENT ? '(' . $query . ')' : "");
+        if (!$this->nt_error && class_exists("tpl") && $this->connected) {
+            tpl::o()->assign('backtrace', $this->print_backtrace());
             error($emess, "", 'db_error');
         } else
             print($emess);
@@ -605,6 +614,48 @@ class db { // не final, ибо err переопределяется в анн�
      */
     public function version() {
         return mysql_get_server_info();
+    }
+
+    // Реализация Singleton
+
+    /**
+     * Объект данного класса
+     * @var db
+     */
+    private static $o = null;
+
+    /**
+     * Конструктор? А где конструктор? А нет его.
+     * @return null 
+     */
+    private function __construct() {
+        
+    }
+
+    /**
+     * Не клонируем
+     * @return null 
+     */
+    private function __clone() {
+        
+    }
+
+    /**
+     * И не десериализуем
+     * @return null 
+     */
+    private function __wakeup() {
+        
+    }
+
+    /**
+     * Получение объекта класса
+     * @return db $this
+     */
+    public static function o() {
+        if (!self::$o)
+            self::$o = new self();
+        return self::$o;
     }
 
 }

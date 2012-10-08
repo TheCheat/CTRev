@@ -33,14 +33,12 @@ class announce_parser extends fbenc {
 
     /**
      * Получение списка аннонсеров из торрента
-     * @global config $config
      * @param array $dict словарь торрента
      * @return array список аннонсеров
      */
     public function announce_lists(&$dict) {
-        global $config;
         $announce_urls = array();
-        if ($config->v('multitracker_on')) {
+        if (config::o()->v('multitracker_on')) {
             if ($dict ['announce-list']) {
                 if (!is_array($dict['announce-list']))
                     $dict ['announce-list'] = array(array($dict ['announce-list']));
@@ -88,7 +86,7 @@ class bittorrent extends announce_parser {
      * @param int $poster_id ID создателя
      * @return string идентефикатор
      */
-    public function get_filename($time, $poster_id) {
+    public static function get_filename($time, $poster_id) {
         $poster_id = (int) $poster_id;
         $time = (int) $time;
         return sprintf(self::files_pattern, $time, $poster_id);
@@ -96,14 +94,11 @@ class bittorrent extends announce_parser {
 
     /**
      * Замена passkey в URL трекера на настройки пользователя
-     * @global users $users
-     * @global display $display
      * @param string $url URL трекера
      * @param string|array строка из конфига
      * @return bool true, в случае успешной замены
      */
     protected function pk_replace(&$url, &$pk) {
-        global $users, $display;
         if (!is_array($pk))
             $pk = preg_split('/\s+/', trim($pk));
         list($host, $pk_s, $pk_e) = $pk;
@@ -113,7 +108,7 @@ class bittorrent extends announce_parser {
             return;
         if (mb_strpos($m[3] . ':' . $m[4], $host) === false)
             return;
-        $apk = $users->v('announce_pk');
+        $apk = users::o()->v('announce_pk');
         $url = preg_replace('/(' . mpc($pk_s) . ')(.*?)(' . ($pk_e ? mpc($pk_e) : "$") . ')/siu', '$1' .
                 $apk[$host] . '$3', $url);
         return true;
@@ -134,38 +129,33 @@ class bittorrent extends announce_parser {
 
     /**
      * Предобработка dict перед скачиванием
-     * @global config $config
-     * @global users $users
-     * @global furl $furl
-     * @global lang $lang
      * @param int $id ID торрента
      * @param int $posted_time время постинга
      * @param int $poster_id ID автора
      * @return array словарь торрента
      */
     protected function prepare_dict($id, $posted_time, $poster_id) {
-        global $config, $users, $furl, $lang;
 
-        $fname = $this->get_filename($posted_time, $poster_id);
-        $dict = $this->bdec(ROOT . $config->v('torrents_folder') . '/' . self::torrent_prefix . $fname . ".torrent", true);
+        $fname = self::get_filename($posted_time, $poster_id);
+        $dict = $this->bdec(ROOT . config::o()->v('torrents_folder') . '/' . self::torrent_prefix . $fname . ".torrent", true);
 
-        $dict ['comment'] = sprintf($lang->v('torrents_from_site'), $config->v('site_title'), $furl->construct("download", array(
+        $dict ['comment'] = sprintf(lang::o()->v('torrents_from_site'), config::o()->v('site_title'), furl::o()->construct("download", array(
                     "id" => $id,
                     'noencode' => true)));
 
-        $passkey = $users->v('passkey');
-        $dict ['announce'] = $config->v('annadress') ? $config->v('annadress') :
-                $furl->construct('announce', array(
+        $passkey = users::o()->v('passkey');
+        $dict ['announce'] = config::o()->v('annadress') ? config::o()->v('annadress') :
+                furl::o()->construct('announce', array(
                     'passkey' => $passkey,
                     'noencode' => true), false, true);
         if (!is_array($dict ['announce-list']))
             unset($dict ['announce-list']);
-        if ($config->v('get_pk') && $dict ['announce-list']) {
-            if ($users->v('settings'))
-                $users->decode_settings();
-            if (!is_array($users->v('announce_pk')))
-                $users->unserialize('announce_pk');
-            $pk = explode("\n", $config->v('get_pk'));
+        if (config::o()->v('get_pk') && $dict ['announce-list']) {
+            if (users::o()->v('settings'))
+                users::o()->decode_settings();
+            if (!is_array(users::o()->v('announce_pk')))
+                users::o()->unserialize('announce_pk');
+            $pk = explode("\n", config::o()->v('get_pk'));
             $c = count($pk);
             foreach ($dict ['announce-list'] as $k => $a)
                 foreach ($a as $l => $b)
@@ -173,8 +163,8 @@ class bittorrent extends announce_parser {
                         if ($this->pk_replace($dict ['announce-list'][$k][$l], $pk[$i]))
                             break;
         }
-        if ($config->v('additional_announces')) {
-            $add = explode("\n", $config->v('additional_announces'));
+        if (config::o()->v('additional_announces')) {
+            $add = explode("\n", config::o()->v('additional_announces'));
             foreach ($add as $a) {
                 $a = trim($a);
                 if ($this->in_annlist($a, $dict ['announce-list']))
@@ -190,50 +180,47 @@ class bittorrent extends announce_parser {
 
     /**
      * Скачивание торрент файла
-     * @global db $db
-     * @global users $users
-     * @global lang $lang
-     * @global etc $etc
-     * @global uploader $uploader
-     * @global plugins $plugins
      * @param int $id ID торрент файла
      * @return null
      * @throws EngineException 
      */
     public function download_torrent($id) {
-        global $db, $users, $lang, $etc, $uploader, $plugins;
 
         $id = (int) $id;
         try {
-            $users->check_perms('torrents');
-            $r = $db->query('SELECT t.banned, t.poster_id, t.posted_time, t.price, d.uid FROM torrents AS t
-            LEFT JOIN downloaded AS d ON d.tid=t.id AND d.uid=' . $users->v('id') . '
+            users::o()->check_perms('torrents');
+            $r = db::o()->query('SELECT t.banned, t.poster_id, t.posted_time, t.price, d.uid FROM torrents AS t
+            LEFT JOIN downloaded AS d ON d.tid=t.id AND d.uid=' . users::o()->v('id') . '
             WHERE t.id=' . $id . ' LIMIT 1');
-            list($banned, $poster_id, $posted_time, $price, $downloaded) = $db->fetch_row($r);
-            $lang->get('torrents');
+            list($banned, $poster_id, $posted_time, $price, $downloaded) = db::o()->fetch_row($r);
+            lang::o()->get('torrents');
             if (!$poster_id || $banned)
                 throw new EngineException('torrents_no_this_torrents');
-            $off = $users->perm('free', 2) ? 1 : ($users->perm('free', 1) ? 0.5 : 0);
+            $off = users::o()->perm('free', 2) ? 1 : (users::o()->perm('free', 1) ? 0.5 : 0);
             $price = $price * (1 - $off);
 
-            if ($poster_id == $users->v('id'))
+            if ($poster_id == users::o()->v('id'))
                 $downloaded = true;
 
-            $plugins->pass_data(array('price' => &$price,
+            plugins::o()->pass_data(array('price' => &$price,
                 'id' => $id), true)->run_hook('torrents_download_price');
 
-            if ($users->v('bonus_count') < $price)
+            if (users::o()->v('bonus_count') < $price)
                 throw new EngineException('torrents_no_enough_bonus');
+            /* @var $etc etc */
+            $etc = n("etc");
             if (!$downloaded) {
                 if ($price)
                     $etc->add_res('bonus', -$price);
-                $db->insert(array('tid' => $id, 'uid' => $users->v('id')), 'downloaded');
+                db::o()->insert(array('tid' => $id, 'uid' => users::o()->v('id')), 'downloaded');
             }
             $dict = $this->prepare_dict($id, $posted_time, $poster_id);
 
-            $plugins->pass_data(array('dict' => &$dict))->run_hook('torrents_download_dict');
+            plugins::o()->pass_data(array('dict' => &$dict))->run_hook('torrents_download_dict');
 
             $name = 'id' . $id . '[' . $_SERVER["HTTP_HOST"] . '].torrent';
+            /* @var $uploader uploader */
+            $uploader = n("uploader");
             $uploader->download_headers($this->benc($dict), $name, "application/x-bittorrent");
         } catch (PReturn $e) {
             return $e->r();
@@ -242,9 +229,6 @@ class bittorrent extends announce_parser {
 
     /**
      * Проверка dict перед записью
-     * @global config $config
-     * @global furl $furl
-     * @global users $users
      * @param string $t путь к файлу торрента
      * @param array $filelist список файлов
      * @param int $filesize размер файла
@@ -253,7 +237,6 @@ class bittorrent extends announce_parser {
      * @throws EngineException 
      */
     protected function check_dict($t, &$filelist = null, &$filesize = null, &$announce_list = null) {
-        global $config, $furl, $users;
         $dict = $this->bdec($t, true);
         if (!$dict)
             throw new EngineException('bencode_cant_parse_file');
@@ -296,9 +279,9 @@ class bittorrent extends announce_parser {
         }
         $filelist = serialize($filelist);
         $idict = &$dict ['info'];
-        if ($config->v('DHT_on') == 0)
+        if (config::o()->v('DHT_on') == 0)
             $idict ['private'] = 1;
-        elseif ($config->v('DHT_on') == 1)
+        elseif (config::o()->v('DHT_on') == 1)
             unset($idict ['private']);
         // не меняем, если -1
 
@@ -314,18 +297,15 @@ class bittorrent extends announce_parser {
         unset($idict ['tiger']);
         unset($dict ['azureus_properties']);
 
-        $dict ['publisher.utf-8'] = $dict ['publisher'] = $dict ['created by'] = $users->v('username');
-        $dict ['publisher-url.utf-8'] = $dict ['publisher-url'] = $furl->construct("users", array(
-            "user" => $users->v('username'),
+        $dict ['publisher.utf-8'] = $dict ['publisher'] = $dict ['created by'] = users::o()->v('username');
+        $dict ['publisher-url.utf-8'] = $dict ['publisher-url'] = furl::o()->construct("users", array(
+            "user" => users::o()->v('username'),
             'noencode' => true));
         return array($dict, $idict);
     }
 
     /**
      * Проверка и загрузка торрент-файла
-     * @global file $file
-     * @global uploader $uploader
-     * @global config $config
      * @param string $id ID торрент-файла
      * @param string $filevar файловая переменная($_FILES) для торрента
      * @param string $filelist ссылка на сериализованный список файлов в торренте
@@ -334,13 +314,12 @@ class bittorrent extends announce_parser {
      * @return string инфохеш торрент файла
      */
     public function torrent_file($id, $filevar, &$filelist = null, &$filesize = null, &$announce_list = null) {
-        global $file, $uploader, $config;
         ref($uploader)->check($filevar, /* ссылка */ $tmp = 'torrents');
         $t = $filevar["tmp_name"];
 
         list($dict, $idict) = $this->check_dict($t, $filelist, $filesize, $announce_list);
 
-        $file->write_file($this->benc($dict), $config->v('torrents_folder') . '/' . self::torrent_prefix . $id . ".torrent");
+        file::o()->write_file($this->benc($dict), config::o()->v('torrents_folder') . '/' . self::torrent_prefix . $id . ".torrent");
 
         return sha1($this->benc($idict));
     }

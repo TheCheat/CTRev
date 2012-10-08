@@ -17,12 +17,10 @@ class downm_block {
 
     /**
      * Инициализация нижнего блока
-     * @global lang $lang
      * @return null
      */
     public function init() {
-        global $lang;
-        $lang->get("blocks/downm");
+        lang::o()->get("blocks/downm");
         print("Down block inited");
     }
 

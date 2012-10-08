@@ -14,6 +14,12 @@ if (!defined('INSITE'))
     die('Remote access denied!');
 
 class getpeers {
+    
+    /**
+     * Объект bittorrent
+     * @var bittorrent 
+     */
+    protected $bt = null;
 
     /**
      * Параметры, отсылаемые аннонсеру
@@ -56,6 +62,7 @@ class getpeers {
         $announce_url .= "&no_peer_id=" . $no_peer_id;
         $announce_url .= "&event=" . $event;
         $this->announce_url = $announce_url;
+        $this->bt = n("bittorrent");
         ini_set('default_socket_timeout', self::time_limit);
     }
 
@@ -160,7 +167,6 @@ class getpeers {
 
     /**
      * Получение списка пиров
-     * @global db $db
      * @param int $tid ID торрента
      * @param string $announces сериализованный массив аннонсеров
      * @param string $infohash инфохеш торрента
@@ -168,7 +174,6 @@ class getpeers {
      * @return array массив полученной статистики по трекерам
      */
     public function get_peers($tid, $announces, $infohash, $update = true) {
-        global $db;
         $announces = unserialize($announces);
         $tid = (int) $tid;
         if (!$announces || !is_array($announces))
@@ -190,19 +195,17 @@ class getpeers {
         }
         $stat['last_update'] = time();
         if ($update)
-            $db->update(array('announce_stat' => serialize($stat)), 'torrents', 'WHERE id=' . $tid . ' LIMIT 1');
+            db::o()->update(array('announce_stat' => serialize($stat)), 'torrents', 'WHERE id=' . $tid . ' LIMIT 1');
         return $stat;
     }
 
     /**
      * Парсинг аннонсера
-     * @global bittorrent $bt
      * @param string $content контент аннонсера
      * @return int|array кол-во пиров, либо массив из кол-ва сидов и личеров
      */
     protected function parse_announcer($content) {
-        global $bt;
-        $c = $bt->bdec($content);
+        $c = $this->bt->bdec($content);
         if (!is_array($c))
             return 0;
         if (isset($c["complete"]) && isset($c["incomplete"]))
@@ -215,13 +218,11 @@ class getpeers {
 
     /**
      * Парсинг скрейпа
-     * @global bittorrent $bt
      * @param string $content контент скрейпа
      * @return array массив из кол-ва сидов и личеров
      */
     protected function parse_scrape($content) {
-        global $bt;
-        $c = $bt->bdec($content);
+        $c = $this->bt->bdec($content);
         if (!is_array($c))
             return 0;
         if (isset($c["complete"]) && isset($c["incomplete"]))

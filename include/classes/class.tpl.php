@@ -105,7 +105,6 @@ final class tpl extends Smarty {
 
     /**
      * Переопределение функции fetch для собтсвенных нужд
-     * @global cache $cache
      * @param string $resource_name имя шаблона
      * @param int $cache_id ID кеша
      * @param int $compile_id ID скомпилированного шаблона
@@ -195,6 +194,48 @@ final class tpl extends Smarty {
             default:
                 return ROOT . THEMES_PATH . '/' . $this->theme . '/' . TEMPLATES_PATH . '/';
         }
+    }
+
+    // Реализация Singleton
+
+    /**
+     * Объект данного класса
+     * @var tpl
+     */
+    private static $o = null;
+
+    /**
+     * Конструктор? А где конструктор? А нет его.
+     * @return null 
+     */
+    private function __construct() {
+        
+    }
+
+    /**
+     * Не клонируем
+     * @return null 
+     */
+    private function __clone() {
+        
+    }
+
+    /**
+     * И не десериализуем
+     * @return null 
+     */
+    private function __wakeup() {
+        
+    }
+
+    /**
+     * Получение объекта класса
+     * @return tpl $this
+     */
+    public static function o() {
+        if (!self::$o)
+            self::$o = new self();
+        return self::$o;
     }
     
 }

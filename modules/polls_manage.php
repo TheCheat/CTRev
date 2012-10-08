@@ -23,24 +23,23 @@ class polls_manage {
 
     /**
      * Инициализация опросов
-     * @global polls $polls
-     * @global lang $lang
      * @return null
      */
     public function init() {
-        global $polls, $lang;
-        $lang->get('polls');
+        lang::o()->get('polls');
         $act = $_GET ['act'];
         $poll_id = (int) $_GET ['id'];
+        /* @var $polls polls */
+        $polls = n("polls");
         switch ($act) {
             case "add" :
             case "edit" :
                 $polls->add_form(0, $poll_id, true);
-                $this->title = $lang->v('polls_title_add');
+                $this->title = lang::o()->v('polls_title_add');
                 break;
             default :
                 $polls->display(0, $poll_id, $_GET ['votes'], $_GET ['short']);
-                $this->title = $lang->v('polls_title');
+                $this->title = lang::o()->v('polls_title');
                 break;
         }
     }
@@ -48,18 +47,22 @@ class polls_manage {
 }
 
 class polls_manage_ajax {
+    
+    /**
+     * Объект опросов
+     * @var polls
+     */
+    protected $polls = null;
 
     /**
      * Инициализация опросов AJAX методов
-     * @global polls $polls
-     * @global lang $lang
      * @return null
      */
     public function init() {
-        global $polls, $lang;
-        $lang->get('polls');
+        lang::o()->get('polls');
         $act = $_GET ['act'];
         $poll_id = (int) $_GET ['id'];
+        $this->polls = n("polls");
         switch ($act) {
             case "vote" :
                 $answers = $_POST ['answers'];
@@ -78,44 +81,38 @@ class polls_manage_ajax {
 
     /**
      * Сохранение опросов
-     * @global polls $polls
      * @param array $data массив данных
      * @param int $poll_id ID опроса
      * @return null
      * @throws EngineException
      */
     protected function save($data, $poll_id) {
-        global $polls;
         check_formkey();
-        $ret = $polls->save($data, 0, $poll_id);
+        $ret = $this->polls->save($data, 0, $poll_id);
         die("OK!" . $ret);
         die();
     }
 
     /**
      * Голосование за опрос
-     * @global polls $polls
      * @param int $poll_id ID опроса
      * @param integer|array $answers голоса
      * @return null
      */
     protected function vote($poll_id, $answers) {
-        global $polls;
-        $ret = $polls->vote($poll_id, $answers);
+        $ret = $this->polls->vote($poll_id, $answers);
         die("OK!");
     }
 
     /**
      * Голосование за опрос
-     * @global polls $polls
      * @param int $poll_id ID опроса
      * @return null
      * @throws EngineException
      */
     protected function delete($poll_id) {
-        global $polls;
         check_formkey();
-        $ret = $polls->delete($poll_id);
+        $ret = $this->polls->delete($poll_id);
         die("OK!");
     }
 

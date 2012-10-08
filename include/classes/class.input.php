@@ -35,16 +35,10 @@ class input {
         "december");
 
     /**
-     * Проверка на инициализованность JS скриптов к BBCodes
-     * @var bool
-     */
-    protected $inited_js = false;
-
-    /**
      * Доступные периоды
      * @var array
      */
-    protected $periods = array(
+    protected static $periods = array(
         1 => "hour",
         6 => "six_hours",
         12 => "twelve_hours",
@@ -55,18 +49,16 @@ class input {
 
     /**
      * Поле Select для выбора GMT
-     * @global lang $lang
      * @param string $name имя для поля Select
      * @param float $current данный часовой пояс
      * @return string HTML код выборки
      */
     public function select_gmt($name = "timezone", $current = null) {
-        global $lang;
         if (is_array($name)) {
             $current = $name ['current'];
             $name = $name ['name'];
         }
-        $lang->get('timezones');
+        lang::o()->get('timezones');
         $name = ($name ? $name : "timezone");
         $select = "<select name=\"" . $name . "\">";
         $half = array(
@@ -80,7 +72,7 @@ class input {
             if ($i != longval($i) && !in_array(longval($i), $half))
                 continue;
             $ii = ($i > 0 ? "+" . longval($i) : ($i != 0 ? "-" : "") . abs(longval($i))) . ":" . (abs($i - longval($i)) == 0.5 ? "30" : "00");
-            $select .= "<option value=\"" . $i . "\"" . (($gmt == $ii && is_null($current)) || (!is_null($current) && $current == $i) ? " selected='selected'" : "") . ">(GMT " . $ii . ")&nbsp;" . $lang->v('timesone_gmt_' . $ii) . "</option>\n";
+            $select .= "<option value=\"" . $i . "\"" . (($gmt == $ii && is_null($current)) || (!is_null($current) && $current == $i) ? " selected='selected'" : "") . ">(GMT " . $ii . ")&nbsp;" . lang::o()->v('timesone_gmt_' . $ii) . "</option>\n";
         }
         $select .= "</select>";
         return $select;
@@ -88,7 +80,6 @@ class input {
 
     /**
      * Форма ввода даты
-     * @global lang $lang
      * @param string $name добавочное имя к select
      * @param string $type тип ввода даты(y - год, m - месяц, d - день, h - час, i - минута, s - секунда), пример:
      * ymd - select года, месяца и дня
@@ -97,7 +88,6 @@ class input {
      * @return string HTML код выборки
      */
     public function select_date($name = "date", $type = "ymd", $time = null, $fromnull = false) {
-        global $lang;
         if (is_array($name)) {
             $type = $name ["type"];
             $time = $name ["time"];
@@ -139,7 +129,7 @@ class input {
             if ($fromnull)
                 $text .= "<option value=\"0\"" . ($now == 0 ? " selected=\"selected\"" : "") . ">----</option>";
             for ($i = 1; $i <= 12; $i++) {
-                $text .= "<option value=\"" . $i . "\"" . ($now == $i ? " selected=\"selected\"" : "") . ">" . $lang->v('month_' . self::$months [$i - 1]) . "</option>";
+                $text .= "<option value=\"" . $i . "\"" . ($now == $i ? " selected=\"selected\"" : "") . ">" . lang::o()->v('month_' . self::$months [$i - 1]) . "</option>";
             }
             $text .= "</select>";
             $tdate[] = $text;
@@ -203,7 +193,6 @@ class input {
 
     /**
      * Функция выборки категорий
-     * @global categories $cats
      * @param string $name имя поля
      * @param int $size размер поля выборки
      * @param int $current выбранная категория
@@ -213,7 +202,6 @@ class input {
      * @return string HTML-код выборки
      */
     public function select_categories($name = "categories", $size = 5, $current = null, $not_null = false, $nbsp = null, $carr = null) {
-        global $cats;
         if (is_array($name)) {
             $current = $name ['current'];
             $size = $name ['size'];
@@ -226,6 +214,8 @@ class input {
             $name = "categories";
         if (!longval($size))
             $size = 5;
+        /* @var $cats categories */
+        $cats = n("categories");
         if (!is_array($carr) || !$carr) {
             $carr = $cats->get(null, 't');
             $select = "<select name='" . $name . "" . ($size == 1 ? "" : "[]' multiple='multiple") . "' 
@@ -252,16 +242,14 @@ class input {
 
     /**
      * Функция вывода списка стран\одной страны
-     * @global db $db
      * @global string $BASEURL
-     * @global config $config
      * @param array $country выводимая страна(не для списка)(вкл. в себя name и image)
      * @param string $name имя для списка стран
      * @param int $current ID данной страны
      * @return string HTML код выборки списка стран\данной страны
      */
     public function select_countries($country = '', $name = 'country', $current = 0) {
-        global $db, $BASEURL, $config;
+        global $BASEURL;
         if (is_array($country)) {
             $name = $country ['name'];
             $current = $country ['current'];
@@ -269,7 +257,7 @@ class input {
         }
         $name = ($name ? $name : 'country');
         $select = "";
-        $show_flag = "show_flag_image('" . addslashes($BASEURL . $config->v('countries_folder') . "/") . "',
+        $show_flag = "show_flag_image('" . addslashes($BASEURL . config::o()->v('countries_folder') . "/") . "',
 			'#" . addslashes("country_" . $name) . "',
 			'" . addslashes("flag_image_" . $name) . "');";
         $select .= "<script type=\"text/javascript\">
@@ -277,7 +265,7 @@ class input {
 					" . $show_flag . "
 				});
 				</script>";
-        $res = $db->query('SELECT id, name, image FROM countries', 'countries');
+        $res = db::o()->query('SELECT id, name, image FROM countries', 'countries');
         $select .= "<select name=\"" . $name . "\" id=\"country_" . $name . "\" onchange=\"" . $show_flag . "\">";
         $select .= empty_option;
         foreach ($res as $row) {
@@ -292,15 +280,13 @@ class input {
         }
         $select .= "</select>";
         $select = "<span id=\"flag_image_" . $name . "\" style=\"display:none;\">
-            <img src=\"" . $BASEURL . $config->v('countries_folder') . "/" . ($this_i ? $this_i : $image) . "\"
+            <img src=\"" . $BASEURL . config::o()->v('countries_folder') . "/" . ($this_i ? $this_i : $image) . "\"
                 height=\"20\" alt=\"\" align=\"left\"></span>" . $select;
         return $select;
     }
 
     /**
      * Выборка дирректорий
-     * @global lang $lang
-     * @global file $file
      * @param string $name имя селектора
      * @param string $folder дирректория
      * @param string $current данный язык
@@ -311,7 +297,6 @@ class input {
      * @return string HTML код селектора
      */
     public function select_folder($name = "lang", $folder = LANGUAGES_PATH, $current = '', $onlydir = false, $empty = false, $regexp = '', $match = '') {
-        global $lang, $file;
         if (is_array($name)) {
             $current = $name ["current"];
             $folder = $name ["folder"];
@@ -328,15 +313,15 @@ class input {
             $folder = LANGUAGES_PATH;
         if ($folder == LANGUAGES_PATH || $folder == THEMES_PATH)
             $onlydir = true;
-        $res = $file->open_folder($folder, $onlydir);
+        $res = file::o()->open_folder($folder, $onlydir);
         $count = count($res);
         $options = "";
         for ($i = 0; $i < $count; $i++) {
             $cur = $res [$i];
             $value = $cur;
             $matches = array();
-            if ($folder == LANGUAGES_PATH && $lang->visset("lang_" . $cur))
-                $value = $lang->v("lang_" . $cur);
+            if ($folder == LANGUAGES_PATH && lang::o()->visset("lang_" . $cur))
+                $value = lang::o()->v("lang_" . $cur);
             if ($regexp && !preg_match($regexp, $cur, $matches))
                 continue;
             if ($matches && $match)
@@ -355,7 +340,6 @@ class input {
 
     /**
      * Функция выборки групп
-     * @global users $users
      * @param string $name имя поля
      * @param int $current ID группы, выбранной по-умолчанию
      * @param bool $guest в т.ч. и гость
@@ -364,7 +348,6 @@ class input {
      * @return string HTML код выборки
      */
     public function select_groups($name = "group", $current = null, $guest = false, $not_null = false, $multiple = false) {
-        global $users;
         if (is_array($name)) {
             $current = $name ["current"];
             $guest = $name ["guest"];
@@ -379,12 +362,12 @@ class input {
         $id = 0;
         if (!$not_null)
             $sel .= empty_option;
-        foreach ($users->get_group() as $id => $group)
+        foreach (users::o()->get_group() as $id => $group)
             if ($guest || (!$guest && !$group ['guest'])) {
                 $s = ((!is_array($current) ? $current == $id : in_array($id, $current)) ? " selected='selected'" : "");
                 $sel .= "<option value='" . $id . "'" .
                         $s . ">" .
-                        $users->get_group_name($id) . "</option>";
+                        users::o()->get_group_name($id) . "</option>";
             }
         $sel .= "</select>";
         return $sel;
@@ -392,14 +375,12 @@ class input {
 
     /**
      * Выборка интервалов подписок
-     * @global lang $lang
      * @param string $name имя селектора
      * @param int $current данная подписка
      * @return string HTML код селектора
      */
     public function select_mailer($name = "interval", $current = '') {
-        global $lang;
-        $lang->get('usercp');
+        lang::o()->get('usercp');
         if (is_array($name)) {
             $current = $name ["current"];
             $name = $name ["name"];
@@ -408,20 +389,18 @@ class input {
             $name = "interval";
         $arr = mailer::$allowed_interval;
         foreach ($arr as $i => $lv)
-            $arr[$i] = $lang->v('usercp_mailer_interval_every_' . $lv);
+            $arr[$i] = lang::o()->v('usercp_mailer_interval_every_' . $lv);
         $html = $this->simple_selector($name, $arr, true, $current);
         return $html;
     }
 
     /**
      * Функция выборки периодов, прежде всего, для банов
-     * @global lang $lang
      * @param string $name имя поля выборки
      * @param string $current данный период
      * @return string HTML код селектора
      */
     public function select_periods($name = "period", $current = null) {
-        global $lang;
         if (is_array($name)) {
             if (isset($name["current"]))
                 $current = $name ['current'];
@@ -439,12 +418,12 @@ class input {
                 $selected = true;
             } else
                 $s = "";
-            $sel .= "<option value='" . $time . "'" . $s . ">" . $lang->v("period_" . $period) . "</option>";
+            $sel .= "<option value='" . $time . "'" . $s . ">" . lang::o()->v("period_" . $period) . "</option>";
         }
-        $sel .= "<option value='-1'>" . $lang->v('period_other') . "</option>";
+        $sel .= "<option value='-1'>" . lang::o()->v('period_other') . "</option>";
         $sel .= "</select>";
         $sel .= "<div" . ($selected ? " class='hidden'" : "") . "><input type='text' name='" . $name . "' value='" . $current . "'><br>
-            <font size='1'>(" . $lang->v('period_notice_in_hours') . ")</font></div>";
+            <font size='1'>(" . lang::o()->v('period_notice_in_hours') . ")</font></div>";
         return $sel;
     }
 
@@ -482,6 +461,57 @@ class input {
         }
         $html .= '</select>';
         return $html;
+    }
+
+    // Реализация Singleton для переопределяемого класса
+
+    /**
+     * Объект данного класса
+     * @var input
+     */
+    protected static $o = null;
+
+    /**
+     * Конструктор? А где конструктор? А нет его.
+     * @return null 
+     */
+    protected function __construct() {
+        
+    }
+
+    /**
+     * Не клонируем
+     * @return null 
+     */
+    protected function __clone() {
+        
+    }
+
+    /**
+     * И не десериализуем
+     * @return null 
+     */
+    protected function __wakeup() {
+        
+    }
+
+    /**
+     * Получение объекта класса
+     * @return input $this
+     */
+    public static function o() {
+        if (!self::$o) {
+            $cn = 'input';
+            $c = n('input', true);
+            if ($c != $cn) {
+                if (is_callable(array($c, 'o')))
+                    self::$o = $c::o();
+                else
+                    self::$o = new $c();
+            } else
+                self::$o = new self();
+        }
+        return self::$o;
     }
 
 }

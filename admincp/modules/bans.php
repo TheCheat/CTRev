@@ -17,13 +17,10 @@ class bans_man {
 
     /**
      * Инициализация модуля банов
-     * @global lang $lang
-     * @global tpl $tpl
      * @return null
      */
     public function init() {
-        global $lang, $tpl;
-        $lang->get('admin/bans');
+        lang::o()->get('admin/bans');
         $act = $_GET["act"];
         switch ($act) {
             case "save":
@@ -31,7 +28,7 @@ class bans_man {
                 die();
                 break;
             case "add":
-                $tpl->display('admin/bans/add.tpl');
+                tpl::o()->display('admin/bans/add.tpl');
                 break;
             default:
                 $this->show();
@@ -41,32 +38,27 @@ class bans_man {
 
     /**
      * Функция показа банов
-     * @global db $db
-     * @global tpl $tpl
      * @param int $id ID бана
      * @return null
      */
     protected function show($id = null) {
-        global $db, $tpl;
-        $r = $db->query('SELECT b.*, u.username AS bu, u.group AS bg, u2.username, u2.group FROM bans AS b
+        $r = db::o()->query('SELECT b.*, u.username AS bu, u.group AS bg, u2.username, u2.group FROM bans AS b
             LEFT JOIN users AS u ON u.id=b.uid
             LEFT JOIN users AS u2 ON u2.id=b.byuid' .
                 ($id ? " WHERE b.id=" . longval($id) . ' LIMIT 1' : ""));
-        $tpl->assign('res', $db->fetch2array($r));
-        $tpl->display('admin/bans/index.tpl');
+        tpl::o()->assign('res', db::o()->fetch2array($r));
+        tpl::o()->display('admin/bans/index.tpl');
     }
 
     /**
      * Сохранение бана
-     * @global etc $etc
-     * @global furl $furl
      * @global string $admin_file
      * @param array $data массив данных
      * @return null
      * @throws EngineException 
      */
     protected function save($data) {
-        global $etc, $furl, $admin_file;
+        global $admin_file;
         $id = (int) $data['id'];
         $cols = array(
             'user' => 'username',
@@ -80,6 +72,8 @@ class bans_man {
         $ip_f = ip2ulong($ip_f);
         $ip_t = ip2ulong($ip_t);
         $period = (float) $period;
+        /* @var $etc etc */
+        $etc = n("etc");
         $uid = 0;
         if ($user) {
             $r = $etc->select_user(null, $user, "id");
@@ -92,7 +86,7 @@ class bans_man {
             $this->show($id);
             return;
         } else
-            $furl->location($admin_file);
+            furl::o()->location($admin_file);
     }
 
 }
@@ -101,12 +95,10 @@ class bans_man_ajax {
 
     /**
      * Инициализация AJAX-части модуля
-     * @global lang $lang
      * @return null
      */
     public function init() {
-        global $lang;
-        $lang->get('admin/bans');
+        lang::o()->get('admin/bans');
         $act = $_GET["act"];
         $id = (int) $_POST["id"];
         switch ($act) {
@@ -122,31 +114,28 @@ class bans_man_ajax {
 
     /**
      * Удаление бана
-     * @global etc $etc
      * @param int $id ID бана
      * @return null
      */
     protected function delete($id) {
-        global $etc;
         $id = (int) $id;
+        /* @var $etc etc */
+        $etc = n("etc");
         $etc->unban_user(null, $id);
     }
 
     /**
      * Функция редактирования бана
-     * @global db $db
-     * @global tpl $tpl
      * @param int $id ID бана
      * @return null
      */
     protected function edit($id) {
-        global $db, $tpl;
         $id = (int) $id;
-        $r = $db->query('SELECT b.*, u.username, u.group FROM bans AS b
+        $r = db::o()->query('SELECT b.*, u.username, u.group FROM bans AS b
             LEFT JOIN users AS u ON u.id=b.uid
             WHERE b.id=' . $id . ' LIMIT 1');
-        $tpl->assign("res", $db->fetch_assoc($r));
-        $tpl->display('admin/bans/edit.tpl');
+        tpl::o()->assign("res", db::o()->fetch_assoc($r));
+        tpl::o()->display('admin/bans/edit.tpl');
     }
 
 }

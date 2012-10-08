@@ -40,37 +40,16 @@ final class cache {
     private $time = 86400;
 
     /**
-     * Инициализация кеша
-     * @global config $config
-     * @return null
-     */
-    public function init() {
-        global $config;
-        $this->state = (bool) $config->v('cache_on');
-        $this->time = (int) $config->v('cache_oldtime');
-        if (class_exists('Memcache', false))
-            $m = new Memcache();
-        elseif (class_exists('Memcached', false))
-            $m = new Memcached();
-        if (!$m)
-            return;
-        list($server, $port) = explode(':', $config->v('memcache_server'));
-        $m->addServer($server, $port);
-    }
-
-    /**
      * Проверка на недавнее исполнение запроса в сессии юзера
-     * @global config $config
      * @param string $name имя сессии
      * @param int $mytime своё время задержки
      * @return bool нуждается ли запрос в исполнении
      */
     public function query_delay($name, $mytime = false) {
-        global $config;
         if (!$this->state)
             return true; // нуждается же
         $time = &$_SESSION['cachetime_' . $name];
-        $delay = $mytime ? $mytime : $config->v('delay_queries');
+        $delay = $mytime ? $mytime : config::o()->v('delay_queries');
         if (!$delay)
             return true;
         if (!$time || $time < time() - $delay) {
@@ -110,19 +89,26 @@ final class cache {
                 $this->m->delete($cache_file);
             return false;
         }
-        array_pop($this->cache_files); // Ибо уже кешировано
+        $this->pop_readed(); // Ибо уже кешировано
         return $array;
     }
 
     /**
+     * Удаление последнего прочтённого элемента
+     * @return cache $this
+     */
+    public function pop_readed() {
+        array_pop($this->cache_files);
+        return $this;
+    }
+
+    /**
      * Кеш массива
-     * @global file $file
      * @param array $array записываемый массив
      * @param string $cache_file кешируемый файл
      * @return null
      */
     public function write($array, $cache_file = null) {
-        global $file;
         if (!$this->state)
             return;
         $tmp = $cache_file;
@@ -132,7 +118,7 @@ final class cache {
         if (!$this->m) {
             $contents = serialize($my_array);
             $f = 'include/cache/' . $cache_file . '.html';
-            $cfile = $file->write_file($contents, $f);
+            $cfile = file::o()->write_file($contents, $f);
             if (!$cfile)
                 error("cannot_write_cache", $cache_file);
         } else
@@ -142,7 +128,7 @@ final class cache {
             if ($k)
                 unset($this->cache_files[$k]);
         } else
-            array_pop($this->cache_files);
+            $this->pop_readed();
     }
 
     /**
@@ -159,25 +145,72 @@ final class cache {
 
     /**
      * Полная очистка кеша без скомпилированных шаблонов
-     * @global file $file
      * @return bool true, если успешно очищено
      */
     public function clear() {
-        global $file;
         if ($this->m)
             return @$this->m->flush();
         else
-            return @$file->unlink_folder('include/cache', true, array(TEMPLATES_PATH, '.gitignore'));
+            return @file::o()->unlink_folder('include/cache', true, array(TEMPLATES_PATH, '.gitignore'));
     }
 
     /**
      * Очистка от скомпилированных шаблонов
-     * @global file $file
      * @return bool true, если успешно очищено
      */
     public function clear_tpl() {
-        global $file;
-        return @$file->unlink_folder('include/cache/' . TEMPLATES_PATH, true, '.gitignore');
+        return @file::o()->unlink_folder('include/cache/' . TEMPLATES_PATH, true, '.gitignore');
+    }
+
+    // Реализация Singleton
+
+    /**
+     * Объект данного класса
+     * @var cache
+     */
+    private static $o = null;
+
+    /**
+     * Конструктор? А где конструктор? А нет его.
+     * @return null 
+     */
+    private function __construct() {
+        $this->state = (bool) config::o()->v('cache_on');
+        $this->time = (int) config::o()->v('cache_oldtime');
+        if (class_exists('Memcache', false))
+            $m = new Memcache();
+        elseif (class_exists('Memcached', false))
+            $m = new Memcached();
+        if (!$m)
+            return;
+        list($server, $port) = explode(':', config::o()->v('memcache_server'));
+        $m->addServer($server, $port);
+    }
+
+    /**
+     * Не клонируем
+     * @return null 
+     */
+    private function __clone() {
+        
+    }
+
+    /**
+     * И не десериализуем
+     * @return null 
+     */
+    private function __wakeup() {
+        
+    }
+
+    /**
+     * Получение объекта класса
+     * @return cache $this
+     */
+    public static function o() {
+        if (!self::$o)
+            self::$o = new self();
+        return self::$o;
     }
 
 }

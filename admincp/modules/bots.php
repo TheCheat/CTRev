@@ -17,13 +17,12 @@ class bots_man {
 
     /**
      * Инициализация модуля ботов
-     * @global lang $lang
      * @global array $POST
      * @return null
      */
     public function init() {
-        global $lang, $POST;
-        $lang->get('admin/bots');
+        global $POST;
+        lang::o()->get('admin/bots');
         $act = $_GET["act"];
         switch ($act) {
             case "save":
@@ -42,46 +41,38 @@ class bots_man {
 
     /**
      * Отображение списка ботов
-     * @global db $db
-     * @global tpl $tpl
      * @return null
      */
     protected function show() {
-        global $db, $tpl;
-        $r = $db->query('SELECT * FROM bots');
-        $tpl->assign('res', $db->fetch2array($r));
-        $tpl->display('admin/bots/index.tpl');
+        $r = db::o()->query('SELECT * FROM bots');
+        tpl::o()->assign('res', db::o()->fetch2array($r));
+        tpl::o()->display('admin/bots/index.tpl');
     }
 
     /**
      * Добавление/редактирование бота
-     * @global db $db
-     * @global tpl $tpl
      * @param int $id ID бота
      * @return null
      */
     protected function add($id = null) {
-        global $db, $tpl;
         $id = (int) $id;
         if ($id) {
-            $r = $db->query('SELECT * FROM bots WHERE id=' . $id . ' LIMIT 1');
-            $tpl->assign("row", $db->fetch_assoc($r));
+            $r = db::o()->query('SELECT * FROM bots WHERE id=' . $id . ' LIMIT 1');
+            tpl::o()->assign("row", db::o()->fetch_assoc($r));
         }
-        $tpl->assign("id", $id);
-        $tpl->display('admin/bots/add.tpl');
+        tpl::o()->assign("id", $id);
+        tpl::o()->display('admin/bots/add.tpl');
     }
 
     /**
      * Сохранение бота
-     * @global db $db
-     * @global furl $furl
      * @global string $admin_file
      * @param array $data массив данных
      * @return null
      * @throws EngineException 
      */
     protected function save($data) {
-        global $db, $furl, $admin_file;
+        global $admin_file;
         $cols = array(
             'id',
             'name',
@@ -111,13 +102,13 @@ class bots_man {
             'lastip' => $lastip,
             'agent' => $agent);
         if (!$id) {
-            $db->insert($update, 'bots');
+            db::o()->insert($update, 'bots');
             log_add('added_bot', 'admin');
         } else {
-            $db->update($update, 'bots', 'WHERE id=' . $id . ' LIMIT 1');
+            db::o()->update($update, 'bots', 'WHERE id=' . $id . ' LIMIT 1');
             log_add('changed_bot', 'admin', $id);
         }
-        $furl->location($admin_file);
+        furl::o()->location($admin_file);
     }
 
 }
@@ -141,14 +132,12 @@ class bots_man_ajax {
 
     /**
      * Удаление бота
-     * @global db $db
      * @param int $id ID бота
      * @return null
      */
     protected function delete($id) {
-        global $db;
         $id = (int) $id;
-        $db->delete('bots', 'WHERE id=' . $id . ' LIMIT 1');
+        db::o()->delete('bots', 'WHERE id=' . $id . ' LIMIT 1');
         log_add('deleted_bot', 'admin', $id);
     }
 

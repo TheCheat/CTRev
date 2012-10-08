@@ -17,7 +17,9 @@ final class captcha implements captcha_interface {
     /**
      * @const time - время очистки капч(в сек.)
      */
+
     const time = 1800;
+
     /**
      * Массив возможных бэкграундов
      * @var array
@@ -27,14 +29,10 @@ final class captcha implements captcha_interface {
 
     /**
      * Функция вызова captcha
-     * @global users $users
-     * @global db $db
-     * @global uploader $uploader
      * @return null
      */
     public function init() {
-        global $users, $db, $uploader;
-        $uid = $users->v('id');
+        $uid = users::o()->v('id');
         $insert = array();
         $created = time();
         $insert ["created"] = $created;
@@ -44,77 +42,72 @@ final class captcha implements captcha_interface {
         } else {
             $sid = session_id();
             $insert ["session_id"] = $sid;
-            $where = 'session_id = ' . $db->esc($sid);
+            $where = 'session_id = ' . db::o()->esc($sid);
         }
         $background = 'include/backgrounds/' . $this->bckgrnds [rand(0, count($this->bckgrnds) - 1)];
-        $code = mb_strtoupper($users->generate_salt(6));
+        $code = mb_strtoupper(users::o()->generate_salt(6));
         $insert ["key"] = $code;
-        $db->delete("captcha", ("WHERE " . $where));
-        $db->insert($insert, "captcha");
+        db::o()->delete("captcha", ("WHERE " . $where));
+        db::o()->insert($insert, "captcha");
+        /* @var $uploader uploader */
+        $uploader = n("uploader");
         $uploader->watermark($background, $code, 'auto', false, '', 'cc', true, false);
     }
 
     /**
      * Функция проверки кода captcha
-     * @global users $users
-     * @global db $db
-     * @global lang $lang
      * @param array $error массив ошибок
      * @param string $var $_POST переменная для проверки введённого кода
      * @return null
      */
     public function check(&$error, $var = "captcha_code") {
-        global $users, $db, $lang;
-        $uid = $users->v('id');
+        $uid = users::o()->v('id');
         $posted_code = $_POST [$var];
         if (!$posted_code) {
-            $error [] = $lang->v('captcha_false_captcha');
+            $error [] = lang::o()->v('captcha_false_captcha');
             return;
         }
         if ($uid) {
             $where = 'user_id = ' . longval($uid);
         } else {
             $sid = session_id();
-            $where = 'session_id = ' . $db->esc($sid);
+            $where = 'session_id = ' . db::o()->esc($sid);
         }
-        $code = $db->fetch_assoc($db->query("SELECT `key` FROM captcha WHERE " . $where . " LIMIT 1"));
+        $code = db::o()->fetch_assoc(db::o()->query("SELECT `key` FROM captcha WHERE " . $where . " LIMIT 1"));
         if (!$code) {
-            $error [] = $lang->v('captcha_false_captcha');
+            $error [] = lang::o()->v('captcha_false_captcha');
             return;
         }
         $code = $code["key"];
         if ($code == mb_strtoupper($posted_code)) {
             return true;
         } else {
-            $error [] = $lang->v('captcha_false_captcha');
+            $error [] = lang::o()->v('captcha_false_captcha');
             return;
         }
     }
 
     /**
      * Функция очистки старых капч
-     * @global users $users
-     * @global db $db
      * @param string $only удаление только(old - старые, user пользователя)
      * @return null
      */
     public function clear($only = "") {
-        global $users, $db;
         $where = "";
-        $uid = $users->v('id');
+        $uid = users::o()->v('id');
         if (!$only || $only == "user")
             if ($uid) {
                 $where = 'user_id = ' . longval($uid);
             } else {
                 $sid = session_id();
-                $where = 'session_id = ' . $db->esc($sid);
+                $where = 'session_id = ' . db::o()->esc($sid);
             }
         if (!$only || $only == "old")
             if (longval(self::time))
                 $where .= ( $where ? " OR " : "") . 'created < (' . time() . ' - ' . self::time . ')';
         if (!$where)
             return;
-        $db->delete("captcha", ("WHERE " . $where));
+        db::o()->delete("captcha", ("WHERE " . $where));
     }
 
 }

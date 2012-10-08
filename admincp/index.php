@@ -14,18 +14,18 @@ if (!defined('INSITE'))
     die("Remote access denied!");
 $allowed = "acp_modules";
 $allowed_admin_pages = "acp_pages";
-if (!($admin_modules = $cache->read('admin_modules'))) {
+if (!($admin_modules = cache::o()->read('admin_modules'))) {
     $admin_modules = array();
-    $r = $db->query('SELECT ai.name AS ai_name, ac.name AS ac_name, am.name AS am_name, am.link 
+    $r = db::o()->query('SELECT ai.name AS ai_name, ac.name AS ac_name, am.name AS am_name, am.link 
     FROM admin_items AS ai 
     LEFT JOIN admin_cats AS ac ON ac.item=ai.id
     LEFT JOIN admin_modules AS am ON am.cat=ac.id
     ORDER BY am.id');
-    while ($row = $db->fetch_assoc($r))
+    while ($row = db::o()->fetch_assoc($r))
         $admin_modules[$row['ai_name']][$row['ac_name']][$row['am_name']] = $row['link'];
-    $cache->write($admin_modules);
+    cache::o()->write($admin_modules);
 }
-$users->check_perms('acp');
+users::o()->check_perms('acp');
 $item_mainpage = false;
 /**
  * Узнаём, в какой вкладке сейчас находимся
@@ -74,10 +74,10 @@ if ($module && !$ajax) {
 /**
  * То, что не разрешено - запрещено 
  */
-$users->acp_modules();
-$allowed_acp_mods = (array) $users->perm('acp_modules');
+users::o()->acp_modules();
+$allowed_acp_mods = (array) users::o()->perm('acp_modules');
 
-if (!$users->perm('acp', 2) && !$ajax) {
+if (!users::o()->perm('acp', 2) && !$ajax) {
     foreach ($admin_modules as $k => $v) {
         foreach ($v as $kk => $vv) {
             foreach ($vv as $kkk => $vvv) { // НУЖНО БОЛЬШЕ VVV, KKK
@@ -111,45 +111,45 @@ if ($item_mainpage && !$module && !$ajax) {
 /**
  * Передаём часть переменных в Smarty Tpl.
  */
-$tpl->assign("selected_item", $item);
+tpl::o()->assign("selected_item", $item);
 if ($imod)
-    $tpl->assign("selected_imod", $imod);
-$tpl->assign("imods", $admin_modules);
-$lang->get("admin/main");
-$users->check_inadmin($module, false, true);
+    tpl::o()->assign("selected_imod", $imod);
+tpl::o()->assign("imods", $admin_modules);
+lang::o()->get("admin/main");
+users::o()->check_inadmin($module, false, true);
 $iadmin_file = $eadmin_file . '&item=' . $item;
-$tpl->assign("iadmin_file", $iadmin_file);
+tpl::o()->assign("iadmin_file", $iadmin_file);
 if ($module) {
     $admin_file = $iadmin_file . '&module=' . $module;
-    $tpl->assign("admin_file", $admin_file);
+    tpl::o()->assign("admin_file", $admin_file);
     $admin_page = null;
 } elseif ($admin_page) {
     $module = $admin_page;
     $allowed = $allowed_admin_pages;
     $plugins_isblock = 2;
     $admin_file = $iadmin_file . '&page=' . $admin_page;
-    $tpl->assign("admin_file", $admin_file);
+    tpl::o()->assign("admin_file", $admin_file);
 }
 /**
  * Загружаем модуль, или индексную страничку во вкладке
  */
 if (!$ajax)
-    $tpl->display("admin/header.tpl");
+    tpl::o()->display("admin/header.tpl");
 else {
-    $db->nt_error();
-    $tpl->assign("from_ajax", 1);
+    db::o()->nt_error();
+    tpl::o()->assign("from_ajax", 1);
 }
 if ($module) {
     if (!allowed::o()->is($module, $allowed))
-        die($lang->v('module_not_exists'));
-    $m = $plugins->get_module($module, $plugins_isblock, $ajax && !$nno);
+        die(lang::o()->v('module_not_exists'));
+    $m = plugins::o()->get_module($module, $plugins_isblock, $ajax && !$nno);
     try {
-        $plugins->call_init($m);
+        plugins::o()->call_init($m);
     } catch (EngineException $e) {
         $e->defaultCatch();
     }
 }
 if (!$ajax)
-    $tpl->display("admin/footer.tpl");
+    tpl::o()->display("admin/footer.tpl");
 die();
 ?>

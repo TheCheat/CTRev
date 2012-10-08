@@ -28,13 +28,12 @@ class patterns_man {
 
     /**
      * Инициализация управления шаблонами
-     * @global lang $lang
      * @global array $POST
      * @return null
      */
     public function init() {
-        global $lang, $POST;
-        $lang->get('admin/patterns');
+        global $POST;
+        lang::o()->get('admin/patterns');
         $act = $_GET['act'];
         switch ($act) {
             case "add":
@@ -54,54 +53,44 @@ class patterns_man {
 
     /**
      * Добавление/редактирование шаблона
-     * @global db $db
-     * @global tpl $tpl
      * @param int $id ID шаблона
      * @param bool $add добавление?
      * @return null
      */
     protected function add($id = null, $add = false) {
-        global $tpl, $db;
         $row = array();
         if ($id) {
             $id = (int) $id;
-            $r = $db->query('SELECT * FROM patterns WHERE id=' . $id . ' LIMIT 1');
-            $row = $db->fetch_assoc($r);
+            $r = db::o()->query('SELECT * FROM patterns WHERE id=' . $id . ' LIMIT 1');
+            $row = db::o()->fetch_assoc($r);
             $row["pattern"] = unserialize($row["pattern"]);
         } else
             $row["pattern"] = array(array());
-        $tpl->assign('id', $add ? 0 : $id);
-        $tpl->assign('rows', $row);
-        $tpl->assign('pat_types', $this->types);
-        $tpl->display('admin/patterns/add.tpl');
+        tpl::o()->assign('id', $add ? 0 : $id);
+        tpl::o()->assign('rows', $row);
+        tpl::o()->assign('pat_types', $this->types);
+        tpl::o()->display('admin/patterns/add.tpl');
     }
 
     /**
      * Вывод списка категорий
-     * @global tpl $tpl
-     * @global db $db
      * @return null 
      */
     protected function show() {
-        global $tpl, $db;
-        $r = $db->query('SELECT id, name FROM patterns');
-        $tpl->assign('rows', $db->fetch2array($r));
-        $tpl->display('admin/patterns/index.tpl');
+        $r = db::o()->query('SELECT id, name FROM patterns');
+        tpl::o()->assign('rows', db::o()->fetch2array($r));
+        tpl::o()->display('admin/patterns/index.tpl');
     }
 
     /**
      * Сохранение шаблона
-     * @global db $db
-     * @global cache $cache
-     * @global furl $furl
      * @global string $admin_file
-     * @global display $display
      * @param array $data массив данных шаблона
      * @return null
      * @throws EngineException 
      */
     protected function save($data) {
-        global $db, $cache, $furl, $admin_file, $display;
+        global $admin_file;
         $cols = array(
             'name',
             'rname',
@@ -134,7 +123,7 @@ class patterns_man {
             if (!$e['name'])
                 continue;
             if ((!$e['rname'] || !validword($e['rname'])) && $type != 'html')
-                $e['rname'] = $display->translite($e['name']);
+                $e['rname'] = display::o()->translite($e['name']);
             if (!$e['formdata'])
                 continue;
             $c = false;
@@ -171,14 +160,14 @@ class patterns_man {
         }
         $update['pattern'] = serialize($pattern);
         if ($id) {
-            $db->update($update, 'patterns', 'WHERE id=' . $id . ' LIMIT 1');
-            $cache->remove('patterns/pattern-id' . $id);
+            db::o()->update($update, 'patterns', 'WHERE id=' . $id . ' LIMIT 1');
+            cache::o()->remove('patterns/pattern-id' . $id);
             log_add('changed_pattern', 'admin', $id);
         } else {
-            $db->insert($update, 'patterns');
+            db::o()->insert($update, 'patterns');
             log_add('added_pattern', 'admin');
         }
-        $furl->location($admin_file);
+        furl::o()->location($admin_file);
     }
 
 }
@@ -201,16 +190,13 @@ class patterns_man_ajax {
 
     /**
      * Удаление шаблона
-     * @global db $db
-     * @global cache $cache
      * @param int $id ID шаблона
      * @return null
      */
     protected function delete($id) {
-        global $db, $cache;
         $id = (int) $id;
-        $db->delete('patterns', 'WHERE id="' . $id . '" LIMIT 1');
-        $cache->remove('patterns/pattern-id' . $id);
+        db::o()->delete('patterns', 'WHERE id="' . $id . '" LIMIT 1');
+        cache::o()->remove('patterns/pattern-id' . $id);
         log_add('deleted_pattern', 'admin', $id);
     }
 

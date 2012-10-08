@@ -5,7 +5,7 @@
                 <div class="m_message_image info_image td"></div>
                 <div class='td'>
                     <div class='m_message_content'>
-                        <?= sprintf($lang->v('install_finish'), ILOCK_FILE) ?>
+                        <?= sprintf(lang::o()->v('install_finish'), ILOCK_FILE) ?>
                     </div>
                 </div>
             </div>

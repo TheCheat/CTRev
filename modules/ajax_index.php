@@ -23,15 +23,13 @@ class ajax_index {
 
     /**
      * Функция инициализации Ajax функций для главной страницы
-     * @global modsettings $modsettings
      * @return null
      */
     public function init() {
-        global $modsettings;
         $act = $_GET ['act'];
         switch ($act) {
             case "modsettings":
-                $modsettings->make_demo($_POST);
+                modsettings::o()->make_demo($_POST);
                 break;
             case "calendar_torrents" :
                 $year = (int) $_POST ["year"];
@@ -77,135 +75,117 @@ class ajax_index {
 
     /**
      * Подсчёт кол-ва торрентов в данном месяце и в данном году
-     * @global plugins $plugins
      * @param int $month данный месяц
      * @param int $year данный год
      * @return null
      */
     protected function calendar_torrents($month, $year) {
-        global $plugins;
-        $calendar_block = $plugins->get_module("calendar", true);
+        /* @var $calendar_block calendar_block */
+        $calendar_block = plugins::o()->get_module("calendar", true);
         $to_print = $calendar_block->count_torrents($month, $year);
         print ('<script language="text/javascript">$torrents_per_dates = ' . $to_print . '</script>');
     }
 
     /**
      * Предпросмотр результатов поиска
-     * @global search $search
-     * @global tpl $tpl
-     * @global config $config
-     * @global lang $lang
      * @param string $text искомый текст
      */
     protected function search_pre($text) {
-        global $search, $tpl, $config, $lang;
-        $lang->get('search');
-        $res = $search->pre_search("torrents", ($config->v('pre_search_title_only') ? "title" : array(
+        lang::o()->get('search');
+        /* @var $search search */
+        $search = n("search");
+        $res = $search->pre_search("torrents", (config::o()->v('pre_search_title_only') ? "title" : array(
                     "title",
                     "content")), $text);
-        $tpl->assign("res", $res);
-        $tpl->display("torrents/pre_search.tpl");
+        tpl::o()->assign("res", $res);
+        tpl::o()->display("torrents/pre_search.tpl");
     }
 
     /**
      * Функция получения кол-ва сообщений пользователя
-     * @global plugins $plugins
-     * @global tpl $tpl
-     * @global lang $lang
-     * @global users $users
      * @return null
      */
     protected function get_msgs() {
-        global $plugins, $tpl, $lang, $users;
-        $users->check_perms('pm');
-        $lang->get("messages");
-        $messages = $plugins->get_module("messages", false, true);
+        users::o()->check_perms('pm');
+        lang::o()->get("messages");
+        /* @var $messages messages */
+        $messages = plugins::o()->get_module("messages", false, true);
         list($inbox, $outbox, $unread) = $messages->count();
         if ($unread) {
             $res = $messages->unread();
             $time = (int) $_COOKIE ['time_last_msg'];
             $count = $messages->unread_count($res ["time"], true);
         }
-        $tpl->assign("inbox", $inbox);
-        $tpl->assign("outbox", $outbox);
-        $tpl->assign("unread", $unread);
-        $tpl->assign("count_after", $count);
-        $tpl->assign("count_prev", $unread - $count - 1);
-        $tpl->assign("unread_time", $time);
-        $tpl->assign("unread_last", $res);
-        $tpl->display("messages/ajax_index_get.tpl");
+        tpl::o()->assign("inbox", $inbox);
+        tpl::o()->assign("outbox", $outbox);
+        tpl::o()->assign("unread", $unread);
+        tpl::o()->assign("count_after", $count);
+        tpl::o()->assign("count_prev", $unread - $count - 1);
+        tpl::o()->assign("unread_time", $time);
+        tpl::o()->assign("unread_last", $res);
+        tpl::o()->display("messages/ajax_index_get.tpl");
     }
 
     /**
      * Функция сохранения времени последнего закрытого сообщения в кукисах
-     * @global users $users
      * @param int $time время сообщения
      * @return null
      */
     protected function save_last($time) {
-        global $users;
         $time = (int) $time;
-        $users->check_perms('pm');
+        users::o()->check_perms('pm');
         @ob_clean();
-        $users->setcookie("time_last_msg", $time);
+        users::o()->setcookie("time_last_msg", $time);
     }
 
     /**
      * Функция прочтения сообщения до или после данного времени
-     * @global tpl $tpl
-     * @global plugins $plugins
-     * @global users $users
-     * @global lang $lang
      * @param int $time данное время
      * @param bool $after true - до, иначе - после
      * @return null
      */
     protected function move_unread($time, $after = false) {
-        global $tpl, $plugins, $users, $lang;
         $time = (int) $time;
-        $users->check_perms('pm');
-        $lang->get("messages");
-        $messages = $plugins->get_module("messages", false, true);
+        users::o()->check_perms('pm');
+        lang::o()->get("messages");
+        /* @var $messages messages */
+        $messages = plugins::o()->get_module("messages", false, true);
         $row = $messages->unread($time, $after);
         if (!$row)
             return;
-        $tpl->assign("unread_last", $row);
-        $tpl->assign("after", $after);
-        $tpl->assign("only_unread", true);
-        $tpl->display("messages/ajax_index_get.tpl");
+        tpl::o()->assign("unread_last", $row);
+        tpl::o()->assign("after", $after);
+        tpl::o()->assign("only_unread", true);
+        tpl::o()->display("messages/ajax_index_get.tpl");
     }
 
     /**
      * Показывание подкат. категории
-     * @global categories $cats
-     * @global tpl $tpl
      * @param int $cat_id ID категории-родителя
      * @param int $num номер вложенности
      * @param string $type тип категории
      * @return null
      */
     protected function children_cat($cat_id, $num, $type = 'torrents') {
-        global $cats, $tpl;
         $cat_id = (int) $cat_id;
-        $tpl->assign("cats", $cats->change_type($type)->get($cat_id, 'c'));
-        $tpl->assign("only_cat", true);
-        $tpl->assign("cnum", $num);
-        $tpl->display('categories.tpl');
+        /* @var $cats categories */
+        $cats = n("categories");
+        tpl::o()->assign("cats", $cats->change_type($type)->get($cat_id, 'c'));
+        tpl::o()->assign("only_cat", true);
+        tpl::o()->assign("cnum", $num);
+        tpl::o()->display('categories.tpl');
     }
 
     /**
      * Парсинг шаблона
-     * @global db $db
-     * @global cache $cache
      * @param int $id ID шаблона
      * @return array массив данного шаблона
      */
     protected function parse_pattern($id) {
-        global $db, $cache;
         $id = (int) $id;
-        if (!($row = $cache->read('patterns/pattern-id' . $id))) {
-            $r = $db->query('SELECT * FROM patterns WHERE id=' . $id . ' LIMIT 1');
-            $row = $db->fetch_assoc($r);
+        if (!($row = cache::o()->read('patterns/pattern-id' . $id))) {
+            $r = db::o()->query('SELECT * FROM patterns WHERE id=' . $id . ' LIMIT 1');
+            $row = db::o()->fetch_assoc($r);
             if (!$row)
                 return;
             $row['pattern'] = unserialize($row['pattern']);
@@ -237,7 +217,7 @@ class ajax_index {
                 }
                 $row['pattern'][$k] = $e;
             }
-            $cache->write($row);
+            cache::o()->write($row);
         }
         return $row;
     }
@@ -256,12 +236,10 @@ class ajax_index {
 
     /**
      * Обработка поля шаблона
-     * @global bbcodes $bbcodes
      * @param array $el поле шаблона
      * @return string HTML код поля
      */
     public function patternfield_compile($el) {
-        global $bbcodes;
         $html = '';
         $rname = $el['rname'];
         $s = false;
@@ -271,7 +249,7 @@ class ajax_index {
                 $html .= '<input type="text" name="' . $rname . '" size="' . $size . '">';
                 break;
             case "textarea":
-                $html .= $bbcodes->input_form($rname);
+                $html .= bbcodes::o()->input_form($rname);
                 break;
             case "select":
                 $html .= '<select name="' . $rname . '">';
@@ -300,15 +278,12 @@ class ajax_index {
 
     /**
      * Проверка и сборка шаблона для формы
-     * @global lang $lang
-     * @global display $display
      * @param int $id ID шаблона
      * @param array $data проверяемые данные
      * @return null 
      */
     protected function check_pattern($id) {
-        global $lang, $display;
-        $lang->get('admin/patterns');
+        lang::o()->get('admin/patterns');
         $row = $this->parse_pattern($id);
         $arr = array();
         foreach ($row['pattern'] as $e)
@@ -326,23 +301,20 @@ class ajax_index {
                     $val = "\n" . $val;
                 $arr[$key] .= $val;
             }
-        print('OK!' . $display->array_export_to_js($arr));
+        print('OK!' . display::o()->array_export_to_js($arr));
     }
 
     /**
      * Построение шаблона
-     * @global lang $lang
-     * @global tpl $tpl
      * @param int $id ID шаблона
      * @return null 
      */
     protected function build_pattern($id) {
-        global $lang, $tpl;
-        $lang->get('admin/patterns');
+        lang::o()->get('admin/patterns');
         $row = $this->parse_pattern($id);
-        $tpl->register_modifier('patternfield_compile', array($this, 'patternfield_compile'));
-        $tpl->assign('row', $row);
-        $tpl->display('pattern.tpl');
+        tpl::o()->register_modifier('patternfield_compile', array($this, 'patternfield_compile'));
+        tpl::o()->assign('row', $row);
+        tpl::o()->display('pattern.tpl');
     }
 
 }

@@ -14,7 +14,7 @@
 if (!defined('INSITE'))
     die('Remote access denied!');
 
-class formatter_callbacks extends pluginable_object {
+abstract class formatter_callbacks extends pluginable_object {
 
     /**
      * Мультивложенность тегов
@@ -141,20 +141,6 @@ class formatter_callbacks extends pluginable_object {
     }
 
     /**
-     * Конструктор класса
-     * @return null 
-     */
-    protected function plugin_construct() {
-        $this->access_var('bb_patterns', PVAR_ADD | PVAR_MOD);
-        $this->access_var('bb_replacement', PVAR_ADD | PVAR_MOD);
-        $this->access_var('spec_patterns', PVAR_ADD | PVAR_MOD);
-        $this->access_var('multi_tagin', PVAR_ADD);
-        $this->access_var('remove_quote_tags', PVAR_ADD);
-        $this->access_var('removing_tags', PVAR_ADD);
-        $this->access_var('simple_tags', PVAR_ADD);
-    }
-
-    /**
      * Аналог pcre_callback_hide для RSS
      * @param array $matches входящий массив парсенной строки
      * @return string HTML код
@@ -165,40 +151,35 @@ class formatter_callbacks extends pluginable_object {
 
     /**
      * Обработка значений для preg_replace_callback тега hide
-     * @global users $users
-     * @global lang $lang
-     * @global furl $furl
-     * @global display $display
      * @param array $matches входящий массив парсенной строки
      * @param bool $rss RSS?
      * @return string HTML код
      */
     protected function pcre_callback_hide($matches, $rss = false) {
-        global $users, $lang, $furl, $display;
         $vars = array();
-        if ($users->v()) {
+        if (users::o()->v()) {
             if ($matches[1]) {
                 $matches[1] = longval(trim($matches[1]));
-                if ($matches[1] <= $users->v('torrents_count'))
+                if ($matches[1] <= users::o()->v('torrents_count'))
                     return $matches[3];
                 if (!$rss) {
-                    $vars = array($matches[1], $users->v('torrents_count'));
+                    $vars = array($matches[1], users::o()->v('torrents_count'));
                     $text = "hidden_need_torrents_you_have";
                 }
             } elseif ($matches[2]) {
                 $grps = array_map('longval', explode(",", $matches[2]));
                 $c = count($grps);
                 for ($i = 0; $i < $c; $i++) {
-                    if (!$users->get_group($grps[$i]))
+                    if (!users::o()->get_group($grps[$i]))
                         continue;
                     if (!$rss) {
-                        $pretext .= ( $pretext ? ", " : "") . $display->user_group_color($grps[$i]);
+                        $pretext .= ( $pretext ? ", " : "") . display::o()->user_group_color($grps[$i]);
                     }
-                    if ($users->v('group') == $grps[$i])
+                    if (users::o()->v('group') == $grps[$i])
                         return $matches[3];
                 }
                 if (!$rss) {
-                    $vars = array($pretext, $display->user_group_color($users->v('group')));
+                    $vars = array($pretext, display::o()->user_group_color(users::o()->v('group')));
                     $text = "hidden_group_to_see";
                 }
             } else
@@ -210,14 +191,14 @@ class formatter_callbacks extends pluginable_object {
         //    return $matches[3];
         if (!$rss) {
             if (!$vars)
-                $vars = $furl->construct("registration");
+                $vars = furl::o()->construct("registration");
             ob_start();
             mess($text, $vars, "info", false, "hidden_text", "left", false, true);
             $cont = ob_get_contents();
             ob_end_clean();
             return $cont;
         }
-        return $lang->v('hidden_text');
+        return lang::o()->v('hidden_text');
     }
 
     /**
@@ -280,16 +261,14 @@ class formatter_callbacks extends pluginable_object {
 
     /**
      * Обработка значений для preg_replace_callback тега hide
-     * @global lang $lang
      * @param array $matches входящий массив парсенной строки
      * @param bool $rss RSS?
      * @return string HTML код
      */
     protected function pcre_callback_code($matches) {
-        global $lang;
-        return '<div class="shl_div_top"><div class="shl_title">' . $lang->v('code') . ':
-                    <a href="javascript:void(0);" onclick="code_select_all(this);">' . $lang->v('select_all') . '</a>,
-			<a href="javascript:void(0);" onclick="code_unoverflow(this);">' . $lang->v('unoverflow') . '</a></div>
+        return '<div class="shl_div_top"><div class="shl_title">' . lang::o()->v('code') . ':
+                    <a href="javascript:void(0);" onclick="code_select_all(this);">' . lang::o()->v('select_all') . '</a>,
+			<a href="javascript:void(0);" onclick="code_unoverflow(this);">' . lang::o()->v('unoverflow') . '</a></div>
 			<div class="syntaxhighlighter">
 			<pre class="' . mb_strtolower($matches[1]) . '">' . $this->sc_sscrapes($matches[2]) . '</pre>
 			</div></div>';
@@ -308,7 +287,7 @@ class formatter_callbacks extends pluginable_object {
 
 }
 
-class bbcode_formatter extends formatter_callbacks {
+abstract class bbcode_formatter extends formatter_callbacks {
 
     /**
      * Массив смайлов
@@ -352,14 +331,13 @@ class bbcode_formatter extends formatter_callbacks {
 
     /**
      * Инициализация паттернов и заменяемого текста для format_text
-     * @global display $display
      * @global string $BASEURL
      * @param array $patterns паттерны
      * @param array $replacement заменяемый текст
      * @return null
      */
     protected function format_text_init(&$patterns = "", &$replacement = "") {
-        global $display, $BASEURL;
+        global $BASEURL;
         $global = false;
         if (!$patterns && !$replacement) {
             if ($this->executed_format)
@@ -369,8 +347,8 @@ class bbcode_formatter extends formatter_callbacks {
             return;
         }
         if ($patterns) {
-            $q = mpc($display->html_encode('"'));
-            $sq = mpc($display->html_encode("'"));
+            $q = mpc(display::o()->html_encode('"'));
+            $sq = mpc(display::o()->html_encode("'"));
             $patterns = str_replace("%URL_PATTERN;", display::url_pattern, $patterns);
             $patterns = str_replace('"', $q, $patterns);
             $patterns = str_replace("'", $sq, $patterns);
@@ -384,13 +362,11 @@ class bbcode_formatter extends formatter_callbacks {
 
     /**
      * Обработка конструкции %LANG
-     * @global lang $lang
      * @param array $matches входящий массив парсенной строки
      * @return string языковая часть
      */
     protected function lang_macro($matches) {
-        global $lang;
-        return $lang->v($matches[1]);
+        return lang::o()->v($matches[1]);
     }
 
     /**
@@ -426,13 +402,11 @@ class bbcode_formatter extends formatter_callbacks {
 
     /**
      * Удаление ББ-тегов из текста(для цитирования)
-     * @global display $display
      * @param string $text текст с тегами
      * @param array $not_remove не удаляемые ББ-теги
      * @return string текст без тегов
      */
     public function remove_quote_tags($text, $not_remove = array()) {
-        global $display;
         $this->format_text_init();
         if (!$this->subexe_format) {
             $this->format_text_init($null, $this->remove_quote_tags);
@@ -458,18 +432,17 @@ class bbcode_formatter extends formatter_callbacks {
                 } while ($o != $text && $i < 100);
             }
         }
-        return $display->html_decode($text);
+        return display::o()->html_decode($text);
     }
 
     /**
      * Форматирование текста, согласно паттернам(простые теги типа b, i, u и пр.)
      * @global string $BASEURL
-     * @global config $config
      * @param string $input входной текст
      * @return string форматированный текст
      */
     protected function format_text_simple($input) {
-        global $BASEURL, $config;
+        global $BASEURL;
         $this->init_smilies();
 // $out = nl2br ( $input ); // лишь в 5.3 можно сделать для HTML Trans.
         $out = $input;
@@ -483,12 +456,11 @@ class bbcode_formatter extends formatter_callbacks {
     /**
      * Замена смайликов
      * @global string $BASEURL
-     * @global config $config
      * @param string $input входящий текст
      * @return null
      */
     protected function smilies_replace(&$input) {
-        global $BASEURL, $config;
+        global $BASEURL;
         if (!$this->smilies)
             return;
         foreach ($this->smilies as $smilies_pack) {
@@ -498,7 +470,7 @@ class bbcode_formatter extends formatter_callbacks {
                     $image = $smilie ['image'];
                     $name = $smilie ['name'];
                     // preg_replace с модификатором i намного быстрее str_ireplace
-                    $input = preg_replace('/' . mpc($code) . '/i', "<img src=\"" . $BASEURL . $config->v('smilies_folder') . "/" . $image . "\" 
+                    $input = preg_replace('/' . mpc($code) . '/i', "<img src=\"" . $BASEURL . config::o()->v('smilies_folder') . "/" . $image . "\" 
                                 alt=\"" . $name . "\" 
                                 title=\"" . $name . "\">", $input);
                 }
@@ -542,10 +514,6 @@ class bbcode_formatter extends formatter_callbacks {
 
     /**
      * Форматирование текста, согласно паттернам
-     * @global string $BASEURL
-     * @global config $config
-     * @global tpl $tpl
-     * @global plugins $plugins
      * @param string $input входной текст
      * @param bool $rss RSS?, если же это поле равно ATOM, то будет обрабатываться, как для ATOM,
      * SIMPLE - простое форматирование
@@ -554,9 +522,8 @@ class bbcode_formatter extends formatter_callbacks {
      * @return string форматированный текст
      */
     public function format_text($input, $rss = false, $nc = false) {
-        global $tpl, $plugins;
         try {
-            $plugins->pass_data(array('input' => &$input,
+            plugins::o()->pass_data(array('input' => &$input,
                 'rss' => &$rss), true)->run_hook('bbcodes_format_text');
         } catch (PReturn $e) {
             return $e->r();
@@ -600,7 +567,7 @@ class bbcode_formatter extends formatter_callbacks {
         }
         if (!$this->inited_js_format) {
             $this->inited_js_format = true;
-            $c = $tpl->fetch('initializer_formatter.tpl');
+            $c = tpl::o()->fetch('initializer_formatter.tpl');
         }
         $c .= (!$nc ? "<div class='content'>" : "") . $out . (!$nc ? "</div>" : "");
         return $c;
@@ -624,14 +591,12 @@ final class bbcodes extends bbcode_formatter {
 
     /**
      * Инициализация смайлов
-     * @global db $db
      * @return null
      */
     public function init_smilies() {
-        global $db;
         if ($this->smilies)
             return;
-        $r = $db->query('SELECT name,image,code,show_bbeditor FROM smilies', 'smilies');
+        $r = db::o()->query('SELECT name,image,code,show_bbeditor FROM smilies', 'smilies');
         $this->smilies = array(array(), array());
         foreach ($r as $row)
             $this->smilies[$row['show_bbeditor']][] = $row;
@@ -639,44 +604,98 @@ final class bbcodes extends bbcode_formatter {
 
     /**
      * Форма ввода текста с BB-кодами
-     * @global tpl $tpl
-     * @global lang $lang
-     * @global display $display
-     * @global plugins $plugins
      * @param string $name имя формы
      * @param string $text текст
      * @return string HTML код формы
      */
     public function input_form($name, $text = '') {
-        global $tpl, $lang, $display, $plugins;
         if (is_array($name)) {
             $text = $name ['text'];
             $name = $name ['name'];
         }
         $this->init_smilies();
-        $lang->get('bbcodes');
+        lang::o()->get('bbcodes');
         $c = '';
 
         try {
-            $plugins->pass_data(array('name' => $name,
+            plugins::o()->pass_data(array('name' => $name,
                 'text' => $text,
                 'html' => &$c), true)->run_hook('bbcodes_input_form');
         } catch (PReturn $e) {
             return $e->r();
         }
 
-        $tpl->assign("textarea_rname", $name);
-        $tpl->assign("textarea_name", 'formid' . time() . $this->id++);
-        $tpl->assign("textarea_text", $text);
-        $tpl->assign("smilies", $this->smilies[1]);
-        $tpl->assign("inited_bbcodes", $this->inited_js);
+        tpl::o()->assign("textarea_rname", $name);
+        tpl::o()->assign("textarea_name", 'formid' . time() . $this->id++);
+        tpl::o()->assign("textarea_text", $text);
+        tpl::o()->assign("smilies", $this->smilies[1]);
+        tpl::o()->assign("inited_bbcodes", $this->inited_js);
         if (!$this->inited_js) {
             $this->inited_js = true;
             $fs = array_merge($this->smilies[0], $this->smilies[1]);
-            $tpl->assign('smilies_array', $display->array_export_to_js($fs));
+            tpl::o()->assign('smilies_array', display::o()->array_export_to_js($fs));
         }
-        $c .= $tpl->fetch('init_textinput.tpl');
+        $c .= tpl::o()->fetch('init_textinput.tpl');
         return $c;
+    }
+
+    // Реализация Singleton для pluginable_object
+
+    /**
+     * Объект данного класса
+     * @var furl
+     */
+    private static $o = null;
+
+    /**
+     * Переменная для создания объекта только через функцию o
+     * @var bool
+     */
+    protected static $singletoned = false;
+
+    /**
+     * Не клонируем
+     * @return null 
+     */
+    protected function __clone() {
+        
+    }
+
+    /**
+     * И не десериализуем
+     * @return null 
+     */
+    protected function __wakeup() {
+        
+    }
+
+    /**
+     * Конструктор класса
+     * @return null 
+     */
+    protected function plugin_construct() {
+        if (!self::$singletoned)
+            die("To get an object use furl::o()");
+        $this->access_var('bb_patterns', PVAR_ADD | PVAR_MOD);
+        $this->access_var('bb_replacement', PVAR_ADD | PVAR_MOD);
+        $this->access_var('spec_patterns', PVAR_ADD | PVAR_MOD);
+        $this->access_var('multi_tagin', PVAR_ADD);
+        $this->access_var('remove_quote_tags', PVAR_ADD);
+        $this->access_var('removing_tags', PVAR_ADD);
+        $this->access_var('simple_tags', PVAR_ADD);
+    }
+
+    /**
+     * Получение объекта класса
+     * @return furl $this
+     */
+    public static function o() {
+        if (!self::$o) {
+            self::$singletoned = true;
+            self::$o = new self();
+            self::$singletoned = false;
+        }
+        return self::$o;
     }
 
 }

@@ -17,14 +17,12 @@ class lang_man {
 
     /**
      * Инициализация управления языковыми пакетами
-     * @global lang $lang
      * @global array $POST
-     * @global tpl $tpl
      * @return null
      */
     public function init() {
-        global $lang, $POST, $tpl;
-        $lang->get('admin/languages');
+        global $POST;
+        lang::o()->get('admin/languages');
         $act = $_GET['act'];
         switch ($act) {
             case "add":
@@ -47,7 +45,7 @@ class lang_man {
                     $_POST['search'] = $POST['search'];
                     $this->search($_POST['id'], $_POST);
                 } else
-                    $tpl->display('admin/languages/search.tpl');
+                    tpl::o()->display('admin/languages/search.tpl');
                 break;
             default:
                 $this->show();
@@ -57,16 +55,14 @@ class lang_man {
 
     /**
      * Получение массива языковых переменных
-     * @global lang $lang
      * @param string $file путь к файлу
      * @param array $matches спарсенный массив
      * @return array массив языковых перменных
      */
     public function get($file, &$matches = null) {
-        global $lang;
         if (!preg_match('/^' . LANGUAGES_PATH . '\/([a-z0-9\_\-]+)\/(.+)\.php$/siu', $file, $matches))
             return false;
-        return $lang->get($matches[2], $matches[1], false);
+        return lang::o()->get($matches[2], $matches[1], false);
     }
 
     /**
@@ -77,7 +73,6 @@ class lang_man {
      * @return null
      */
     public function replace($f, $arr, $keys = null) {
-        global $lang;
         $languages = $this->get($f, $matches);
         if ($languages === false)
             return;
@@ -88,20 +83,17 @@ class lang_man {
                 unset($languages[$keys[$key]]);
             $languages[$key] = $value;
         }
-        $lang->set($matches[2], $languages, $matches[1]);
+        lang::o()->set($matches[2], $languages, $matches[1]);
     }
 
     /**
      * Поиск в языковых пакетах
-     * @global tpl $tpl
-     * @global search $search
      * @param string $name имя языка
      * @param array $data массив данных
      * @return null
      * @throws EngineException
      */
     protected function search($name, $data) {
-        global $tpl, $search;
         $cols = array(
             'what' => 'search',
             'where',
@@ -113,19 +105,19 @@ class lang_man {
             throw new EngineException;
         if (!$what || mb_strlen($what) < 2)
             throw new EngineException('nothing_selected');
+        /* @var $search search */
+        $search = n("search");
         $res = $search->search_infiles(LANGUAGES_PATH . '/' . $name, $what, $regexp, $where, array($this, "get"));
-        $tpl->assign('row', $res);
-        $tpl->assign('id', $name);
+        tpl::o()->assign('row', $res);
+        tpl::o()->assign('id', $name);
         $data['search'] = $data['what'];
         unset($data['what']);
-        $tpl->assign('postdata', http_build_query($data));
-        $tpl->display('admin/languages/results.tpl');
+        tpl::o()->assign('postdata', http_build_query($data));
+        tpl::o()->display('admin/languages/results.tpl');
     }
 
     /**
      * Добавление/Редактирование языкового файла
-     * @global lang $lang
-     * @global tpl $tpl
      * @param string $name языковой пакет
      * @param string $f2e файл
      * @param bool $add добавление?
@@ -133,7 +125,6 @@ class lang_man {
      * @throws EngineException
      */
     protected function add($name, $f2e, $add = false) {
-        global $lang, $tpl;
         if (!validfolder($name, LANGUAGES_PATH))
             throw new EngineException;
         $f2e = validpath($f2e);
@@ -146,59 +137,52 @@ class lang_man {
         if (!$add) {
             if (!file_exists($fpath))
                 throw new EngineException;
-            $tpl->assign('file', $f2e);
-            $languages = $lang->get($f2e, $name, false);
+            tpl::o()->assign('file', $f2e);
+            $languages = lang::o()->get($f2e, $name, false);
             reset($languages);
             if (!is_numeric(key($languages)))
                 array_unshift($languages, $e);
         }
         if (!$languages || !is_array($languages) || count($languages) < 2)
             $languages = array($e, '');
-        $tpl->assign('id', $name);
-        $tpl->assign('parent', $folder);
-        $tpl->assign('filename', $f2e);
-        $tpl->assign('is_writable', is_writable($fpath));
-        $tpl->assign('languages', $languages);
-        $tpl->register_modifier('cut_langsplitter', array($lang, "cut_splitter"));
-        $tpl->display('admin/languages/add.tpl');
+        tpl::o()->assign('id', $name);
+        tpl::o()->assign('parent', $folder);
+        tpl::o()->assign('filename', $f2e);
+        tpl::o()->assign('is_writable', is_writable($fpath));
+        tpl::o()->assign('languages', $languages);
+        tpl::o()->register_modifier('cut_langsplitter', array(lang::o(), "cut_splitter"));
+        tpl::o()->display('admin/languages/add.tpl');
     }
 
     /**
      * Выбор языкового файла
-     * @global display $display
      * @param string $name языковой пакет
      * @param string $folder выбранная дирректория
      * @return null
      */
     protected function files($name, $folder = null) {
-        global $display;
-        $display->filechooser(LANGUAGES_PATH, $name, $folder);
+        display::o()->filechooser(LANGUAGES_PATH, $name, $folder);
     }
 
     /**
      * Вывод списка категорий
-     * @global tpl $tpl
-     * @global file $file
      * @return null 
      */
     protected function show() {
-        global $tpl, $file;
-        $rows = $file->open_folder(LANGUAGES_PATH, true);
-        $tpl->assign('rows', $rows);
-        $tpl->display('admin/languages/index.tpl');
+        $rows = file::o()->open_folder(LANGUAGES_PATH, true);
+        tpl::o()->assign('rows', $rows);
+        tpl::o()->display('admin/languages/index.tpl');
     }
 
     /**
      * Сохранение языкового файла
-     * @global furl $furl
      * @global string $admin_file
-     * @global lang $lang
      * @param array $data массив данных языкового файла
      * @return null
      * @throws EngineException 
      */
     protected function save($data) {
-        global $furl, $admin_file, $lang;
+        global $admin_file;
         $cols = array(
             'name' => 'id',
             'of2e' => 'file',
@@ -245,12 +229,12 @@ class lang_man {
         }
         if ($of2e != $f2e && $of2e)
             unlink($ppr . $of2e . '.php');
-        $lang->set($f2e, $arr, $name);
+        lang::o()->set($f2e, $arr, $name);
         if (!$of2e)
             log_add('changed_language_file', 'admin', array($f2e, $of2e, $name));
         else
             log_add('added_language_file', 'admin', array($f2e, $name));
-        $furl->location($admin_file);
+        furl::o()->location($admin_file);
     }
 
 }
@@ -292,14 +276,11 @@ class lang_man_ajax {
 
     /**
      * Замена в языковых пакетах
-     * @global search $search
-     * @global plugins $plugins
      * @param string $name имя языка
      * @param array $data данные поиска
      * @return null
      */
     protected function replace($name, $data) {
-        global $search, $plugins;
         $cols = array(
             'what' => 'search',
             'with',
@@ -310,7 +291,8 @@ class lang_man_ajax {
         if (!$what)
             return;
         $regexp = (bool) $regexp;
-        $obj = $plugins->get_module('lang', 1);
+        /* @var $obj lang_man */
+        $obj = plugins::o()->get_module('lang', 1);
         $dir = LANGUAGES_PATH . '/' . $name;
         if (!$files)
             $files = $dir;
@@ -328,68 +310,58 @@ class lang_man_ajax {
 
     /**
      * Удаление файла/папки
-     * @global file $file
      * @param string $name имя языка
      * @param string $f2d имя файла/папки
      * @return null
      */
     protected function delete_file($name, $f2d) {
-        global $file;
         $f2d = validpath($f2d);
-        $file->unlink_folder(LANGUAGES_PATH . '/' . $name . '/' . $f2d);
+        file::o()->unlink_folder(LANGUAGES_PATH . '/' . $name . '/' . $f2d);
         log_add('deleted_language_file', 'admin', array($f2d, $name));
     }
 
     /**
      * Удаление языкового пакета
-     * @global file $file
-     * @global config $config
      * @param string $name имя языка
      * @return null
      */
     protected function delete($name) {
-        global $file, $config;
-        $rows = $file->open_folder(LANGUAGES_PATH, true);
+        $rows = file::o()->open_folder(LANGUAGES_PATH, true);
         if (count($rows) < 2)
             return;
-        if ($config->v('default_lang') == $name) {
+        if (config::o()->v('default_lang') == $name) {
             $i = array_search($name, $rows);
             unset($rows[$i]);
             $this->bydefault(reset($rows));
         }
-        $file->unlink_folder(LANGUAGES_PATH . '/' . $name);
+        file::o()->unlink_folder(LANGUAGES_PATH . '/' . $name);
         log_add('deleted_language', 'admin', $name);
     }
 
     /**
      * Клонирование языкового пакета
-     * @global file $file
-     * @global lang $lang
      * @param string $name имя языка
      * @param string $newname новое имя языка
      * @return null
      * @throws EngineException
      */
     protected function copy($name, $newname) {
-        global $file, $lang;
-        $lang->get('admin/languages');
+        lang::o()->get('admin/languages');
         if (!validword($newname))
             throw new EngineException('languages_invalid_new_name');
-        $file->copy_folder(LANGUAGES_PATH . '/' . $name, LANGUAGES_PATH . '/' . $newname);
+        file::o()->copy_folder(LANGUAGES_PATH . '/' . $name, LANGUAGES_PATH . '/' . $newname);
         log_add('copied_language', 'admin', array($newname, $name));
     }
 
     /**
      * Присвоение языкового пакета по-умолчанию
-     * @global config $config
      * @param string $name имя языка
      * @return null
      */
     protected function bydefault($name) {
-        global $config;
-        if ($config->v('default_lang') == $name)
+        if (config::o()->v('default_lang') == $name)
             return;
-        $config->set('default_lang', $name);
+        config::o()->set('default_lang', $name);
         log_add('changed_config', 'admin');
     }
 

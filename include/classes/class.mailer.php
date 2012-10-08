@@ -48,12 +48,10 @@ class mailer extends pluginable_object {
 
     /**
      * Конструктор класса
-     * @global config $config
      * @return null 
      */
     protected function plugin_construct() {
-        global $config;
-        $this->state = (bool) $config->v('mailer_on');
+        $this->state = (bool) config::o()->v('mailer_on');
         $this->access_var('allowed_types', PVAR_ADD);
     }
 
@@ -71,45 +69,37 @@ class mailer extends pluginable_object {
 
     /**
      * Получение заголовков для подписок
-     * @global lang $lang
      * @param int $id ID ресурса
      * @param string $type тип подписки
      * @return string код заголовка
      */
     public function get_title($id, $type = "torrents") {
-        global $lang;
         $vars = $this->change_type($type)->get_vars($id);
         $link = $vars["link"];
         $name = $vars["name"];
-        $content = "<b>" . $lang->v('usercp_mailer_type_' . $type) . "</b>" .
+        $content = "<b>" . lang::o()->v('usercp_mailer_type_' . $type) . "</b>" .
                 "<a href='" . $link . "'>" . $name . "</a>";
         return $content;
     }
 
     /**
      * Отображение подписок
-     * @global tpl $tpl
-     * @global db $db
      * @return null
      */
     public function show() {
-        global $db, $tpl;
         if (!$this->state) {
             disabled();
             return;
         }
-        $res = $db->query("SELECT * FROM mailer");
-        $tpl->register_modifier('get_mailer_title', array($this, "get_title"));
-        $tpl->assign('mailer_res', $db->fetch2array($res));
-        $tpl->assign('intervals', self::$allowed_interval);
-        $tpl->display('usercp/mailer.tpl');
+        $res = db::o()->query("SELECT * FROM mailer");
+        tpl::o()->register_modifier('get_mailer_title', array($this, "get_title"));
+        tpl::o()->assign('mailer_res', db::o()->fetch2array($res));
+        tpl::o()->assign('intervals', self::$allowed_interval);
+        tpl::o()->display('usercp/mailer.tpl');
     }
 
     /**
      * Создание\обновление подписки
-     * @global db $db
-     * @global users $users
-     * @global lang $lang
      * @param int $id ID ресурса
      * @param int $interval интервал посылок
      * @param bool $updt обновить?
@@ -117,69 +107,63 @@ class mailer extends pluginable_object {
      * @throws EngineException 
      */
     public function make($id, $interval = null, $updt = false) {
-        global $db, $users, $lang;
         if (!$this->state)
             return true;
         $type = $this->type;
-        $lang->get('usercp');
-        $users->check_perms();
+        lang::o()->get('usercp');
+        users::o()->check_perms();
         $interval = (int) $interval;
         if (!self::$allowed_interval[$interval])
             throw new EngineException('usercp_mailer_not_allowed_interval');
         $where = array(
-            "user" => $users->v('id'),
+            "user" => users::o()->v('id'),
             "toid" => (int) $id,
             "type" => $type
         );
-        $upd = array("interval" => ($interval ? $interval : $users->v('mailer_interval')));
+        $upd = array("interval" => ($interval ? $interval : users::o()->v('mailer_interval')));
         if (!$updt) {
-            $db->no_error();
-            $db->insert(array_merge($upd, $where), "mailer");
-            if ($db->errno() != UNIQUE_VALUE_ERROR && $db->errno())
-                throw new EngineException($lang->v('db_error') . '(' . $db->errno() . ')');
+            db::o()->no_error();
+            db::o()->insert(array_merge($upd, $where), "mailer");
+            if (db::o()->errno() != UNIQUE_VALUE_ERROR && db::o()->errno())
+                throw new EngineException(lang::o()->v('db_error') . '(' . db::o()->errno() . ')');
             return true;
         }
-        if ($updt || ($db->errno() == UNIQUE_VALUE_ERROR && $interval)) {
+        if ($updt || (db::o()->errno() == UNIQUE_VALUE_ERROR && $interval)) {
             $wh = "";
             foreach ($where as $key => $value)
-                $wh .= ( $wh ? " AND " : "") . "`" . $key . '`=' . $db->esc($value);
-            return $db->update($upd, "mailer", "WHERE " . $wh . " LIMIT 1");
+                $wh .= ( $wh ? " AND " : "") . "`" . $key . '`=' . db::o()->esc($value);
+            return db::o()->update($upd, "mailer", "WHERE " . $wh . " LIMIT 1");
         } else
             return true;
     }
 
     /**
      * Удаление подписки
-     * @global db $db
-     * @global users $users
      * @param int $id ID ресурса
      * @param bool $user ID пользователя?
      * @return int статус удаления
      */
     public function remove($id, $user = false) {
-        global $db, $users;
         if (!$this->state)
             return true;
         $type = $this->type;
-        $users->check_perms();
+        users::o()->check_perms();
         $id = (int) $id;
         if ($user)
             $where = 'user = ' . $id;
         else
-            $where = "user = " . $users->v('id') .
+            $where = "user = " . users::o()->v('id') .
                     " AND toid = " . $id .
-                    " AND type = " . $db->esc($type);
-        return $db->delete("mailer", "WHERE " . $where . " LIMIT 1");
+                    " AND type = " . db::o()->esc($type);
+        return db::o()->delete("mailer", "WHERE " . $where . " LIMIT 1");
     }
 
     /**
      * Обновление и отсылка "срочных" писем в подписках
-     * @global db $db
      * @param int|array $id ID ресурса/ресурсов
      * @return int  статус обновления
      */
     public function update($id) {
-        global $db;
         if (!$this->state)
             return true;
         $type = $this->type;
@@ -189,21 +173,18 @@ class mailer extends pluginable_object {
             $id = 'IN(' . implode(',', array_map('intval', $id)) . ')';
         else
             $id = '= ' . ((int) $id);
-        $where = 'toid ' . $id . ' AND type=' . $db->esc($type);
-        $ret = $db->update(array("is_new" => 1), "mailer", "WHERE " . $where);
+        $where = 'toid ' . $id . ' AND type=' . db::o()->esc($type);
+        $ret = db::o()->update(array("is_new" => 1), "mailer", "WHERE " . $where);
         $this->cleanup($id);
         return $ret;
     }
 
     /**
      * Отсылка писем в подписках
-     * @global db $db
-     * @global config $config
      * @param int $id ID ресурса
      * @return int  статус обновления
      */
     public function cleanup($id = null) {
-        global $db, $config;
         if (!$this->state)
             return true;
         $type = $this->type;
@@ -214,13 +195,13 @@ class mailer extends pluginable_object {
             AND m.is_new='1'" . ($id ? "
                 AND m.interval=0
                 AND m.toid=" . $id . "
-                AND m.type=" . $db->esc($type) : "");
-        $res = $db->query('SELECT m.user,m.toid,m.type, u.email FROM mailer AS m
+                AND m.type=" . db::o()->esc($type) : "");
+        $res = db::o()->query('SELECT m.user,m.toid,m.type, u.email FROM mailer AS m
             LEFT JOIN users AS u ON u.id=m.user
-            WHERE ' . $where . ($config->v('mailer_per_once') ? ' LIMIT ' . $config->v('mailer_per_once') : ''));
+            WHERE ' . $where . (config::o()->v('mailer_per_once') ? ' LIMIT ' . config::o()->v('mailer_per_once') : ''));
         $where = array();
         $c = 0;
-        while ($row = $db->fetch_assoc($res)) {
+        while ($row = db::o()->fetch_assoc($res)) {
             $this->send_mail($row["email"], $id);
             $where[$row["type"]]["user"][] = $row["user"];
             $where[$row["type"]]["toid"][] = $row["toid"];
@@ -228,13 +209,13 @@ class mailer extends pluginable_object {
         }
         $wh = "";
         foreach ($where as $type => $vs) {
-            $wh .= ( $wh ? " OR " : "") . "(type=" . $db->esc($type);
+            $wh .= ( $wh ? " OR " : "") . "(type=" . db::o()->esc($type);
             foreach ($vs as $what => $vals)
                 $wh .= " AND `" . $what . "` IN (" . implode(',', $vals) . ")";
             $wh .= ")";
         }
         if ($wh)
-            return $db->update(array("last_check" => time(),
+            return db::o()->update(array("last_check" => time(),
                         "is_new" => 0), "mailer", ($wh ? "WHERE " . $wh : "") . " LIMIT " . $c);
     }
 
@@ -252,45 +233,41 @@ class mailer extends pluginable_object {
 
     /**
      * Получение переменных для категорий
-     * @global categories $cats
-     * @global furl $furl
      * @param int $id ID категории
      * @return array массив переменных
      */
     protected function get_vars_category($id) {
-        global $cats, $furl;
+        /* @var $cats categories */
+        $cats = n("categories");
         $res = $cats->get($id);
         $name = $res["name"];
-        $link = $furl->construct('torrents', array('act' => 'new', 'cat' => $res["transl_name"]));
+        $link = furl::o()->construct('torrents', array('act' => 'new', 'cat' => $res["transl_name"]));
         return array("link" => $link, "name" => $name);
     }
 
     /**
      * Получение переменных для торрентов
-     * @global db $db
-     * @global furl $furl
      * @param int $id ID торрента
      * @return array массив переменных
      */
     protected function get_vars_torrents($id) {
-        global $db, $furl;
-        $res = $db->fetch_assoc($db->query('SELECT title FROM torrents WHERE id=' . $id . ' LIMIT 1'));
+        $res = db::o()->fetch_assoc(db::o()->query('SELECT title FROM torrents WHERE id=' . $id . ' LIMIT 1'));
         $name = $res["title"];
-        $link = $furl->construct('torrents', array('title' => $name, 'id' => $id));
+        $link = furl::o()->construct('torrents', array('title' => $name, 'id' => $id));
         return array("link" => $link, "name" => $name);
     }
 
     /**
      * Отсылка письма
-     * @global etc $etc
      * @param string $to E-mail адресата
      * @param int $id ID ресурса
      * @return int статус отсылки
      */
     protected function send_mail($to, $id) {
-        global $etc;
         $type = $this->type;
         $vars = $this->get_vars($id);
+        /* @var $etc etc */
+        $etc = n("etc");
         return $etc->send_mail($to, "mailer_" . $type, $vars);
     }
 

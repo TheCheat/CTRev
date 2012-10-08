@@ -22,19 +22,6 @@ final class stats {
     private $res = array();
 
     /**
-     * Конструктор
-     * @global db $db
-     * @return null
-     */
-    public function __construct() {
-        global $db;
-        if (!$this->res) {
-            $res = $db->query("SELECT * FROM stats");
-            $this->res = $db->fetch2array($res, null, array("name" => "value"));
-        }
-    }
-
-    /**
      * Чтение значения из статистики
      * @param string $name поле
      * @return string значение
@@ -48,34 +35,75 @@ final class stats {
 
     /**
      * Запись значения в статистику
-     * @global db $db
      * @param string $name поле
      * @param string $value значение
      * @return null
      */
     public function write($name, $value) {
-        global $db;
         if (!isset($this->res[$name])) {
             $this->res[$name] = $value;
-            $r = $db->insert(array("name" => $name, "value" => $value), "stats");
+            $r = db::o()->insert(array("name" => $name, "value" => $value), "stats");
             return;
         }
         $this->res[$name] = $value;
-        $db->update(array("value" => $value), "stats", "WHERE name=" . $db->esc($name) . " LIMIT 1");
+        db::o()->update(array("value" => $value), "stats", "WHERE name=" . db::o()->esc($name) . " LIMIT 1");
     }
 
     /**
      * Удаление поля статистики
-     * @global db $db
      * @param string $name поле
      * @return null
      */
     public function remove($name) {
-        global $db;
         if (!isset($this->res[$name]))
             return;
         unset($this->res[$name]);
-        $db->delete("stats", "WHERE name=" . $db->esc($name) . " LIMIT 1");
+        db::o()->delete("stats", "WHERE name=" . db::o()->esc($name) . " LIMIT 1");
+    }
+
+    // Реализация Singleton
+
+    /**
+     * Объект данного класса
+     * @var tpl
+     */
+    private static $o = null;
+
+    /**
+     * Конструктор? А где конструктор? А нет его.
+     * @return null 
+     */
+    private function __construct() {
+        if (!$this->res) {
+            $res = db::o()->query("SELECT * FROM stats");
+            $this->res = db::o()->fetch2array($res, null, array("name" => "value"));
+        }
+    }
+
+    /**
+     * Не клонируем
+     * @return null 
+     */
+    private function __clone() {
+        
+    }
+
+    /**
+     * И не десериализуем
+     * @return null 
+     */
+    private function __wakeup() {
+        
+    }
+
+    /**
+     * Получение объекта класса
+     * @return tpl $this
+     */
+    public static function o() {
+        if (!self::$o)
+            self::$o = new self();
+        return self::$o;
     }
 
 }

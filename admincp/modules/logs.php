@@ -37,22 +37,20 @@ class logs_man {
 
     /**
      * Инициализация модуля логов
-     * @global lang $lang
-     * @global furl $furl
      * @global string $admin_file
-     * @global plugins $plugins
      * @return null
      */
     public function init() {
-        global $lang, $furl, $admin_file, $plugins;
-        $lang->get('admin/logs');
+        global $admin_file;
+        lang::o()->get('admin/logs');
         $act = $_GET["act"];
         $type = $_GET["type"];
         switch ($act) {
             case "clear":
-                $o = $plugins->get_module('logs', 1, true);
+                /* @var $o logs_man_ajax */
+                $o = plugins::o()->get_module('logs', 1, true);
                 $o->clear();
-                $furl->location($admin_file);
+                furl::o()->location($admin_file);
                 break;
             default:
                 $this->show($type, $_GET['sort']);
@@ -62,19 +60,14 @@ class logs_man {
 
     /**
      * Отображение списка логов
-     * @global db $db
-     * @global tpl $tpl
-     * @global display $display
-     * @global config $config
      * @param string $type тип логов
      * @param string $sort сортировка
      * @return null
      */
     protected function show($type = null, $sort = null) {
-        global $db, $tpl, $display, $config;
-        $tpl->assign('curtype', $type);
+        tpl::o()->assign('curtype', $type);
         if ($type)
-            $type = $db->esc($type);
+            $type = db::o()->esc($type);
         $orderby = '';
         if ($sort) {
             $sort = explode(",", $sort);
@@ -88,17 +81,17 @@ class logs_man {
         }
         if (!$orderby)
             $orderby = 'l.`time` DESC';
-        $count = $db->count_rows("logs", $type ? 'type=' . $type : '');
-        list($pages, $limit) = $display->pages($count, $config->v('table_perpage'), 'switch_logs_page', 'page', 5, true);
-        $r = $db->query('SELECT l.*, u.username, u.group, u2.username AS tusername, u2.group AS tgroup
+        $count = db::o()->count_rows("logs", $type ? 'type=' . $type : '');
+        list($pages, $limit) = display::o()->pages($count, config::o()->v('table_perpage'), 'switch_logs_page', 'page', 5, true);
+        $r = db::o()->query('SELECT l.*, u.username, u.group, u2.username AS tusername, u2.group AS tgroup
             FROM logs AS l LEFT JOIN users AS u ON u.id=l.byuid LEFT JOIN users AS u2 ON u2.id=l.touid
             ' . ($type ? ' WHERE l.type=' . $type : "") . '
             ' . ($orderby ? ' ORDER BY ' . $orderby : "") . '
             ' . ($limit ? ' LIMIT ' . $limit : ""));
-        $tpl->assign('res', $db->fetch2array($r));
-        $tpl->assign('log_types', $this->types);
-        $tpl->assign('pages', $pages);
-        $tpl->display('admin/logs/index.tpl');
+        tpl::o()->assign('res', db::o()->fetch2array($r));
+        tpl::o()->assign('log_types', $this->types);
+        tpl::o()->assign('pages', $pages);
+        tpl::o()->display('admin/logs/index.tpl');
     }
 
 }
@@ -122,13 +115,11 @@ class logs_man_ajax {
 
     /**
      * Очистка логов
-     * @global db $db
      * @param string $type тип логов
      * @return null
      */
     public function clear($type = null) {
-        global $db;
-        $db->delete('logs', ($type ? 'WHERE type=' . $db->esc($type) : ""));
+        db::o()->delete('logs', ($type ? 'WHERE type=' . db::o()->esc($type) : ""));
         log_add('cleared_logs' . ($type ? '_' . $type : ''), 'admin');
     }
 

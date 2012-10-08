@@ -17,12 +17,10 @@ class groups_man {
 
     /**
      * Инициализация управления группами пользователей
-     * @global lang $lang
      * @return null
      */
     public function init() {
-        global $lang;
-        $lang->get('admin/groups');
+        lang::o()->get('admin/groups');
         $act = $_GET['act'];
         switch ($act) {
             case "add":
@@ -44,22 +42,20 @@ class groups_man {
 
     /**
      * Вывод селектора параметров
-     * @global lang $lang
      * @param array $row массив группы
      * @param int $v значение параметра
      * @return string HTML код
      */
     public function show_selector($row, $v) {
-        global $lang;
         $m = $row['allowed'];
         $n = $row['perm'];
         $s = "";
         if (strpos($n, "edit_") === 0 || strpos($n, "del_") === 0)
             $a = "_e";
         for ($i = $m; $i >= 0; $i--) {
-            $l = $lang->visset("groups_rule_" . $n . "_value_" . $i) ?
-                    $lang->v("groups_rule_" . $n . "_value_" . $i) :
-                    $lang->v("groups_value_" . $i . ($i ? $a : ""));
+            $l = lang::o()->visset("groups_rule_" . $n . "_value_" . $i) ?
+                    lang::o()->v("groups_rule_" . $n . "_value_" . $i) :
+                    lang::o()->v("groups_value_" . $i . ($i ? $a : ""));
             $s .= "<input type='radio' name='can_" . $n . "'
                 value='" . $i . "'" . ($v == $i ? " checked='checked'" : "") . ">&nbsp;" . $l . " ";
         }
@@ -68,9 +64,6 @@ class groups_man {
 
     /**
      * Добавление/редактирование группы
-     * @global db $db
-     * @global users $users
-     * @global tpl $tpl
      * @param int $id ID группы
      * @param bool $add добавление?
      * @param bool $onlyperms только права?
@@ -78,56 +71,48 @@ class groups_man {
      * @throws EngineException
      */
     public function add($id, $add = false, $onlyperms = false) {
-        global $db, $users, $tpl;
         if (is_array($id) && $onlyperms)
             $row = $id;
         else
-            $row = $users->get_group($id);
+            $row = users::o()->get_group($id);
         if (!$row)
             throw new EngineException;
-        $users->acp_modules($row);
-        $tpl->assign('id', $add ? 0 : $id);
-        $tpl->assign('row', $row);
-        $r = $db->query('SELECT cat FROM groups_perm GROUP BY cat');
-        $tpl->assign('types', $db->fetch2array($r, null, array('cat')));
-        $r = $db->query('SELECT cat, perm, allowed FROM groups_perm');
+        users::o()->acp_modules($row);
+        tpl::o()->assign('id', $add ? 0 : $id);
+        tpl::o()->assign('row', $row);
+        $r = db::o()->query('SELECT cat FROM groups_perm GROUP BY cat');
+        tpl::o()->assign('types', db::o()->fetch2array($r, null, array('cat')));
+        $r = db::o()->query('SELECT cat, perm, allowed FROM groups_perm');
         $perms = null;
-        while ($row = $db->fetch_assoc($r))
+        while ($row = db::o()->fetch_assoc($r))
             $perms[$row["cat"]][] = $row;
-        $tpl->assign('perms', $perms);
-        $tpl->assign('allowed_modules', allowed::o()->get("acp_modules"));
-        $tpl->register_modifier('show_selector', array($this, 'show_selector'));
-        $tpl->display('admin/groups/' . ($onlyperms ? 'perms' : 'add') . '.tpl');
+        tpl::o()->assign('perms', $perms);
+        tpl::o()->assign('allowed_modules', allowed::o()->get("acp_modules"));
+        tpl::o()->register_modifier('show_selector', array($this, 'show_selector'));
+        tpl::o()->display('admin/groups/' . ($onlyperms ? 'perms' : 'add') . '.tpl');
     }
 
     /**
      * Отображение всех групп
-     * @global db $db
-     * @global tpl $tpl
-     * @global users $users
      * @return null
      */
     protected function show() {
-        global $db, $tpl, $users;
-        $r = $db->query('SELECT `group`, COUNT(*) AS c FROM users GROUP BY `group`');
-        $tpl->assign('params', array('default', 'system', 'guest', 'bot'));
-        $tpl->assign('rows', $db->fetch2array($r, null, array('group' => 'c')));
-        $tpl->display('admin/groups/index.tpl');
+        $r = db::o()->query('SELECT `group`, COUNT(*) AS c FROM users GROUP BY `group`');
+        tpl::o()->assign('params', array('default', 'system', 'guest', 'bot'));
+        tpl::o()->assign('rows', db::o()->fetch2array($r, null, array('group' => 'c')));
+        tpl::o()->display('admin/groups/index.tpl');
     }
 
     /**
      * Сохранение группы
-     * @global db $db
-     * @global furl $furl
      * @global string $admin_file
-     * @global cache $cache
      * @param array $data массив данных группы
      * @param array $fgroup изначальные права группы(для прав пользователя)
      * @return null
      * @throws EngineException 
      */
     public function save($data, $fgroup = null) {
-        global $db, $furl, $admin_file, $cache;
+        global $admin_file;
         if (!$fgroup) {
             $cols = array('name',
                 'color',
@@ -146,9 +131,9 @@ class groups_man {
             if (count($update) != count($cols) || !$update['name'] || !$update['color'])
                 throw new EngineException('groups_invalid_input');
         }
-        $r = $db->query('SELECT id, perm, allowed, dvalue FROM groups_perm');
+        $r = db::o()->query('SELECT id, perm, allowed, dvalue FROM groups_perm');
         $perms = "";
-        while ($row = $db->fetch_assoc($r)) {
+        while ($row = db::o()->fetch_assoc($r)) {
             $p = 'can_' . $row['perm'];
             $dvalue = $fgroup ? $fgroup[$p] : $row['dvalue'];
             if (isset($data[$p]) && strval((int) $data[$p]) === $data[$p]
@@ -161,15 +146,15 @@ class groups_man {
         $update['perms'] = $perms;
         $update['acp_modules'] = implode(';', array_map('trim', (array) $update['acp_modules']));
         if ($id) {
-            $db->update($update, 'groups', 'WHERE id=' . $id . ' LIMIT 1');
+            db::o()->update($update, 'groups', 'WHERE id=' . $id . ' LIMIT 1');
             log_add('changed_group', 'admin', $id);
         } else {
-            $db->insert($update, 'groups');
+            db::o()->insert($update, 'groups');
             log_add('added_group', 'admin');
         }
-        $db->query('ALTER TABLE `groups` ORDER BY `sort`');
-        $cache->remove('groups');
-        $furl->location($admin_file);
+        db::o()->query('ALTER TABLE `groups` ORDER BY `sort`');
+        cache::o()->remove('groups');
+        furl::o()->location($admin_file);
     }
 
 }
@@ -178,11 +163,9 @@ class groups_man_ajax {
 
     /**
      * Инициализация AJAX-части модуля
-     * @global cache $cache
      * @return null
      */
     public function init() {
-        global $cache;
         $act = $_GET['act'];
         switch ($act) {
             case "delete":
@@ -192,35 +175,31 @@ class groups_man_ajax {
                 $this->save_order($_POST['groupid']);
                 break;
         }
-        $cache->remove('groups');
+        cache::o()->remove('groups');
         die('OK!');
     }
 
     /**
      * Удаление группы пользователя
-     * @global db $db
      * @param int $id ID группы
      * @return null
      */
     protected function delete($id) {
-        global $db;
-        $db->delete('groups', 'WHERE id=' . intval($id) . ' AND notdeleted="0" LIMIT 1');
+        db::o()->delete('groups', 'WHERE id=' . intval($id) . ' AND notdeleted="0" LIMIT 1');
         log_add('deleted_group', 'admin', $id);
     }
 
     /**
      * Сохранение порядка групп
-     * @global db $db
      * @return null
      * @throws EngineException
      */
     protected function save_order($sort) {
-        global $db;
         if (!$sort)
             throw new EngineException;
         foreach ($sort as $s => $id)
-            $db->update(array('sort' => (int) $s), 'groups', 'WHERE id=' . intval($id) . ' LIMIT 1');
-        $db->query('ALTER TABLE `groups` ORDER BY `sort`');
+            db::o()->update(array('sort' => (int) $s), 'groups', 'WHERE id=' . intval($id) . ' LIMIT 1');
+        db::o()->query('ALTER TABLE `groups` ORDER BY `sort`');
     }
 
 }

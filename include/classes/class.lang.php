@@ -53,15 +53,6 @@ final class lang {
     private $binding = array();
 
     /**
-     * Конструктор
-     * @return null 
-     */
-    public function __construct() {
-        if (!$this->folder)
-            $this->change_folder(DEFAULT_LANG);
-    }
-
-    /**
      * Сменить дирректорию языка
      * @param string $folder новая дирректория языка
      * @param bool $join присоединить system и main из новой дирректории?
@@ -156,14 +147,12 @@ final class lang {
 
     /**
      * Замена языкового файла
-     * @global file $file
      * @param string $f изменяемый файл(!тип файла не указывается!)
      * @param array $arr новый массив
      * @param string $folder дирректория языка
      * @return null
      */
     public function set($f, $arr, $folder = null) {
-        global $file;
         if (!$folder)
             $folder = $this->folder;
         $out = '$languages = array(';
@@ -173,7 +162,7 @@ final class lang {
             else
                 $out .= "\t" . var_export($key, true) . " => " . var_export($value, true) . ",\n";
         $out = "<?php\n" . rtrim($out, ",\n") . ");\n?>";
-        $file->write_file($out, LANGUAGES_PATH . '/' . $folder . '/' . $f . '.php');
+        file::o()->write_file($out, LANGUAGES_PATH . '/' . $folder . '/' . $f . '.php');
     }
 
     /**
@@ -221,6 +210,50 @@ final class lang {
             $this->binding[$file] = array();
         $this->binding[$file][] = $with;
         return $this;
+    }
+
+    // Реализация Singleton
+
+    /**
+     * Объект данного класса
+     * @var lang
+     */
+    private static $o = null;
+
+    /**
+     * Конструктор
+     * @return null 
+     */
+    private function __construct() {
+        
+    }
+
+    /**
+     * Не клонируем
+     * @return null 
+     */
+    private function __clone() {
+        
+    }
+
+    /**
+     * И не десериализуем
+     * @return null 
+     */
+    private function __wakeup() {
+        
+    }
+
+    /**
+     * Получение объекта класса
+     * @return lang $this
+     */
+    public static function o() {
+        if (!self::$o) {
+            self::$o = new self();
+            self::$o->change_folder(DEFAULT_LANG);
+        }
+        return self::$o;
     }
 
 }

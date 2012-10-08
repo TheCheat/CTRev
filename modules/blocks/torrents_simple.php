@@ -33,21 +33,18 @@ class torrents_simple_block {
 
     /**
      * Инициализация блока-торрентов
-     * @global lang $lang
-     * @global categories $cats
-     * @global users $users
-     * @global tpl $tpl
      * @return null
      */
     public function init() {
-        global $lang, $cats, $users, $tpl;
-        $lang->get("blocks/torrents");
-        if (!$users->perm('torrents'))
+        lang::o()->get("blocks/torrents");
+        if (!users::o()->perm('torrents'))
             return;
         $curcats = $this->settings['cats'];
         if (!$curcats)
             return;
-        if ($this->settings['check_children'])
+        if ($this->settings['check_children']) {
+            /* @var $cats categories */
+            $cats = n("categories");
             foreach ($curcats as $name => $cat) {
                 $cat = explode('|', $cat);
                 $c = count($cat);
@@ -66,8 +63,9 @@ class torrents_simple_block {
                 $ids = array_unique($ids);
                 $curcats[$name] = implode('|', $ids);
             }
+        }
         print("Torrents block inited");
-        $tpl->assign('curcats', array_reverse($curcats));
+        tpl::o()->assign('curcats', array_reverse($curcats));
     }
 
 }

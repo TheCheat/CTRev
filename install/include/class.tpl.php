@@ -32,12 +32,10 @@ class tpl {
 
     /**
      * Получение кода шаблона
-     * @global lang $lang
      * @param string $file файл
      * @return string HTML код
      */
     public function fetch($file) {
-        global $lang;
         ob_start();
         $data = $this->data;
         include ROOT . 'install/style/' . $file . '.php';
@@ -55,6 +53,48 @@ class tpl {
     public function assign($var, $value) {
         $this->data[$var] = $value;
         return $this;
+    }
+
+    // Реализация Singleton
+
+    /**
+     * Объект данного класса
+     * @var tpl
+     */
+    private static $o = null;
+
+    /**
+     * Конструктор? А где конструктор? А нет его.
+     * @return null 
+     */
+    private function __construct() {
+        
+    }
+
+    /**
+     * Не клонируем
+     * @return null 
+     */
+    private function __clone() {
+        
+    }
+
+    /**
+     * И не десериализуем
+     * @return null 
+     */
+    private function __wakeup() {
+        
+    }
+
+    /**
+     * Получение объекта класса
+     * @return tpl $this
+     */
+    public static function o() {
+        if (!self::$o)
+            self::$o = new self();
+        return self::$o;
     }
 
 }

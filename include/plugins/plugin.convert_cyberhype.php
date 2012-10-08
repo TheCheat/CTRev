@@ -92,32 +92,29 @@ class plugin_convert_cyberhype {
 
     /**
      * Вход для конвертированного пользователя
-     * @global users $users
-     * @global etc $etc
-     * @global db $db
-     * @global lang $lang
      * @param array $data массив переменных
      * @return null
      * @throws PReturn
      */
     public function converted_login($data) {
-        global $users, $etc, $db, $lang;
         $login = $data['login'];
         $password = $data['password'];
         $error = &$data['error'];
         $id = &$data['id'];
+        /* @var $etc etc */
+        $etc = n("etc");
         $u = $etc->select_user(null, $login, 'id,password,salt,converted');
         if (!$u['converted'])
             return;
         $salt = $u['salt'];
         if ($u['password'] != md5($salt . $password . $salt)) {
-            $error = $lang->v('login_false_signin');
+            $error = lang::o()->v('login_false_signin');
             return;
         }
         $id = $u['id'];
-        $salt = $users->generate_salt(32);
-        $password = $users->generate_pwd_hash($password, $salt);
-        $db->update(array('salt' => $salt,
+        $salt = users::o()->generate_salt(32);
+        $password = users::o()->generate_pwd_hash($password, $salt);
+        db::o()->update(array('salt' => $salt,
             'password' => $password,
             'converted' => '0'), 'users', 'WHERE id = ' . $id . ' LIMIT 1');
         throw new PReturn($password);
@@ -130,9 +127,8 @@ class plugin_convert_cyberhype {
      * @return null
      */
     public function install($re = false) {
-        global $db;
-        $db->query("ALTER TABLE `users` ADD `converted` ENUM( '1', '0' ) NOT NULL DEFAULT '0' AFTER `warnings_count`");
-        $db->update(array('converted' => '1'), 'users');
+        db::o()->query("ALTER TABLE `users` ADD `converted` ENUM( '1', '0' ) NOT NULL DEFAULT '0' AFTER `warnings_count`");
+        db::o()->update(array('converted' => '1'), 'users');
     }
 
     /**
@@ -141,8 +137,7 @@ class plugin_convert_cyberhype {
      * @return null
      */
     public function uninstall($replaced = false) {
-        global $db;
-        $db->no_error()->query("ALTER TABLE `users` DROP `converted`");
+        db::o()->no_error()->query("ALTER TABLE `users` DROP `converted`");
     }
 
 }

@@ -85,15 +85,13 @@ final class smtp {
 
     /**
      * Конструктор SMTP отправки сообщения
-     * @global lang $lang
      * @param string $to конечный адресат
      * @param string $subject тема сообщения
      * @param string $message сообщение
      * @return bool true, если успешно подключился к серверу
      */
     public function __construct($to, $subject, $message, $params = array()) {
-        global $lang;
-        $lang->get('smtp');
+        lang::o()->get('smtp');
         if (is_array($params) && $params) {
             foreach ($params as $key => $value)
                 $this->$key = $value;
@@ -112,18 +110,16 @@ final class smtp {
 
     /**
      * Подключение к серверу SMTP и отправка необходимых комманд
-     * @global lang $lang
      * @return bool true, в случае удачной отправки
      */
     private function Connect2Server() {
-        global $lang;
         $this->smtpConnect = fsockopen($this->smtpServer, $this->port, $errno, $error, $this->timeout);
         $this->logArray ['CONNECT_RESPONSE'] = $this->readResponse();
 
         if (!is_resource($this->smtpConnect)) {
             return false;
         }
-        $this->logArray ['connection'] = $lang->v('smtp_conn_accept') . "$smtpResponse";
+        $this->logArray ['connection'] = lang::o()->v('smtp_conn_accept') . "$smtpResponse";
         $this->sendCommand("EHLO $this->localdomain");
         $this->logArray ['EHLO'] = $this->readResponse();
         $this->sendCommand('AUTH LOGIN');
@@ -133,19 +129,19 @@ final class smtp {
         $this->sendCommand(base64_encode($this->password));
         $this->logArray ['REQUEST_PASSWD'] = $this->readResponse();
         if (substr($this->logArray ['REQUEST_PASSWD'], 0, 3) != '235') {
-            $this->Error .= $lang->v('smtp_error_auth') . $this->logArray ['REQUEST_PASSWD'] . $this->newline;
+            $this->Error .= lang::o()->v('smtp_error_auth') . $this->logArray ['REQUEST_PASSWD'] . $this->newline;
             return false;
         }
         $this->sendCommand("MAIL FROM: $this->username");
         $this->logArray ['MAIL_FROM_RESPONSE'] = $this->readResponse();
         if (substr($this->logArray ['MAIL_FROM_RESPONSE'], 0, 3) != '250') {
-            $this->Error .= $lang->v('smtp_error_send_addr') . $this->logArray ['MAIL_FROM_RESPONSE'] . $this->newline;
+            $this->Error .= lang::o()->v('smtp_error_send_addr') . $this->logArray ['MAIL_FROM_RESPONSE'] . $this->newline;
             return false;
         }
         $this->sendCommand("RCPT TO: $this->to");
         $this->logArray ['RCPT_TO_RESPONCE'] = $this->readResponse();
         if (substr($this->logArray ['RCPT_TO_RESPONCE'], 0, 3) != '250') {
-            $this->Error .= $lang->v('smtp_error_rec_addr') . $this->logArray ['RCPT_TO_RESPONCE'] . $this->newline;
+            $this->Error .= lang::o()->v('smtp_error_rec_addr') . $this->logArray ['RCPT_TO_RESPONCE'] . $this->newline;
         }
         $this->sendCommand('DATA');
         $this->logArray ['DATA_RESPONSE'] = $this->readResponse();
@@ -159,17 +155,15 @@ final class smtp {
 
     /**
      * Непосредственно, отправка сообщения
-     * @global lang $lang
      * @return bool true, в случае удачной отправки
      */
     private function sendMail() {
-        global $lang;
         $this->sendHeaders();
         $this->sendCommand($this->message);
         $this->sendCommand('.');
         $this->logArray ['SEND_DATA_RESPONSE'] = $this->readResponse();
         if (substr($this->logArray ['SEND_DATA_RESPONSE'], 0, 3) != '250') {
-            $this->Error .= $lang->v('smtp_error_send_data') . $this->logArray ['SEND_DATA_RESPONSE'] . $this->newline;
+            $this->Error .= lang::o()->v('smtp_error_send_data') . $this->logArray ['SEND_DATA_RESPONSE'] . $this->newline;
             return false;
         }
         return true;

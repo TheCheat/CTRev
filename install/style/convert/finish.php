@@ -5,7 +5,7 @@
                 <div class="m_message_image info_image td"></div>
                 <div class='td'>
                     <div class='m_message_content'>
-                        <?= $lang->v('convert_finished') ?>
+                        <?= lang::o()->v('convert_finished') ?>
                     </div>
                 </div>
             </div>

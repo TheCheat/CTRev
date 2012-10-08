@@ -10,7 +10,6 @@
  * @name		Автоподгрузка классов, тобишь "на лету"
  * @version           	1.00
  */
-
 if (!defined('INSITE'))
     die('Remote access denied!');
 
@@ -29,130 +28,6 @@ function __autoload($class) {
             include ROOT . 'include/classes/interface.' . $class . '.php';
         if (file_exists(ROOT . 'include/classes/class.' . $class . '.php'))
             include ROOT . 'include/classes/class.' . $class . '.php';
-    }
-}
-
-/**
- *  Динамическая подгрузка объектов, как бэ оптимизация, ибо часть объектов
- *      не всегда нужна и лишь кушает память.
- *  После подгрузки объект system в переменной заменяется необходимым объектом.
- */
-class system {
-
-    /**
-     * Данный объект из дин. подгружаемого класса
-     * @var object
-     */
-    private $_parent = null;
-
-    /**
-     * Имя объекта
-     * @var string
-     */
-    private $_oname = "";
-
-    /**
-     * Имя переменной объекта
-     * @var string
-     */
-    private $_vname = "";
-
-    /**
-     * Разрешить разрушить объект?
-     * @var bool
-     */
-    private $_destruct = false;
-
-    /**
-     * Конструктор
-     * @param string $var переменная
-     * @param string $obj класс
-     * @return null
-     */
-    public function __construct($var, $obj) {
-        $this->_vname = $var;
-        $this->_oname = $obj;
-    }
-
-    /**
-     * Инициализация класса при вызове метода/обращении к св-ву
-     * @global plugins $plugins
-     * @return null
-     */
-    private function _initialize() {
-        global $plugins;
-        if (!$this->_parent && $this->_oname)
-            $this->_parent = $plugins->get_class($this->_oname);
-    }
-
-    /**
-     * Избавляемся от системнего класса
-     * @global object ${имя_переменной}
-     * @return object собстно объект
-     */
-    public function make_object() {
-        global ${$this->_vname};
-        if (!$this->_parent)
-            $this->_initialize();
-        $this->_destruct = true;
-        ${$this->_vname} = $this->_parent;
-        return $this->_parent;
-    }
-
-    /**
-     * Вызов метода объекта
-     * @param string $name имя метода
-     * @param array $arguments массив аргументов
-     * @return mixed то, что вернёт метод.
-     */
-    public function __call($name, $arguments) {
-        $this->_initialize();
-        if (!$this->_parent)
-            return;
-        $this->make_object();
-        return call_user_func_array(array($this->_parent, $name), $arguments);
-    }
-
-    /**
-     * Получение свойства объекта
-     * @param string $name имя свойства
-     * @return mixed свойство объекта
-     */
-    public function &__get($name) {
-        $this->_initialize();
-        if (!$this->_parent)
-            return;
-        $r = $this->_parent->$name;
-        $this->make_object();
-        return $r;
-    }
-
-    /**
-     * Проверка существования свойства объекта
-     * @param string $name имя свойства
-     * @return bool true, если существует
-     */
-    public function __isset($name) {
-        $this->_initialize();
-        if (!$this->_parent)
-            return;
-        $r = isset($this->_parent->$name);
-        $this->make_object();
-        return $r;
-    }
-
-    /**
-     * Присвоение свойству объекта нек. значения
-     * @param string $name имя свойства
-     * @param mixed $value значение
-     * @return null
-     */
-    public function __set($name, $value) {
-        $this->_initialize();
-        if (!$this->_parent)
-            return;
-        $this->_parent->$name = $value;
-        $this->make_object();
     }
 }
 
@@ -182,12 +57,10 @@ class EngineException extends Exception {
 
     /**
      * Получение сообщения
-     * @global lang $lang
      * @return string сообщение
      */
     public function getEMessage() { // Ибо getMessage - final
-        global $lang;
-        $m = $lang->if_exists($this->message);
+        $m = lang::o()->if_exists($this->message);
         $v = $this->vars;
         return $v ? vsprintf($m, $v) : $m;
     }

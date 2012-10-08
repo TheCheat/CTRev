@@ -20,28 +20,25 @@ class uploader extends image {
      * Инициализировано?
      * @var bool
      */
-    protected $inited = false;
+    protected static $inited = false;
 
     /**
      * Массив файловых типов
      * @var array
      */
-    protected $file_types = array();
+    protected static $file_types = array();
 
     /**
      * Инициализация файловых типов
-     * @global db $db
-     * @global lang $lang
      * @return null
      */
-    public function init_ft() {
-        global $db, $lang;
-        if ($this->inited)
+    public function __construct() {
+        if (self::$inited)
             return false;
-        $this->file_types = $db->query("SELECT * FROM allowed_ft", array('n' => 'filetypes',
+        self::$file_types = db::o()->query("SELECT * FROM allowed_ft", array('n' => 'filetypes',
             'k' => array('name' => 0)));
-        $lang->get("file");
-        $this->inited = true;
+        lang::o()->get("file");
+        self::$inited = true;
     }
 
     /**
@@ -50,7 +47,7 @@ class uploader extends image {
      * @return string результат
      */
     public function convert_filetypes($file_type) {
-        return "*." . str_replace(";", "; *.", $this->file_types [$file_type] ["types"]);
+        return "*." . str_replace(";", "; *.", self::$file_types [$file_type] ["types"]);
     }
 
     /**
@@ -59,13 +56,11 @@ class uploader extends image {
      * @return array элемент 
      */
     public function filetypes($name) {
-        return $this->file_types[$name];
+        return self::$file_types[$name];
     }
 
     /**
      * Проверка файла
-     * @global lang $lang
-     * @global file $file
      * @param array $file_arr массив $_FILES или URL к файлу
      * @param string $type имя файлового типа
      * @param string $noturl запрет загрузки из URL
@@ -75,10 +70,8 @@ class uploader extends image {
      * @throws EngineException 
      */
     public function check($file_arr, &$type = "", $noturl = true, &$file_type = null, &$minimized = null) {
-        global $lang, $file;
-        $this->init_ft();
         if ($type)
-            if (!$this->file_types [$type])
+            if (!self::$file_types [$type])
                 throw new EngineException('file_no_type');
         if (!is_array($file_arr))
             if (!$noturl) {
@@ -98,10 +91,10 @@ class uploader extends image {
         $file_type = null;
         $auto_type = false;
         if ($noturl)
-            $mime = $file->get_content_type($tmp_name);
+            $mime = file::o()->get_content_type($tmp_name);
         if (!$type) {
-            $file_type = $file->get_filetype($name);
-            foreach ($this->file_types as $ftype => $arr) {
+            $file_type = file::o()->get_filetype($name);
+            foreach (self::$file_types as $ftype => $arr) {
                 if (!$arr ["allowed"])
                     continue;
                 if ($noturl) {
@@ -123,12 +116,12 @@ class uploader extends image {
             $auto_type = true;
         }
         if (!$auto_type) {
-            $mimes = explode(";", $this->file_types [$type] ["MIMES"]);
-            $types = explode(";", $this->file_types [$type] ["types"]);
+            $mimes = explode(";", self::$file_types [$type] ["MIMES"]);
+            $types = explode(";", self::$file_types [$type] ["types"]);
         }
         if (!$types)
             throw new EngineException('file_no_type');
-        $maxfilesize = $this->file_types [$type] ["max_filesize"];
+        $maxfilesize = self::$file_types [$type] ["max_filesize"];
         if ($noturl) {
             if (@filesize($tmp_name) > $maxfilesize && @filesize($tmp_name))
                 throw new EngineException('file_too_big_size');
@@ -136,8 +129,8 @@ class uploader extends image {
         if (is_array($minimized))
             list($maxwidth, $maxheight) = $minimized;
         else {
-            $maxwidth = $this->file_types [$type] ["max_width"];
-            $maxheight = $this->file_types [$type] ["max_height"];
+            $maxwidth = self::$file_types [$type] ["max_width"];
+            $maxheight = self::$file_types [$type] ["max_height"];
         }
         //if ($noturl) {
         $minimized = false;
@@ -153,19 +146,18 @@ class uploader extends image {
         //}
         if (!$file_type) {
             if (!preg_match('/^(.+)\.(' . implode("|", array_unique($types)) . ')$/siu', $name, $file_type))
-                throw new EngineException($lang->v('file_unknown_type') . $lang->v('file_ft_' . $type));
+                throw new EngineException(lang::o()->v('file_unknown_type') . lang::o()->v('file_ft_' . $type));
             $file_type = $file_type [2];
         }
         if ($noturl) {
             if (is_array($mimes) && $mimes)
                 if ($mime && !in_array($mime, $mimes))
-                    throw new EngineException($lang->v('file_unknown_type') . $lang->v('file_ft_' . $type));
+                    throw new EngineException(lang::o()->v('file_unknown_type') . lang::o()->v('file_ft_' . $type));
         }
     }
 
     /**
      * Загрузка файла
-     * @global config $config
      * @param array $file_arr массив $_FILES
      * @param string $to_folder путь к дирректории изображений
      * @param string $type имя файлового типа
@@ -178,11 +170,9 @@ class uploader extends image {
      * @throws EngineException 
      */
     public function upload($file_arr, $to_folder, &$type = "", &$new_name = "", $na_type = false, &$preview = false) {
-        global $config;
-        $this->init_ft();
-        if ($preview && $config->v('makes_preview') && $this->file_types [$type] ["makes_preview"]) {
+        if ($preview && config::o()->v('makes_preview') && self::$file_types [$type] ["makes_preview"]) {
             if (!$this->preview_height && !$this->preview_width)
-                $this->set_preview_size($config->v('preview_width'), $config->v('preview_height'));
+                $this->set_preview_size(config::o()->v('preview_width'), config::o()->v('preview_height'));
             $maxwidth = $this->preview_width;
             $maxheight = $this->preview_height;
             $minimized = array($maxwidth, $maxheight);
@@ -200,8 +190,8 @@ class uploader extends image {
             throw new EngineException('file_false_copy');
         if ($minimized && is_array($minimized)) {
             list($maxwidth, $maxheight, $width, $height) = $minimized;
-            if ($preview && $config->v('makes_preview') && $this->file_types [$type] ["makes_preview"]) {
-                $preview_postfix = $config->v('preview_postfix');
+            if ($preview && config::o()->v('makes_preview') && self::$file_types [$type] ["makes_preview"]) {
+                $preview_postfix = config::o()->v('preview_postfix');
                 $preview_name = $name . $preview_postfix . $nt;
                 try {
                     $preview = $this->resize($to_folder . "/" . $new_name, $maxwidth, $maxheight, $width, $height, null, $to_folder . "/" . $preview_name);
@@ -219,15 +209,12 @@ class uploader extends image {
 
     /**
      * Функция скачивания файла, защищенного .htaccess
-     * @global file $file
      * @param string $filepath путь к файлу
      * @param string $filename имя файла
      * @return bool true, если всё прошло успешно, false - в случае неудачи
      * @throws EngineException 
      */
     public function download($filepath, $filename = "") {
-        global $file;
-        $this->init_ft();
         if (!$filename) {
             preg_match('/\/(.*)$/siu', $filepath, $matches);
             $filename = urlencode($matches [2]);
@@ -236,7 +223,7 @@ class uploader extends image {
         if (!file_exists($filepath))
             throw new EngineException('file_not_exists');
         $content = @file_get_contents($filepath);
-        $t = $file->get_content_type($filepath);
+        $t = file::o()->get_content_type($filepath);
         $this->download_headers($content, $filename, $t);
     }
 

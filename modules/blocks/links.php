@@ -24,13 +24,11 @@ class links_block {
 
     /**
      * Инициализация блока ссылок
-     * @global tpl $tpl
      * @return null
      */
     public function init() {
-        global $tpl;
-        $tpl->assign("links", $this->settings ["links"]);
-        $tpl->display("blocks/contents/links.tpl");
+        tpl::o()->assign("links", $this->settings ["links"]);
+        tpl::o()->display("blocks/contents/links.tpl");
     }
 
 }

@@ -13,86 +13,82 @@ if (!defined('DATE_ATOM'))
 
 /**
  * Инициализация юзерей
- * @global users $users 
- * @global tpl $tpl
  * @return null
  */
 function users_init() {
-    global $users, $tpl;
-    $users->init();
+    users::o()->init();
     if (!defined("DELAYED_SINIT"))
-        $users->write_session();
-    $tpl->assign('groups', $users->get_group());
-    $tpl->assign('curlang', $users->get_lang());
-    $tpl->assign('curtheme', $users->get_theme());
-    $tpl->assign('curuser', $users->v('username'));
-    $tpl->assign('curgroup', $users->v('group'));
+        users::o()->write_session();
+    tpl::o()->assign('groups', users::o()->get_group());
+    tpl::o()->assign('curlang', users::o()->get_lang());
+    tpl::o()->assign('curtheme', users::o()->get_theme());
+    tpl::o()->assign('curuser', users::o()->v('username'));
+    tpl::o()->assign('curgroup', users::o()->v('group'));
 }
-
-/**
- * Класс преобразований значений, а так же вывода ч\л на экран
- * @var display
- */
-$display = $plugins->get_class("display");
 
 if (!defined('DELAYED_UINIT'))
     users_init();
 
-$tpl->assign('URL_PATTERN', display::url_pattern);
-$tpl->assign('slbox_mbinited', false);
+tpl::o()->assign('URL_PATTERN', display::url_pattern);
+tpl::o()->assign('slbox_mbinited', false);
 
 // Кой-чаво для Smarty
 // Для модификаторов нет описания, ибо проще посмотреть сами функции.
-$tpl->register_modifier('unserialize', 'unserialize');
-$tpl->register_modifier('arr_current', 'current');
-$tpl->register_modifier('arr_key', 'key');
-$tpl->register_modifier('l2ip', 'long2ip');
-$tpl->register_modifier('long', 'longval');
-$tpl->register_modifier('is', 'is');
-$tpl->register_modifier('sl', 'slashes_smarty');
-$tpl->register_modifier('uamp', 'w3c_amp_replace');
-$tpl->register_modifier('ue', 'urlencode');
-$tpl->register_modifier('gval', 'smarty_group_value');
-$tpl->register_modifier('cut', array(
-    $display,
+$bbcodes = bbcodes::o();
+$input = input::o();
+
+/* @var $blocks blocks */
+$blocks = n("blocks");
+tpl::o()->register_modifier('unserialize', 'unserialize');
+tpl::o()->register_modifier('arr_current', 'current');
+tpl::o()->register_modifier('arr_key', 'key');
+tpl::o()->register_modifier('l2ip', 'long2ip');
+tpl::o()->register_modifier('long', 'longval');
+tpl::o()->register_modifier('is', 'is');
+tpl::o()->register_modifier('sl', 'slashes_smarty');
+tpl::o()->register_modifier('uamp', 'w3c_amp_replace');
+tpl::o()->register_modifier('ue', 'urlencode');
+tpl::o()->register_modifier('gval', 'smarty_group_value');
+tpl::o()->register_modifier('cut', array(
+    display::o(),
     "cut_text"));
-$tpl->register_modifier('he', array(
-    $display,
+tpl::o()->register_modifier('he', array(
+    display::o(),
     "html_encode"));
-$tpl->register_modifier("ft", array(
+tpl::o()->register_modifier("ft", array(
     $bbcodes,
     "format_text"));
-$tpl->register_modifier("ge", array(
-    $display,
+tpl::o()->register_modifier("ge", array(
+    display::o(),
     "get_estimated_time"));
-$tpl->register_modifier("ul", 'smarty_user_link');
-$tpl->register_modifier('gc', array(
-    $display,
+tpl::o()->register_modifier("ul", 'smarty_user_link');
+tpl::o()->register_modifier('gc', array(
+    display::o(),
     "group_color"));
-$tpl->register_modifier('gcl', 'smarty_group_color_link');
-$tpl->register_modifier("ua", array(
-    $display,
+tpl::o()->register_modifier('gcl', 'smarty_group_color_link');
+tpl::o()->register_modifier("ua", array(
+    display::o(),
     "display_user_avatar"));
-$tpl->register_modifier("pf", "smarty_print_format");
-$tpl->register_modifier('cs', array(
-    $display,
+tpl::o()->register_modifier("pf", "smarty_print_format");
+tpl::o()->register_modifier('cs', array(
+    display::o(),
     "convert_size"));
-$tpl->register_modifier("zodiac_sign", array(
-    $display,
+tpl::o()->register_modifier("zodiac_sign", array(
+    display::o(),
     'get_zodiac_image'));
-$tpl->register_modifier("decus", array(
-    $users,
+tpl::o()->register_modifier("decus", array(
+    users::o(),
     'decode_settings'));
-$tpl->register_modifier("filetype", array(
-    $file,
+tpl::o()->register_modifier("filetype", array(
+    file::o(),
     'get_filetype'));
-$tpl->register_modifier("print_cats", array(
-    $cats,
+tpl::o()->register_modifier("print_cats", array(
+    'categories',
     'print_selected'));
-$tpl->register_modifier("is_writable", array(
-    $file,
+tpl::o()->register_modifier("is_writable", array(
+    file::o(),
     'is_writable'));
-$tpl->register_modifier('rnl', 'replace_newline');
+tpl::o()->register_modifier('rnl', 'replace_newline');
 
 /**
  * Создание тега для atom:id(для торрентов)
@@ -100,15 +96,15 @@ $tpl->register_modifier('rnl', 'replace_newline');
  * @param string title - заголовок
  * @param int id - ID
  */
-$tpl->register_function("atom_tag", "smarty_make_atom_tag");
+tpl::o()->register_function("atom_tag", "smarty_make_atom_tag");
 /*
-  $tpl->register_modifier("parse_array", array(
-  $display,
+  tpl::o()->register_modifier("parse_array", array(
+  display::o(),
   'parse_smarty_array')); */
 /**
  * Вывод статистики запросов 
  */
-$tpl->register_function("query_stat", "query_stat");
+tpl::o()->register_function("query_stat", "query_stat");
 /**
  * Получение ключа формы 
  * @param int ajax - 2, если в AJAX, возвращается, как элемент объекта(напр. fk:'1',)
@@ -117,12 +113,12 @@ $tpl->register_function("query_stat", "query_stat");
  * по-умолчанию возвращается лишь значение ключа
  * @param string var - имя ключа
  */
-$tpl->register_function("fk", "get_formkey");
+tpl::o()->register_function("fk", "get_formkey");
 /**
  * Отображение блоков
  * @param string pos - положение
  */
-$tpl->register_function("display_blocks", array(
+tpl::o()->register_function("display_blocks", array(
     $blocks,
     'display'));
 /**
@@ -137,13 +133,13 @@ $tpl->register_function("display_blocks", array(
  * @param bool no_image - если параметр установлен на true, то статусная картинка не выводится
  * @param bool only_box - если параметр установлен на true, то выводится только message.tpl
  */
-$tpl->register_function('message', 'mess');
+tpl::o()->register_function('message', 'mess');
 /**
  * BBCode форма для ввода текста 
  * @param string name - имя формы
  * @param string text - текст формы
  */
-$tpl->register_function("input_form", array(
+tpl::o()->register_function("input_form", array(
     $bbcodes,
     'input_form'));
 /**
@@ -155,22 +151,22 @@ $tpl->register_function("input_form", array(
  * @param bool slashes - экранирует результат для JavaScript, иначе & заменяется на &amp;
  * @param mixed параметры ссылки
  */
-$tpl->register_function("gen_link", array(
-    $furl,
+tpl::o()->register_function("gen_link", array(
+    furl::o(),
     'construct'));
-$tpl->register_modifier("genlink", array(
-    $furl,
+tpl::o()->register_modifier("genlink", array(
+    furl::o(),
     'construct'));
 /**
  * Форматирование времени UNIXTIME в человекопонятный формат
  * @param int time - время
  * @param string format - формат вывода(ymd или ymdhis, к примеру)
  */
-$tpl->register_function("date", array(
-    $display,
+tpl::o()->register_function("date", array(
+    display::o(),
     'date'));
-$tpl->register_modifier("date_time", array(
-    $display,
+tpl::o()->register_modifier("date_time", array(
+    display::o(),
     'date'));
 /**
  * Поле выбора даты
@@ -179,7 +175,7 @@ $tpl->register_modifier("date_time", array(
  * @param int time - данное время в формате UNIXTIME
  * @param bool fromnull - начинать с 0?
  */
-$tpl->register_function("select_date", array(
+tpl::o()->register_function("select_date", array(
     $input,
     "select_date"));
 
@@ -188,7 +184,7 @@ $tpl->register_function("select_date", array(
  * @param string name - имя поля
  * @param float current - текущее значение
  */
-$tpl->register_function("select_gmt", array(
+tpl::o()->register_function("select_gmt", array(
     $input,
     'select_gmt'));
 /**
@@ -197,23 +193,13 @@ $tpl->register_function("select_gmt", array(
  * @param string name - имя поля
  * @param int current - текущее значение
  */
-$tpl->register_function("select_countries", array(
+tpl::o()->register_function("select_countries", array(
     $input,
     'select_countries'));
 /**
- * Отображение комментариев
- * @param int resid - ID ресурса
- * @param string type - тип ресурса
- * @param string name - имя формы
- * @param bool no_form - без формы добавления
- */
-$tpl->register_function("display_comments", array(
-    $comments,
-    'display'));
-/**
  * Получение кол-во используемой памяти 
  */
-$tpl->register_function("get_memory_usage", "smarty_get_memory_usage");
+tpl::o()->register_function("get_memory_usage", "smarty_get_memory_usage");
 
 /**
  * Поле выбора дирректорий
@@ -225,21 +211,9 @@ $tpl->register_function("get_memory_usage", "smarty_get_memory_usage");
  * @param string regexp - рег. выражение
  * @param int match - номер группы рег. выражения
  */
-$tpl->register_function("select_folder", array(
+tpl::o()->register_function("select_folder", array(
     $input,
     'select_folder'));
-/**
- * Отображение рейтинга
- * @param int rid - ID ресурса
- * @param string type - тип ресурса
- * @param int owner - владелец ресурса
- * @param array res - массив ресурса
- * @param int srid - доп. ID ресурса(для уникальности)
- * @param string stype - доп. тип ресурса(для уникальности)
- */
-$tpl->register_function("display_rating", array(
-    $rating,
-    'display'));
 /**
  * Поле выбора групп
  * @param string name - имя поля
@@ -248,37 +222,15 @@ $tpl->register_function("display_rating", array(
  * @param bool not_null - без пустого значение?
  * @param bool multiple - множественная выборка?
  */
-$tpl->register_function("select_groups", array(
+tpl::o()->register_function("select_groups", array(
     $input,
     'select_groups'));
-
-/**
- * Форма добавления опроса
- * @param int toid - ID ресурса
- * @param string type - тип ресурса
- * @param int pollid - ID опроса
- * @param bool full - полностью загружать страницу с опросом?
- */
-$tpl->register_function("add_polls", array(
-    $polls,
-    "add_form"));
-/**
- * Отображение опроса
- * @param int toid - ID ресурса
- * @param string type - тип ресурса
- * @param int pollid - ID опроса
- * @param bool votes - показывать результат опроса?
- * @param bool short - показывать результаты опроса как в блоке?
- */
-$tpl->register_function("display_polls", array(
-    $polls,
-    "display"));
 /**
  * Поле выбора интервала подписок
  * @param string name - имя поля
  * @param int current - текущее значение
  */
-$tpl->register_function("select_mailer", array(
+tpl::o()->register_function("select_mailer", array(
     $input,
     'select_mailer'));
 /**
@@ -286,7 +238,7 @@ $tpl->register_function("select_mailer", array(
  * @param string name - имя поля
  * @param int current - текущее значение
  */
-$tpl->register_function("select_periods", array(
+tpl::o()->register_function("select_periods", array(
     $input,
     'select_periods'));
 /**
@@ -294,7 +246,7 @@ $tpl->register_function("select_periods", array(
  * @param string pname - имя поля пароля
  * @param string paname - имя поля повтора пароля 
  */
-$tpl->register_function("passgen", 'smarty_passgen');
+tpl::o()->register_function("passgen", 'smarty_passgen');
 /**
  * Поле выбора категорий
  * @param string name - имя поля
@@ -302,7 +254,7 @@ $tpl->register_function("passgen", 'smarty_passgen');
  * @param int current - текущее значение
  * @param bool not_null - без пустого значение?
  */
-$tpl->register_function("select_categories", array(
+tpl::o()->register_function("select_categories", array(
     $input,
     'select_categories'));
 /**
@@ -314,25 +266,31 @@ $tpl->register_function("select_categories", array(
  * @param int size - размер поля(если больше 1 - множественная выборка)
  * @param bool empty - пустое значение?
  */
-$tpl->register_function("simple_selector", array(
+tpl::o()->register_function("simple_selector", array(
     $input,
     'simple_selector'));
 /**
  * Создание настроек для модуля
  */
-$tpl->register_function("modsettings_create", array(
-    $modsettings,
+tpl::o()->register_function("modsettings_create", array(
+    modsettings::o(),
     'create'));
+unset($bbcodes);
+unset($input);
+
+unset($comments);
+unset($rating);
+unset($polls);
 /// Конец
 /// Обнаруживаем IE
 if (preg_match("/MSIE\\s*([0-9]+)/siu", $_SERVER ['HTTP_USER_AGENT'], $matches)) {
-    $lang->get("ie_error");
+    lang::o()->get("ie_error");
     // Выгоняем IE ниже 8 версии
     if ($matches [1] < 8) {
-        $tpl->display('ie_error.tpl');
+        tpl::o()->display('ie_error.tpl');
         die();
     }
-    $tpl->assign('MSIE', $matches [1]);
+    tpl::o()->assign('MSIE', $matches [1]);
 }
 
 if (function_exists("get_magic_quotes_gpc") && get_magic_quotes_gpc()) {

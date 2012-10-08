@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC  "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
     <head>
-        <title><?= $lang->v('install_title') ?>&nbsp;&bull;&nbsp;<?= $lang->v('install_page_' . INSTALL_PAGE) ?></title>
+        <title><?= lang::o()->v('install_title') ?>&nbsp;&bull;&nbsp;<?= lang::o()->v('install_page_' . INSTALL_PAGE) ?></title>
         <link rel="stylesheet" href="install/style/content/style.css"
               type="text/css">
         <script type="text/javascript" src="<?= CONTENT_PATH ?>jquery.js"></script>
@@ -123,7 +123,7 @@
                             <ul>
                                 <?php
                                 foreach ($data['pages'] as $page)
-                                    print("<li>" . $lang->v('install_page_' . $page) . "</li>");
+                                    print("<li>" . lang::o()->v('install_page_' . $page) . "</li>");
                                 ?>
                             </ul>
                         </div>
@@ -132,7 +132,7 @@
                                 <center>
                                     <div id="error_box" class='hidden'>
                                         <div align="left" class='m_message'>
-                                            <div class="error_title" align="left"><?= $lang->v('error') ?></div>
+                                            <div class="error_title" align="left"><?= lang::o()->v('error') ?></div>
                                             <div class="error m_message_table">
                                                 <div align="left" class='content'>
                                                     <div class='tr'>
@@ -145,7 +145,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <b><?= $lang->v('install_language_selector') ?>: </b>
+                                    <b><?= lang::o()->v('install_language_selector') ?>: </b>
                                     <span id='lang_selector'><?= $data['input']->select_folder("lang", LANGUAGES_PATH, $data['clang']) ?></span><br><br>
                                     <div class="cornerText progress_bar" align="left">
                                         <div class="progress" style="width: 0%;">
@@ -158,11 +158,11 @@
                                 <center>
                                     <input type='button' id="button_back" 
                                            disabled='disabled'
-                                           value="<?= $lang->v('install_back') ?>" 
+                                           value="<?= lang::o()->v('install_back') ?>" 
                                            onclick='confirm_back();'>
                                     <input type='submit' id="button_next" 
                                            disabled='disabled'
-                                           value="<?= $lang->v('install_continue') ?>">
+                                           value="<?= lang::o()->v('install_continue') ?>">
                                 </center>
                             </form>
                         </div>

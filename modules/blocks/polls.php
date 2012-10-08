@@ -17,11 +17,11 @@ class polls_block {
 
     /**
      * Инициализация блока опросов
-     * @global polls $polls
      * @return null
      */
     public function init() {
-        global $polls;
+        /* @var $polls polls */
+        $polls = n("polls");
         $polls->display(0, 0, false, true);
     }
 

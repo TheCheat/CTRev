@@ -23,24 +23,19 @@ class statics {
 
     /**
      * Стат. страницы
-     * @global db $db
-     * @global bbcodes $bbcodes
-     * @global furl $furl
-     * @global tpl $tpl
      * @return null
      */
     public function init() {
-        global $db, $bbcodes, $furl, $tpl;
         $url = $_GET['page'];
-        $r = $db->query('SELECT * FROM static WHERE url=' . $db->esc($url) . ' LIMIT 1');
-        $row = $db->fetch_assoc($r);
+        $r = db::o()->query('SELECT * FROM static WHERE url=' . db::o()->esc($url) . ' LIMIT 1');
+        $row = db::o()->fetch_assoc($r);
         if (!$row)
-            $furl->location('');
+            furl::o()->location('');
         $this->title = $row['title'];
-        $content = ($row['bbcode'] ? $bbcodes->format_text($row['content']) : $row['content']);
-        $tpl->assign('title', $row['title']);
-        $tpl->assign('content', $content);
-        $tpl->display('static.tpl');
+        $content = ($row['bbcode'] ? bbcodes::o()->format_text($row['content']) : $row['content']);
+        tpl::o()->assign('title', $row['title']);
+        tpl::o()->assign('content', $content);
+        tpl::o()->display('static.tpl');
     }
 
 }

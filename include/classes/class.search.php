@@ -66,19 +66,16 @@ class search {
 
     /**
      * Обрезка результата поиска
-     * @global config $config
-     * @global display $display
      * @param string $what что режем?
      * @param array $length как сильно?
      * @return null
      */
     public function cut_search(&$what, $length = 0) {
-        global $config, $display;
         if (!$length)
-            $length = $config->v('max_search_symb');
+            $length = config::o()->v('max_search_symb');
         if (!$length)
             return;
-        $what = $display->cut_word($what, 0, $length);
+        $what = display::o()->cut_word($what, 0, $length);
     }
 
     /**
@@ -92,8 +89,6 @@ class search {
 
     /**
      * Подсветка найденных слов в тексте и отсечение лишней части текста, в случае, когда много символов
-     * @global config $config
-     * @global display $display
      * @param string $text строка поиска
      * @param array|string $regexp регулярные выражения поиска. 
      * Группа в рег. выражении под номером 1 всегда должна быть искомым выражением.
@@ -101,15 +96,14 @@ class search {
      * @return bool true, если найдено
      */
     public function highlight_text(&$text, $regexp, $cut = true) {
-        global $config, $display;
-        $cut_symb_max = $config->v('max_search_symb');
+        $cut_symb_max = config::o()->v('max_search_symb');
         if (!is_array($regexp))
             $regexp = array($regexp);
         $regexp = array_map(array($this, 'regexp_replace'), $regexp);
         $ntext = preg_replace_callback($regexp, array($this, 'highlight_pcre_callback'), $text);
         if ($ntext == $text) {
             if ($cut && $cut_symb_max)
-                $text = $display->cut_word($text, 0, $cut_symb_max) . "...";
+                $text = display::o()->cut_word($text, 0, $cut_symb_max) . "...";
             return false;
         }
         $text = $ntext;
@@ -119,31 +113,28 @@ class search {
 
     /**
      * Обрезка выделенного текста
-     * @global config $config
-     * @global display $display
      * @param string $text текст
      * @return null 
      */
     protected function highlight_cut(&$text) {
-        global $config, $display;
-        $cut_symb_max = $config->v('max_search_symb');
+        $cut_symb_max = config::o()->v('max_search_symb');
         $ret = preg_split('/(\<font class\=\"highlighted\"\>(?:.+?)\<\/font\>)/siu', $text, - 1, PREG_SPLIT_DELIM_CAPTURE);
         $count = count($ret);
         $text = "";
-        $max_symb = $config->v('max_symb_after_word');
+        $max_symb = config::o()->v('max_symb_after_word');
         $smax_symb = longval($max_symb / 2);
         $lastword = 0;
         for ($i = 0; $i < $count; $i++) {
             if ($i % 2 == 0) {
                 $strlen = mb_strlen($ret [$i]);
                 if ($i == 0) // режем начало
-                    $text .= ( $strlen > $max_symb ? "..." . $display->cut_word($ret [$i], $strlen - $max_symb, $max_symb) : $ret [$i]);
+                    $text .= ( $strlen > $max_symb ? "..." . display::o()->cut_word($ret [$i], $strlen - $max_symb, $max_symb) : $ret [$i]);
                 elseif ($i == $count - 1) // режем конец
-                    $text .= ( $strlen > $max_symb ? $display->cut_word($ret [$i], 0, $max_symb) . "..." : $ret [$i]);
+                    $text .= ( $strlen > $max_symb ? display::o()->cut_word($ret [$i], 0, $max_symb) . "..." : $ret [$i]);
                 else // и серединку
-                    $text .= ( $strlen > $max_symb ? $display->cut_word($ret [$i], 0, $smax_symb) . "..." . $display->cut_word($ret [$i], $strlen - $smax_symb, $smax_symb) : $ret [$i]);
+                    $text .= ( $strlen > $max_symb ? display::o()->cut_word($ret [$i], 0, $smax_symb) . "..." . display::o()->cut_word($ret [$i], $strlen - $smax_symb, $smax_symb) : $ret [$i]);
                 if (mb_strlen($text) > $cut_symb_max && $cut_symb_max) { // кончаем нарезку, ибо слишком многа букафф
-                    $text = $display->cut_word($text, 0, $lastword > $cut_symb_max ? $lastword : $cut_symb_max) . "...";
+                    $text = display::o()->cut_word($text, 0, $lastword > $cut_symb_max ? $lastword : $cut_symb_max) . "...";
                     break;
                 }
             } else {
@@ -196,13 +187,11 @@ class search {
 
     /**
      * Поиск со звёздочкой
-     * @global db $db
      * @param string $value значение
      * @param string $column столбец
      * @return string условие
      */
     public function like_where($value, $column) {
-        global $db;
         $value = str_replace(array('\*',
             '\?',
             '?',
@@ -213,13 +202,12 @@ class search {
             '_',
             '%',
             '*',
-            '?'), $db->sesc($value));
-        return $db->cesc($column) . ' LIKE "' . $value . '"';
+            '?'), db::o()->sesc($value));
+        return db::o()->cesc($column) . ' LIKE "' . $value . '"';
     }
 
     /**
      * Создание условия полнотекстового поиска и выделение слов для подсветки
-     * @global db $db
      * @param string $value искомые слова
      * @param string|array $columns столбец\столбцы
      * @param array $regexp рег. выражение для подсветки текста
@@ -229,12 +217,11 @@ class search {
      * @return string условие поиска
      */
     public function make_where($value, $columns, &$regexp = true, $boolean = true) {
-        global $db;
         if (is_array($columns))
-            $columns = implode(',', array_map(array($db, "cesc"), $columns));
+            $columns = implode(',', array_map(array(db::o(), "cesc"), $columns));
         else
-            $columns = $db->cesc($columns);
-        $where = 'MATCH(' . $columns . ') AGAINST(' . $db->esc($value) .
+            $columns = db::o()->cesc($columns);
+        $where = 'MATCH(' . $columns . ') AGAINST(' . db::o()->esc($value) .
                 ($boolean ? ' IN BOOLEAN MODE' : '') . ')';
         if (!$regexp)
             return $where;
@@ -267,7 +254,6 @@ class search {
 
     /**
      * Функция поиска значений в данной таблице
-     * @global db $db
      * @param string $table таблица
      * @param string|array $columns искомый столбец\столбцы
      * @param string $value значение
@@ -276,7 +262,6 @@ class search {
      * @return array результат поиска
      */
     public function pre_search($table, $columns, $value, $limit = 10, $id_col = "id") {
-        global $db;
         if (!$id_col)
             $id_col = "id";
         $regexp = false; // reference
@@ -288,10 +273,10 @@ class search {
                 $id_col,
                 $columns);
         $cols = implode('`, `', $cols);
-        $res = $db->query('SELECT `' . $cols . '` FROM `' . $table . '` WHERE ' . $where
+        $res = db::o()->query('SELECT `' . $cols . '` FROM `' . $table . '` WHERE ' . $where
                 . ($limit ? " LIMIT " . $limit : ""));
         if ($where)
-            return $db->fetch2array($res);
+            return db::o()->fetch2array($res);
     }
 
     /**
@@ -314,21 +299,19 @@ class search {
 
     /**
      * Поиск настроек пользователя
-     * @global db $db
      * @param string $area поле
      * @param string $value значение
      * @param string $column искомый столбец
      * @return string условие для поиска
      */
     public function search_settings($area, $value, $column = 'settings') {
-        global $db;
         if (is_numeric($value))
             $value = mpc(serialize($value));
         else {
             $value = str_replace('\*', '[^"]*', mpc($value));
             $value = 's\:([0-9]+)\:"' . $value . '"\;';
         }
-        return '`' . $column . '` RLIKE  ' . $db->esc(mpc(serialize($area)) . $value);
+        return '`' . $column . '` RLIKE  ' . db::o()->esc(mpc(serialize($area)) . $value);
     }
 
     /**
@@ -348,8 +331,6 @@ class search {
 
     /**
      * Поиск/замена в файлах
-     * @global file $file
-     * @global display $display
      * @param string|array $dir путь к дирректории или массив файлов
      * @param string $what что ищем? (рег. выражение без делимиттеров)
      * @param bool $regexp регулярное выражение?
@@ -361,11 +342,10 @@ class search {
      * @return array массив файлов(ключи) и подсвеченных результатов(значения)
      */
     public function search_infiles($dir, $what, $regexp = false, $where = null, $callback = null, $was = '') {
-        global $file, $display;
         if (!$dir || !$what)
             return;
         if (!is_array($dir) && is_dir(ROOT . $dir))
-            $files = $file->open_folder($dir);
+            $files = file::o()->open_folder($dir);
         else
             $dir = $files = (array) $dir;
         $r = array();
@@ -376,7 +356,7 @@ class search {
             $what = str_replace('/', '\\/', $what);
         $owhat = $what;
         if (is_null($this->infiles_replace))
-            $what = $display->html_encode($what);
+            $what = display::o()->html_encode($what);
         $what = '/(' . $what . ')/siu';
         $where = (int) $where;
         foreach ($files as $f) {
@@ -401,7 +381,7 @@ class search {
                 continue;
             if (!is_array($c)) {
                 if (is_null($this->infiles_replace))
-                    $c = $display->html_encode($c);
+                    $c = display::o()->html_encode($c);
                 if (!preg_match($what, $c))
                     continue;
                 if (is_null($this->infiles_replace))
@@ -411,7 +391,7 @@ class search {
                     if ($this->infiles_replace_cb)
                         call_user_func($this->infiles_replace_cb, $nf, $c);
                     else
-                        $file->write_file($c, $nf);
+                        file::o()->write_file($c, $nf);
                 }
                 $r[$wf] = $c;
                 continue;
@@ -427,8 +407,8 @@ class search {
                 if (!$b && !validword($k))
                     continue;
                 if (is_null($this->infiles_replace)) {
-                    $v = $display->html_encode($v);
-                    $k = $display->html_encode($k);
+                    $v = display::o()->html_encode($v);
+                    $k = display::o()->html_encode($k);
                 }
                 if ($where == 0 && !preg_match($what, $v))
                     continue;

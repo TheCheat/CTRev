@@ -12,25 +12,19 @@ require_once ROOT . 'include/classes/class.fbenc.php';
 require_once ROOT . 'include/functions.php';
 @set_error_handler("myerror_report"); // Присваиваем функцию myerror_report, вместо стандартной, помогает избежать раскрытия путей.
 
-final class db_announce extends db {
-
-    /**
-     * Вывод ошибки последнего запроса к БД
-     * @global bittorrent $bt
-     * @param string $query
-     * @return null
-     */
-    public function err($query = null) {
-        global $bt;
-        $bt->err(mysql_error());
-    }
-
+/**
+ * Вывод ошибки последнего запроса к БД
+ * @param string $query строка запрос
+ * @return null
+ */
+function db_errhandler($query = null) {
+    $bt = new fbenc();
+    $bt->err(mysql_error());
 }
-$db = new db_announce();
-$file = new file();
-$cache = new cache();
+
+db::o()->errhandler('db_errhandler');
 $bt = new fbenc();
-$db->connect();
-$db->no_reset();
-$config = new config('announce');
+db::o()->connect();
+db::o()->no_reset();
+config::o('announce');
 ?>

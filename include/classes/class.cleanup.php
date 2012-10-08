@@ -38,106 +38,92 @@ final class cleanup extends pluginable_object {
     }
 
     /**
-     * Инициализация очистки сайта
-     * @global users $users
-     * @global config $config
-     * @global stats $stats
-     * @global mailer $mailer
+     * Выполнение очистки сайта
      * @param bool $force выполнять клинап вне зависимости от времени
      * @return null
      */
-    public function init($force = false) {
-        global $users, $config, $stats, $mailer;
-        if (!longval($config->v('cleanup_each')))
+    public function execute($force = false) {
+        if (!longval(config::o()->v('cleanup_each')))
             return;
         $hour = 3600; // Секунд в часу
-        $time = $stats->read('last_cleanup');
-        if (!$force && time() < $time + $config->v('cleanup_each') * $hour)
+        $time = stats::o()->read('last_cleanup');
+        if (!$force && time() < $time + config::o()->v('cleanup_each') * $hour)
             return;
-        $stats->write('last_cleanup', time());
-        $am = $users->admin_mode(true);
-        $users->set_tmpvars(array('id' => -1));
+        stats::o()->write('last_cleanup', time());
+        $am = users::o()->admin_mode(true);
+        users::o()->set_tmpvars(array('id' => -1));
+        /* @var $mailer mailer */
+        $mailer = n("mailer");
         $mailer->change_type('torrents')->cleanup();
         $mailer->change_type('categories')->cleanup();
-        $users->groups_autoupdate();
+        users::o()->groups_autoupdate();
 
         foreach ($this->methods as $m)
             $this->call_method('clear_' . $m);
-        $users->remove_tmpvars();
+        users::o()->remove_tmpvars();
         if ($am)
-            $users->admin_mode();
-        //$cache->clear_ocache($config->v('cache_oldtime') * 3600);
+            users::o()->admin_mode();
+        //cache::o()->clear_ocache(config::o()->v('cache_oldtime') * 3600);
     }
 
     /**
      * Очистка сессий
-     * @global db $db
-     * @global config $config
      * @return null
      */
     protected function clear_sessions() {
-        global $db, $config;
         $hour = 3600; // Секунд в часу
-        $maxtime = time() - $hour * $config->v('session_clear');
-        $db->delete("sessions", ( 'WHERE time < ' . $maxtime));
+        $maxtime = time() - $hour * config::o()->v('session_clear');
+        db::o()->delete("sessions", ( 'WHERE time < ' . $maxtime));
     }
 
     /**
      * Очистка прочтённых торрентов
-     * @global db $db
-     * @global config $config
-     * @global stats $stats
      * @return null
      */
     protected function clear_readtorrents() {
-        global $db, $config, $stats;
-        if (!$config->v('clean_rt_interval'))
+        if (!config::o()->v('clean_rt_interval'))
             return;
         $day = 86400; // Секунд в день
-        $time = $stats->read('last_clean_rt');
-        if (time() < $time + $config->v('clean_rt_interval') * $day)
+        $time = stats::o()->read('last_clean_rt');
+        if (time() < $time + config::o()->v('clean_rt_interval') * $day)
             return;
-        $db->truncate_table('read_torrents');
-        $stats->write('last_clean_rt', time());
+        db::o()->truncate_table('read_torrents');
+        stats::o()->write('last_clean_rt', time());
     }
 
     /**
      * Очистка банов
-     * @global db $db
      * @return null
      */
     protected function clear_bans() {
-        global $db;
-        $r = $db->query("SELECT id,uid FROM bans WHERE to_time <> 0 AND to_time <= " . time());
+        $r = db::o()->query("SELECT id,uid FROM bans WHERE to_time <> 0 AND to_time <= " . time());
         $ids = "";
-        while ($row = $db->fetch_assoc($r)) {
+        while ($row = db::o()->fetch_assoc($r)) {
             $uid = $row["uid"];
             if ($uid)
-                $db->update(array("_cb_group" => 'old_group',
+                db::o()->update(array("_cb_group" => 'old_group',
                     "old_group" => 0), "users", "WHERE id=" . $uid . " AND old_group<>0 LIMIT 1");
             $ids .= ( $ids ? ", " : "") . $row["id"];
         }
         if (!$ids)
             return;
-        $db->delete("bans", 'WHERE id IN(' . $ids . ')');
+        db::o()->delete("bans", 'WHERE id IN(' . $ids . ')');
     }
 
     /**
      * Очистка предупреждений
-     * @global db $db
-     * @global config $config
-     * @global etc $etc
      * @return null
      */
     protected function clear_warnings() {
-        global $db, $config, $etc;
-        if (!$config->v('clear_warn_period'))
+        if (!config::o()->v('clear_warn_period'))
             return;
         $day = 86400; // Секунд в день
-        $when = time() - $config->v('clear_warn_period') * $day;
-        $r = $db->query("SELECT id,uid FROM warnings WHERE time <= " . $when);
+        $when = time() - config::o()->v('clear_warn_period') * $day;
+        $r = db::o()->query("SELECT id,uid FROM warnings WHERE time <= " . $when);
         $ids = "";
-        while ($row = $db->fetch_assoc($r)) {
+        /* @var $etc etc */
+        $etc = n("etc");
+        while ($row = db::o()->fetch_assoc($r)) {
             $uid = $row["uid"];
             $etc->add_res('warnings', -1, "users", $uid);
             /// Да, да, да.. я тут не сделал удаление юзера из банов, если слишком мало предов, но так и задумывалось ;)
@@ -145,90 +131,80 @@ final class cleanup extends pluginable_object {
         }
         if (!$ids)
             return;
-        $db->delete("warnings", 'WHERE id IN(' . $ids . ')');
+        db::o()->delete("warnings", 'WHERE id IN(' . $ids . ')');
     }
 
     /**
      * Очистка пиров
-     * @global db $db
-     * @global config $config
      * @return null
      */
     protected function clear_peers() {
-        global $db, $config;
-        if (!$config->v('clean_peers_interval'))
+        if (!config::o()->v('clean_peers_interval'))
             return;
         $hour = 3600; // Секунд в часу
-        $when = time() - $config->v('clean_peers_interval') * $hour;
-        $r = $db->query("SELECT peer_id,tid,seeder FROM peers WHERE time <= " . $when);
+        $when = time() - config::o()->v('clean_peers_interval') * $hour;
+        $r = db::o()->query("SELECT peer_id,tid,seeder FROM peers WHERE time <= " . $when);
         $ids = "";
         $sl = array();
-        while ($row = $db->fetch_assoc($r)) {
+        while ($row = db::o()->fetch_assoc($r)) {
             $sl[$row['tid']][0] += ($row["seeder"] ? 1 : 0);
             $sl[$row['tid']][1] += (!$row["seeder"] ? 1 : 0);
-            $ids .= ( $ids ? ", " : "") . $db->esc($row["peer_id"]);
+            $ids .= ( $ids ? ", " : "") . db::o()->esc($row["peer_id"]);
         }
         if (!$ids)
             return;
         if ($sl)
             foreach ($sl as $id => $cur) {
                 if ($cur[0])
-                    $db->update(array("seeders" => 'IF(seeders>=' . $cur[0] . ',seeders-' . $cur[0] . ',0)'), "torrents", 'WHERE id=' . $id . ' LIMIT 1');
+                    db::o()->update(array("seeders" => 'IF(seeders>=' . $cur[0] . ',seeders-' . $cur[0] . ',0)'), "torrents", 'WHERE id=' . $id . ' LIMIT 1');
                 if ($cur[1])
-                    $db->update(array("leechers" => 'IF(leechers>=' . $cur[1] . ',leechers-' . $cur[1] . ',0)'), "torrents", 'WHERE id=' . $id . ' LIMIT 1');
+                    db::o()->update(array("leechers" => 'IF(leechers>=' . $cur[1] . ',leechers-' . $cur[1] . ',0)'), "torrents", 'WHERE id=' . $id . ' LIMIT 1');
             }
-        $db->delete("peers", 'WHERE peer_id IN(' . $ids . ')');
+        db::o()->delete("peers", 'WHERE peer_id IN(' . $ids . ')');
     }
 
     /**
      * Очистка неактивных пользователей
-     * @global db $db
-     * @global config $config
-     * @global etc $etc
      * @return null
      */
     protected function clear_users() {
-        global $db, $config, $etc;
-        if (!$config->v('del_inactive'))
+        if (!config::o()->v('del_inactive'))
             return;
         $day = 86400; // Секунд в день
-        $when = time() - $config->v('del_inactive') * $day;
-        $r = $db->query("SELECT id FROM users WHERE last_visited <= " . $when);
-        while (list($id) = $db->fetch_row($r))
+        $when = time() - config::o()->v('del_inactive') * $day;
+        $r = db::o()->query("SELECT id FROM users WHERE last_visited <= " . $when);
+        /* @var $etc etc */
+        $etc = n("etc");
+        while (list($id) = db::o()->fetch_row($r))
             $etc->delete_user($id);
     }
 
     /**
      * Очистка старых торрентов
-     * @global db $db
-     * @global config $config
-     * @global etc $etc
      * @return null
      */
     protected function clear_torrents() {
-        global $db, $config, $etc;
-        if (!$config->v('del_oldtorrents'))
+        if (!config::o()->v('del_oldtorrents'))
             return;
         $day = 86400; // Секунд в день
-        $when = time() - $config->v('del_oldtorrents') * $day;
-        $r = $db->query("SELECT id FROM torrents WHERE last_active <= " . $when);
-        while (list($id) = $db->fetch_row($r))
+        $when = time() - config::o()->v('del_oldtorrents') * $day;
+        $r = db::o()->query("SELECT id FROM torrents WHERE last_active <= " . $when);
+        /* @var $etc etc */
+        $etc = n("etc");
+        while (list($id) = db::o()->fetch_row($r))
             $etc->delete_torrent($id);
     }
 
     /**
      * Очистка старых сообщений чата
-     * @global db $db
-     * @global config $config
      * @return null
      */
     protected function clear_chat() {
-        global $db, $config;
-        if (!$config->v('chat_autoclear'))
+        if (!config::o()->v('chat_autoclear'))
             return;
         $hour = 3600; // Секунд в час
-        $when = time() - $config->v('chat_autoclear') * $hour;
-        $db->delete('chat', 'WHERE posted_time <= ' . $when);
+        $when = time() - config::o()->v('chat_autoclear') * $hour;
+        db::o()->delete('chat', 'WHERE posted_time <= ' . $when);
     }
 
 }

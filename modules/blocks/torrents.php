@@ -17,17 +17,14 @@ class torrents_block {
 
     /**
      * Инициализация блока-торрентов
-     * @global lang $lang
-     * @global plugins $plugins
-     * @global users $users
      * @return null
      */
     public function init() {
-        global $lang, $plugins, $users;
-        $lang->get("torrents");
-        if (!$users->perm('torrents'))
+        lang::o()->get("torrents");
+        if (!users::o()->perm('torrents'))
             return;
-        $torrents = $plugins->get_module("torrents");
+        /* @var $torrents torrents */
+        $torrents = plugins::o()->get_module("torrents");
         if (!is_callable(array($torrents, "show")))
             return;
         $torrents->show();

@@ -17,36 +17,36 @@ if (!file_exists('install/lock') && file_exists('install/')) {
 define('DELAYED_UINIT', true); // отложенная инициализация юзерей...
 include_once "./include/include.php";
 $module = $_GET ['module'];
-$blocks->set_module($module ? $module : "index");
+blocks::set_module($module ? $module : "index");
 $this_file = $BASEURL . "index.php?module=" . $module;
-$tpl->assign("this_file", $this_file);
+tpl::o()->assign("this_file", $this_file);
 $ajax = (bool) ($_REQUEST ['from_ajax']); // Из AJAX
 $nno = (bool) ($_REQUEST ['nno']); // Стандартный класс(без постфикса '_ajax')
-$tpl->assign('from_ajax', $ajax);
-$tpl->assign('module_loaded', $module);
+tpl::o()->assign('from_ajax', $ajax);
+tpl::o()->assign('module_loaded', $module);
 if ($module) {
     if (!allowed::o()->is($module))
-        die($lang->v('module_not_exists'));
-    $mod = $plugins->get_module($module, false, $ajax && !$nno);
+        die(lang::o()->v('module_not_exists'));
+    $mod = plugins::o()->get_module($module, false, $ajax && !$nno);
     if (!$mod)
-        die($lang->v('module_not_exists'));
-    $plugins->call_init($mod, 'pre_init');
+        die(lang::o()->v('module_not_exists'));
+    plugins::o()->call_init($mod, 'pre_init');
 }
 users_init(); // ...доседова
 if ($module != "login")
-    $display->siteoffline_check();
+    display::o()->siteoffline_check();
 $content = "";
 try {
     if ($mod) {
         if (!$ajax) {
             ob_start();
-            $plugins->call_init($mod);
+            plugins::o()->call_init($mod);
             $content = ob_get_contents();
             ob_end_clean();
             if (isset($mod->title))
-                $tpl->assign("overall_title", $mod->title);
+                tpl::o()->assign("overall_title", $mod->title);
         } else {
-            $plugins->call_init($mod);
+            plugins::o()->call_init($mod);
             die();
         }
     }
@@ -54,15 +54,15 @@ try {
     $e->defaultCatch();
 }
 if (!$mod) {
-    $tpl->assign('module_loaded', 'index');
-    $tpl->assign("overall_title", $lang->v('index_page'));
+    tpl::o()->assign('module_loaded', 'index');
+    tpl::o()->assign("overall_title", lang::o()->v('index_page'));
 }
-$tpl->display("overall_header.tpl");
+tpl::o()->display("overall_header.tpl");
 if ($mod)
     print ($content);
 else
-    $tpl->display("index.tpl");
-$tpl->display("overall_footer.tpl");
+    tpl::o()->display("index.tpl");
+tpl::o()->display("overall_footer.tpl");
 if (!$ajax)
-    $cleanup->init();
+    n("cleanup")->execute();
 ?>

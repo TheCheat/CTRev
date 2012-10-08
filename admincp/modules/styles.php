@@ -36,14 +36,12 @@ class styles_man {
 
     /**
      * Инициализация управления темами
-     * @global lang $lang
      * @global array $POST
-     * @global tpl $tpl
      * @return null
      */
     public function init() {
-        global $lang, $POST, $tpl;
-        $lang->get('admin/styles');
+        global $POST;
+        lang::o()->get('admin/styles');
         $act = $_GET['act'];
         switch ($act) {
             case "add":
@@ -66,8 +64,8 @@ class styles_man {
                     $_POST['search'] = $POST['search'];
                     $this->search($_POST['id'], $_POST);
                 } else {
-                    $tpl->assign('apaths', self::$spaths);
-                    $tpl->display('admin/styles/search.tpl');
+                    tpl::o()->assign('apaths', self::$spaths);
+                    tpl::o()->display('admin/styles/search.tpl');
                 }
                 break;
             default:
@@ -78,15 +76,12 @@ class styles_man {
 
     /**
      * Поиск в темах
-     * @global tpl $tpl
-     * @global search $search
      * @param string $name имя темы
      * @param array $data массив данных
      * @return null
      * @throws EngineException
      */
     protected function search($name, $data) {
-        global $tpl, $search;
         $cols = array(
             'what' => 'search',
             'where',
@@ -103,6 +98,8 @@ class styles_man {
         foreach ($where as $w) {
             if (!self::$spaths[$w])
                 return;
+            /* @var $search search */
+            $search = n("search");
             $res = $search->search_infiles(THEMES_PATH . '/' . $name . '/' . self::$spaths[$w], $what, $regexp);
             $a = array();
             foreach ($res as $k => $r)
@@ -112,17 +109,16 @@ class styles_man {
             else
                 $arr = $a;
         }
-        $tpl->assign('row', $arr);
-        $tpl->assign('id', $name);
+        tpl::o()->assign('row', $arr);
+        tpl::o()->assign('id', $name);
         $data['search'] = $data['what'];
         unset($data['what']);
-        $tpl->assign('postdata', http_build_query($data));
-        $tpl->display('admin/styles/results.tpl');
+        tpl::o()->assign('postdata', http_build_query($data));
+        tpl::o()->display('admin/styles/results.tpl');
     }
 
     /**
      * Добавление/Редактирование темы
-     * @global tpl $tpl
      * @param string $name имя темы
      * @param string $f2e файл
      * @param bool $add добавление?
@@ -130,7 +126,6 @@ class styles_man {
      * @throws EngineException
      */
     protected function add($name, $f2e, $add = false) {
-        global $tpl;
         if (!validfolder($name, THEMES_PATH))
             throw new EngineException;
         $f2e = validpath($f2e, false, self::$spaths);
@@ -145,54 +140,46 @@ class styles_man {
             $add = true;
         if (!$add)
             $contents = file_get_contents($fpath);
-        $tpl->assign('id', $name);
-        $tpl->assign('parent', $add ? $f2e : $folder);
-        $tpl->assign('filename', $sf2e);
-        $tpl->assign('folder', $ffu);
-        $tpl->assign('file', !$add ? $sf2e : '');
-        $tpl->assign('is_writable', is_writable($fpath));
-        $tpl->assign('contents', $contents);
-        $tpl->display('admin/styles/add.tpl');
+        tpl::o()->assign('id', $name);
+        tpl::o()->assign('parent', $add ? $f2e : $folder);
+        tpl::o()->assign('filename', $sf2e);
+        tpl::o()->assign('folder', $ffu);
+        tpl::o()->assign('file', !$add ? $sf2e : '');
+        tpl::o()->assign('is_writable', is_writable($fpath));
+        tpl::o()->assign('contents', $contents);
+        tpl::o()->display('admin/styles/add.tpl');
     }
 
     /**
      * Выбор файла темы
-     * @global display $display
      * @param string $name тема
      * @param string $folder выбранная дирректория
      * @return null
      */
     protected function files($name, $folder = null) {
-        global $display;
-        $display->filechooser(THEMES_PATH, $name, $folder, self::$spaths);
+        display::o()->filechooser(THEMES_PATH, $name, $folder, self::$spaths);
     }
 
     /**
      * Вывод списка тем
-     * @global tpl $tpl
-     * @global file $file
      * @return null 
      */
     public function show() {
-        global $tpl, $file;
-        $rows = $file->open_folder(THEMES_PATH, true);
-        $tpl->assign('rows', $rows);
-        $tpl->register_modifier('get_style_conf', array($tpl, 'init_cfg'));
-        $tpl->display('admin/styles/index.tpl');
+        $rows = file::o()->open_folder(THEMES_PATH, true);
+        tpl::o()->assign('rows', $rows);
+        tpl::o()->register_modifier('get_style_conf', array(tpl::o(), 'init_cfg'));
+        tpl::o()->display('admin/styles/index.tpl');
     }
 
     /**
      * Сохранение файла темы
-     * @global furl $furl
      * @global string $admin_file
-     * @global file $file
-     * @global tpl $tpl
      * @param array $data массив данных файла темы
      * @return null
      * @throws EngineException 
      */
     protected function save($data) {
-        global $furl, $admin_file, $file, $tpl;
+        global $admin_file;
         $cols = array(
             'name' => 'id',
             'of2e' => 'file',
@@ -216,12 +203,12 @@ class styles_man {
             throw new EngineException('styles_file_exists');
         if ($of2e != $f2e && $of2e)
             unlink($path . $of2e);
-        $file->write_file($content, $opath . $f2e);
+        file::o()->write_file($content, $opath . $f2e);
         if (!$of2e)
             log_add('changed_style_file', 'admin', array($f2e, $of2e, $name));
         else
             log_add('added_style_file', 'admin', array($f2e, $name));
-        $furl->location($admin_file);
+        furl::o()->location($admin_file);
     }
 
 }
@@ -263,13 +250,11 @@ class styles_man_ajax {
 
     /**
      * Замена в теме
-     * @global search $search
      * @param string $name имя темы
      * @param array $data данные поиска
      * @return null
      */
     protected function replace($name, $data) {
-        global $search;
         $cols = array(
             'what' => 'search',
             'with',
@@ -296,71 +281,61 @@ class styles_man_ajax {
 
     /**
      * Удаление файла/папки
-     * @global file $file
      * @param string $name имя темы
      * @param string $f2d имя файла/папки
      * @return null
      * @throws EngineException
      */
     protected function delete_file($name, $f2d) {
-        global $file;
         $f2d = validpath($f2d, false, styles_man::$spaths);
         if (preg_match('/^\/*(' . implode('|', array_map('mpc', styles_man::$spaths)) . ')\/*$/siu', trim($f2d)))
             throw new EngineException;
-        $file->unlink_folder(THEMES_PATH . '/' . $name . '/' . $f2d);
+        file::o()->unlink_folder(THEMES_PATH . '/' . $name . '/' . $f2d);
         log_add('deleted_style_file', 'admin', array($f2d, $name));
     }
 
     /**
      * Удаление темы
-     * @global file $file
-     * @global config $config
      * @param string $name имя темы
      * @return null
      */
     protected function delete($name) {
-        global $file, $config;
-        $rows = $file->open_folder(THEMES_PATH, true);
+        $rows = file::o()->open_folder(THEMES_PATH, true);
         if (count($rows) < 2)
             return;
-        if ($config->v('default_style') == $name) {
+        if (config::o()->v('default_style') == $name) {
             $i = array_search($name, $rows);
             unset($rows[$i]);
             $this->bydefault(reset($rows));
         }
-        $file->unlink_folder(THEMES_PATH . '/' . $name);
+        file::o()->unlink_folder(THEMES_PATH . '/' . $name);
         log_add('deleted_style', 'admin', $name);
     }
 
     /**
      * Клонирование темы
-     * @global file $file
-     * @global lang $lang
      * @param string $name имя темы
      * @param string $newname новое имя темы
      * @return null
      * @throws EngineException
      */
     protected function copy($name, $newname) {
-        global $file, $lang;
-        $lang->get('admin/styles');
+        lang::o()->get('admin/styles');
         if (!validword($newname))
             throw new EngineException('styles_invalid_new_name');
-        $file->copy_folder(THEMES_PATH . '/' . $name, THEMES_PATH . '/' . $newname);
+        file::o()->copy_folder(THEMES_PATH . '/' . $name, THEMES_PATH . '/' . $newname);
         log_add('copied_style', 'admin', array($newname, $name));
     }
 
     /**
      * Присвоение темы по-умолчанию
-     * @global config $config
      * @param string $name имя темы
      * @return null
      */
     protected function bydefault($name) {
-        global $config;
-        if ($config->v('default_style') == $name)
+        if (config::o()->v('default_style') == $name)
             return;
-        $config->set('default_style', $name);
+        config::o()->set('default_style', $name);
         log_add('changed_config', 'admin');
     }
 

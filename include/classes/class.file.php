@@ -23,6 +23,25 @@ final class file {
     private $tmp_path = '';
 
     /**
+     * Необходимо перекешировать?
+     * @var bool
+     */
+    private $recache = false;
+
+    /**
+     * Массив кешированных результатов is_writable
+     * @var array
+     */
+    private $cached = null;
+
+    /**
+     * Кеш-файл
+     * @const string cachefile
+     */
+
+    const cachefile = 'writable';
+
+    /**
      * Получение типа файла
      * @param string $path путь к файлу(имя файла)
      * @return string тип файла
@@ -106,6 +125,8 @@ final class file {
      * @return bool записываем ли?
      */
     public function is_writable($filename, $chmod = true, $recursive = false, $nonexists = false) {
+        if ($recursive && $this->cached[$filename])
+            return $this->cached[$filename];
         $rfilename = ROOT . $filename;
         if ($recursive && is_dir($rfilename)) {
             $files = $this->open_folder($filename);
@@ -114,11 +135,16 @@ final class file {
                 @chmod($rfilename, 0777);
             $n = !$y = is_writable($filename);
             for ($i = 0; $i < $c; $i++) {
-                $r = $this->is_writable($filename . '/' . $files[$i], $chmod, $recursive);
+                $r = $this->is_writable($filename . '/' . $files[$i], $chmod, 'inrec');
                 $y = $y || $r === true || $r === 2;
                 $n = $n || !$r || $r === 1;
             }
-            return $y + !$n;
+            $r = $y + !$n;
+            if ($recursive !== 'inrec') {
+                $this->recache = true;
+                $this->cached[$filename] = $r;
+            }
+            return $r;
         } elseif ($nonexists && !is_dir($rfilename) && !file_exists($rfilename)) {
             preg_match('/(.*)\/[^\/]+?/su', $filename, $matches);
             if ($matches) {
@@ -208,6 +234,63 @@ final class file {
         flock($f, LOCK_UN);
         fclose($f);
         return (bool) $s;
+    }
+
+    /**
+     * Деструктор. Запись кеша
+     * @return null
+     */
+    public function __destruct() {
+        if (!class_exists('cache'))
+            return;
+        if ($this->recache)
+            cache::o()->write($this->cached, self::cachefile);
+    }
+
+    // Реализация Singleton
+
+    /**
+     * Объект данного класса
+     * @var file
+     */
+    private static $o = null;
+
+    /**
+     * Конструктор? А где конструктор? А нет его.
+     * @return null 
+     */
+    private function __construct() {
+        if (!class_exists('cache'))
+            return;
+        $this->cached = cache::o()->read(self::cachefile);
+        if ($this->cached === false)
+            cache::o()->pop_readed();
+    }
+
+    /**
+     * Не клонируем
+     * @return null 
+     */
+    private function __clone() {
+        
+    }
+
+    /**
+     * И не десериализуем
+     * @return null 
+     */
+    private function __wakeup() {
+        
+    }
+
+    /**
+     * Получение объекта класса
+     * @return file $this
+     */
+    public static function o() {
+        if (!self::$o)
+            self::$o = new self();
+        return self::$o;
     }
 
 }

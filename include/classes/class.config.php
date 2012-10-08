@@ -24,26 +24,6 @@ final class config {
     private $vars = array();
 
     /**
-     * Конструктор конфига
-     * @global db $db
-     * @param string $cat категория конфига
-     * @return null 
-     */
-    public function __construct($cat = '') {
-        global $db;
-        $vars = array('name' => 'value');
-        if ((!$cat || $cat == "announce"))
-            $c = array('n' => 'config/' . ($cat ? "announce" : "all"),
-                'k' => $vars);
-        $cat = $cat ? ' WHERE cat=' . $db->esc($cat) : '';
-        $r = $db->query("SELECT name, value FROM config" . $cat, $c);
-        if (is_array($r))
-            $this->vars = $r;
-        else
-            $this->vars = $db->fetch2array($r, null, $vars);
-    }
-
-    /**
      * Существует ли переменная?
      * @param string $var имя переменной
      * @return bool true, если существует
@@ -64,7 +44,6 @@ final class config {
 
     /**
      * Добавление значения конфигурационного параметра
-     * @global db $db
      * @param string $var имя параметра
      * @param string $value значение параметра
      * @param string $type тип параметра(int,string,text,date,folder,radio,select,checkbox,other)
@@ -74,7 +53,6 @@ final class config {
      * @return null
      */
     public function add($var, $value, $type = 'int', $allowed = null, $cat = 'other', $sort = null) {
-        global $db;
         $this->vars[$var] = $value;
         $update = array('name' => $var,
             'value' => $value,
@@ -84,38 +62,68 @@ final class config {
             $update['allowed'] = implode(';', (array) $allowed);
         if ($sort)
             $update['sort'] = implode(';', (array) $sort);
-        $db->insert($update, 'config');
-        $this->uncache();
+        db::o()->insert($update, 'config');
     }
 
     /**
      * Изменение значения конфигурационного параметра
-     * @global db $db
-     * @global cache $cache
      * @param string $var имя параметра
      * @param string $value значение параметра
      * @param int $sort сортировка параметра
      * @return null
      */
     public function set($var, $value, $sort = null) {
-        global $db;
         $this->vars[$var] = (string) $value;
         $update = array('value' => (string) $value);
         if ($sort)
             $update['sort'] = (int) $sort;
-        $db->update($update, 'config', 'WHERE name=' . $db->esc($var) . ' LIMIT 1');
-        $this->uncache();
+        db::o()->update($update, 'config', 'WHERE name=' . db::o()->esc($var) . ' LIMIT 1');
+    }
+    
+    // Реализация Singleton
+
+    /**
+     * Объект данного класса
+     * @var config
+     */
+    private static $o = null;
+
+    /**
+     * Конструктор? А где конструктор? А нет его.
+     * @param string $cat категория конфига
+     * @return null 
+     */
+    private function __construct($cat = '') {
+        $cat = $cat ? ' WHERE cat=' . db::o()->esc($cat) : '';
+        $r = db::o()->query("SELECT name, value FROM config" . $cat);
+        $this->vars = db::o()->fetch2array($r, null, array('name' => 'value'));
     }
 
     /**
-     * Удаление кеша конфига
-     * @global cache $cache 
-     * @return null
+     * Не клонируем
+     * @return null 
      */
-    private function uncache() {
-        global $cache;
-        $cache->remove('config/all');
-        $cache->remove('config/announce');
+    private function __clone() {
+        
+    }
+
+    /**
+     * И не десериализуем
+     * @return null 
+     */
+    private function __wakeup() {
+        
+    }
+
+    /**
+     * Получение объекта класса
+     * @param string $cat категория конфига
+     * @return config $this
+     */
+    public static function o($cat = '') {
+        if (!self::$o)
+            self::$o = new self($cat);
+        return self::$o;
     }
 
 }

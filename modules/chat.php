@@ -17,12 +17,10 @@ class chat {
 
     /**
      * Инициализация Ajax-части чата
-     * @global lang $lang
      * @return null
      */
     public function init() {
-        global $lang;
-        $lang->get("blocks/chat");
+        lang::o()->get("blocks/chat");
         $id = (int) $_GET['id'];
         switch ($_GET["act"]) {
             case "text":
@@ -35,7 +33,7 @@ class chat {
                 break;
             case "truncate":
                 $this->truncate();
-                print($lang->v('chat_no_messages'));
+                print(lang::o()->v('chat_no_messages'));
                 die();
                 break;
             case "save":
@@ -50,122 +48,102 @@ class chat {
 
     /**
      * Удаление сообщения из чата
-     * @global db $db
-     * @global users $users
      * @param int $id ID сообщения
      * @return null
      * @throws EngineException
      */
     public function delete($id) {
-        global $db, $users;
         $id = (int) $id;
         check_formkey();
-        $users->check_perms('del_chat');
-        $db->delete('chat', 'WHERE id=' . $id .
-                (!$users->perm('del_chat', 2) ? " AND poster_id=" . $users->v('id') : "") . ' LIMIT 1');
+        users::o()->check_perms('del_chat');
+        db::o()->delete('chat', 'WHERE id=' . $id .
+                (!users::o()->perm('del_chat', 2) ? " AND poster_id=" . users::o()->v('id') : "") . ' LIMIT 1');
         $this->delete_logs($id);
     }
 
     /**
      * Запись в логи чата
-     * @global db $db
-     * @global config $config
      * @param int $id ID сообщения
      * @return null 
      */
     protected function delete_logs($id = 0) {
-        global $db, $config;
         $id = (int) $id;
-        if (!$db->affected_rows() || !$config->v('chat_clearlogs'))
+        if (!db::o()->affected_rows() || !config::o()->v('chat_clearlogs'))
             return;
-        $db->delete('chat_deleted', 'WHERE time<=' . (time() - $config->v('chat_clearlogs')));
-        $db->insert(array('id' => $id, 'time' => time()), 'chat_deleted');
-        if (!$id && $db->affected_rows() < 1)
-            $db->update(array('time' => time()), 'chat_deleted', 'WHERE id="' . $id . '" LIMIT 1');
+        db::o()->delete('chat_deleted', 'WHERE time<=' . (time() - config::o()->v('chat_clearlogs')));
+        db::o()->insert(array('id' => $id, 'time' => time()), 'chat_deleted');
+        if (!$id && db::o()->affected_rows() < 1)
+            db::o()->update(array('time' => time()), 'chat_deleted', 'WHERE id="' . $id . '" LIMIT 1');
     }
 
     /**
      * Очистка сообщений чата
-     * @global db $db
-     * @global users $users
      * @return null
      * @throws EngineException
      */
     public function truncate() {
-        global $db, $users;
         check_formkey();
-        $users->check_perms('del_chat', 3);
-        $db->truncate_table('chat');
+        users::o()->check_perms('del_chat', 3);
+        db::o()->truncate_table('chat');
         $this->delete_logs();
     }
 
     /**
      * Сохранение сообщения чата
-     * @global db $db
-     * @global users $users
-     * @global plugins $plugins
      * @param string $text
      * @param int $id ID сообщения
      * @return null
      * @throws EngineException
      */
     public function save($text, $id = null) {
-        global $db, $users, $plugins;
         check_formkey();
         $text = trim($text);
         if (!$text)
             return;
         $id = (int) $id;
         if (!$id)
-            $users->check_perms('chat', 2, 2);
+            users::o()->check_perms('chat', 2, 2);
         else
-            $users->check_perms('edit_chat');
+            users::o()->check_perms('edit_chat');
         $update = array();
         $update["text"] = $text;
         $update["edited_time"] = time();
 
         try {
-            $plugins->pass_data(array('update' => &$update,
+            plugins::o()->pass_data(array('update' => &$update,
                 'id' => $id), true)->run_hook('chat_save');
         } catch (PReturn $e) {
             return $e->r();
         }
 
         if (!$id) {
-            $update["poster_id"] = $users->v('id') ? $users->v('id') : -1;
+            $update["poster_id"] = users::o()->v('id') ? users::o()->v('id') : -1;
             $update["posted_time"] = time();
-            $db->delete("chat_deleted", "WHERE id=0");
-            $db->insert($update, 'chat');
+            db::o()->delete("chat_deleted", "WHERE id=0");
+            db::o()->insert($update, 'chat');
         } else
-            $db->update($update, 'chat', 'WHERE id=' . $id .
-                    (!$users->perm('edit_chat', 2) ? " AND poster_id=" . $users->v('id') : "") . ' LIMIT 1');
+            db::o()->update($update, 'chat', 'WHERE id=' . $id .
+                    (!users::o()->perm('edit_chat', 2) ? " AND poster_id=" . users::o()->v('id') : "") . ' LIMIT 1');
     }
 
     /**
      * Вывод неформатированного текста сообщения для редактирования
-     * @global db $db
-     * @global users $users
      * @param int $id ID сообщения
      * @return null
      */
     protected function get_text($id) {
-        global $db, $users;
-        $users->check_perms('edit_chat');
+        users::o()->check_perms('edit_chat');
         $id = (int) $id;
-        list ($text) = $db->fetch_row($db->query("SELECT text FROM chat WHERE id=" . $id . ' LIMIT 1'));
+        list ($text) = db::o()->fetch_row(db::o()->query("SELECT text FROM chat WHERE id=" . $id . ' LIMIT 1'));
         print($text);
     }
 
     /**
      * Форматирование сообщения
-     * @global users $users
-     * @global lang $lang
-     * @global plugin $plugins
      * @param array $row массив данных сообщения
      * @return null
      */
     public function chat_mf(&$row) {
-        global $users, $lang, $plugins;
         $t = $row["text"];
         $cmds = 'private|me|hello|bye';
         preg_match('/^\/(' . $cmds . ')\s*(?:\((\w+)(?:,\s*([0-9]+))?\)\s+)?(.*)$/siu', $t, $matches);
@@ -177,28 +155,28 @@ class chat {
             case "private":
                 if (!$row['poster_id'] || mb_strtolower($row['username']) == mb_strtolower($p1))
                     return;
-                if (!$users->perm('chat_sprivate') &&
-                        $users->v('username_lower') != mb_strtolower($p1) &&
-                        $users->v('id') != $row['poster_id']) {
+                if (!users::o()->perm('chat_sprivate') &&
+                        users::o()->v('username_lower') != mb_strtolower($p1) &&
+                        users::o()->v('id') != $row['poster_id']) {
                     $row["text"] = '';
                     return;
                 }
-                if ($users->v('id') == $row['poster_id']) {
+                if (users::o()->v('id') == $row['poster_id']) {
                     $cmd = 'fprivate';
                     $u = $p1;
                 }
             case "me":
                 if (!$u)
                     $u = smarty_group_color_link($row["username"], $row["group"]);
-                $row["text"] = sprintf($lang->v("chat_" . $cmd . "_saying"), $u, $t);
+                $row["text"] = sprintf(lang::o()->v("chat_" . $cmd . "_saying"), $u, $t);
                 break;
             case "hello":
             case "bye":
-                $row["text"] = sprintf($lang->v("chat_" . $cmd . "_saying"), smarty_group_color_link($row["username"], $row["group"]));
+                $row["text"] = sprintf(lang::o()->v("chat_" . $cmd . "_saying"), smarty_group_color_link($row["username"], $row["group"]));
                 break;
             default:
                 try {
-                    $plugins->pass_data(array('row' => &$row,
+                    plugins::o()->pass_data(array('row' => &$row,
                         'matches' => $matches), true)->run_hook('chat_formatting');
                 } catch (PReturn $e) {
                     return $e->r();
@@ -210,37 +188,32 @@ class chat {
 
     /**
      * Вывод сообщений чата
-     * @global db $db
-     * @global tpl $tpl
-     * @global config $config
-     * @global users $users
      * @param int $time время последней проверки или ID сообщения
      * @param bool $prev показать пред. сообщения, до этого ID
      * @return null
      */
     protected function show($time, $prev = false) {
-        global $db, $tpl, $config, $users;
         $time = (int) $time;
-        $users->check_perms('chat', 2, 2);
+        users::o()->check_perms('chat', 2, 2);
         if ($time && !$prev) {
-            $r = $db->query('SELECT id FROM chat_deleted WHERE time>=' . $time);
+            $r = db::o()->query('SELECT id FROM chat_deleted WHERE time>=' . $time);
             $del = "";
-            while (list($i) = $db->fetch_row($r))
+            while (list($i) = db::o()->fetch_row($r))
                 $del .= ( $del ? "," : "") . $i;
-            $tpl->assign('deleted', $del);
+            tpl::o()->assign('deleted', $del);
         }
         $orderby = " ORDER BY c.posted_time DESC ";
-        $limit = $orderby . ($config->v('chat_maxmess') ? " LIMIT " . $config->v('chat_maxmess') : "");
+        $limit = $orderby . (config::o()->v('chat_maxmess') ? " LIMIT " . config::o()->v('chat_maxmess') : "");
         if ($prev) {
             $where = ' WHERE c.id < ' . $time . $limit;
-            $tpl->assign('prev', true);
+            tpl::o()->assign('prev', true);
         } else
             $where = $time ? ' WHERE c.edited_time>=' . $time . $orderby : $limit;
-        $r = $db->query('SELECT c.*, u.username, u.group FROM chat AS c
+        $r = db::o()->query('SELECT c.*, u.username, u.group FROM chat AS c
                 LEFT JOIN users AS u ON u.id=c.poster_id ' . $where);
-        $tpl->assign('rows', array_reverse($db->fetch2array($r)));
-        $tpl->register_modifier('chat_mf', array($this, 'chat_mf'));
-        $tpl->display('chat/chat.tpl');
+        tpl::o()->assign('rows', array_reverse(db::o()->fetch2array($r)));
+        tpl::o()->register_modifier('chat_mf', array($this, 'chat_mf'));
+        tpl::o()->display('chat/chat.tpl');
     }
 
 }

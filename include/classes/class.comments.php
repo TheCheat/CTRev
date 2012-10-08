@@ -45,14 +45,22 @@ class comments extends pluginable_object {
 
     /**
      * Конструктор класса
-     * @global config $config
      * @return null 
      */
     protected function plugin_construct() {
-        global $config;
-        $this->state = (bool) $config->v('comments_on');
+        $this->state = (bool) config::o()->v('comments_on');
         $this->access_var('title_cols', PVAR_ADD);
         $this->access_var('allowed_types', PVAR_ADD);
+        /**
+         * Отображение комментариев
+         * @param int resid - ID ресурса
+         * @param string type - тип ресурса
+         * @param string name - имя формы
+         * @param bool no_form - без формы добавления
+         */
+        tpl::o()->register_function("display_comments", array(
+            $this,
+            'display'));
     }
 
     /**
@@ -70,19 +78,12 @@ class comments extends pluginable_object {
     /**
      * Функция отображения комментариев
      * нек. параметры: GET['cid'] - ID желаемого комментария, GET['comments_page'] - страница комментариев
-     * @global db $db
-     * @global tpl $tpl
-     * @global lang $lang
-     * @global users $users
-     * @global config $config
-     * @global display $display
      * @param int $resid ID ресурса
      * @param string $name имя формы
      * @param bool $no_form без формы добавления
      * @return null
      */
     public function display($resid, $name = "comment", $no_form = false) {
-        global $db, $tpl, $lang, $users, $config, $display;
         if (!$this->state) {
             //disabled();
             return;
@@ -96,8 +97,8 @@ class comments extends pluginable_object {
             $resid = $resid ["resid"];
         }
         $type = $this->type;
-        $lang->get("comments");
-        if (!$users->perm('comment')) {
+        lang::o()->get("comments");
+        if (!users::o()->perm('comment')) {
             mess('comment_you_cannt_view', null, 'error', false);
             return;
         }
@@ -105,114 +106,104 @@ class comments extends pluginable_object {
             return;
         $type = $type ? $type : "torrents";
         $name = $name ? $name : "comment";
-        $where = 'toid =' . $resid . ' AND type =' . $db->esc($type);
+        $where = 'toid =' . $resid . ' AND type =' . db::o()->esc($type);
         $cid = (int) $_GET ['cid'];
         $orderby = "posted_time asc";
-        $count = $db->count_rows("comments", $where);
-        $perpage = $config->v('comm_perpage');
+        $count = db::o()->count_rows("comments", $where);
+        $perpage = config::o()->v('comm_perpage');
         if ($cid) {
-            $pos = $db->get_current_pos("comments", $where, 'id', $cid, $orderby);
+            $pos = db::o()->get_current_pos("comments", $where, 'id', $cid, $orderby);
             $page = longval($pos / $perpage) + 1;
             $_GET ["comments_page"] = $page;
         }
-        list ( $pages, $limit ) = $display->pages($count, $perpage, 'change_page_comments', 'comments_page', '', true);
-        $comments = $db->query('SELECT c.*, u.username,
+        list ( $pages, $limit ) = display::o()->pages($count, $perpage, 'change_page_comments', 'comments_page', '', true);
+        $comments = db::o()->query('SELECT c.*, u.username,
             u.group, u.settings, u.avatar FROM comments AS c
             LEFT JOIN users AS u ON u.id=c.poster_id
             WHERE ' . $where . ' ORDER BY ' . $orderby . ' LIMIT ' . $limit);
-        $tpl->assign("comments", $db->fetch2array($comments));
-        $tpl->assign("name", $name);
-        $tpl->assign("resid", $resid);
-        $tpl->assign("type", $type);
-        $tpl->assign("pages", $pages);
-        $tpl->display("comments/index.tpl");
+        tpl::o()->assign("comments", db::o()->fetch2array($comments));
+        tpl::o()->assign("name", $name);
+        tpl::o()->assign("resid", $resid);
+        tpl::o()->assign("type", $type);
+        tpl::o()->assign("pages", $pages);
+        tpl::o()->display("comments/index.tpl");
         if (!$no_form)
             $this->add_form($resid, $name);
     }
 
     /**
      * Форма добавления\редактирования комментария
-     * @global tpl $tpl
-     * @global lang $lang
-     * @global users $users
      * @param int $resid ID ресурса
      * @param string $name название формы добавления
      * @param int $id ID комментария
      * @return null
      */
     public function add_form($resid = "", $name = "comment", $id = "") {
-        global $tpl, $lang, $users;
         if (!$this->state)
             return;
         $type = $this->type;
-        $lang->get("comments");
-        if (!$users->perm('comment', 2)) {
+        lang::o()->get("comments");
+        if (!users::o()->perm('comment', 2)) {
             mess('comment_you_cannt_add', null, 'error', false);
             return;
         }
         if ((!longval($resid) && $resid) || (!longval($id) && $id) || (!$id && !$resid))
             return;
         if ($id)
-            $tpl->assign("no_js_comm", true);
+            tpl::o()->assign("no_js_comm", true);
         $type = $type ? $type : "torrents";
         $name = $name ? $name : "comment";
-        $tpl->assign("name", $name);
-        $tpl->assign("type", $type);
-        $tpl->assign("resid", longval($resid));
-        $tpl->display("comments/add.tpl");
+        tpl::o()->assign("name", $name);
+        tpl::o()->assign("type", $type);
+        tpl::o()->assign("resid", longval($resid));
+        tpl::o()->display("comments/add.tpl");
     }
 
     /**
      * Функция удаления комментария
-     * @global lang $lang
-     * @global users $users
-     * @global db $db
-     * @global etc $etc
      * @param int $id ID комментария
      * @return null
      * @throws EngineException 
      */
     public function delete($id) {
-        global $lang, $users, $db, $etc;
         if (!$this->state)
             return;
-        $lang->get('comments');
+        /* @var $etc etc */
+        $etc = n("etc");
+        lang::o()->get('comments');
         $id = longval($id);
-        $poster = $db->fetch_assoc($db->query('SELECT poster_id, type, toid
+        $poster = db::o()->fetch_assoc(db::o()->query('SELECT poster_id, type, toid
             FROM comments WHERE id=' . $id . ' LIMIT 1'));
         if (!$poster)
             throw new EngineException("comment_was_deleted");
-        if ($poster ['poster_id'] == $users->v('id') ||
-                ($poster['type'] == 'users' && $poster['toid'] == $users->v('id')))
-            $users->check_perms('del_comm');
+        if ($poster ['poster_id'] == users::o()->v('id') ||
+                ($poster['type'] == 'users' && $poster['toid'] == users::o()->v('id')))
+            users::o()->check_perms('del_comm');
         else
-            $users->check_perms('del_comm', 2);
-        $db->delete("comments", 'WHERE id = ' . $id . ' LIMIT 1');
+            users::o()->check_perms('del_comm', 2);
+        db::o()->delete("comments", 'WHERE id = ' . $id . ' LIMIT 1');
         $etc->add_res('comm', - 1, '', $poster ['poster_id']);
-        $db->no_error();
+        db::o()->no_error();
         $etc->add_res('comm', - 1, $poster ['type'], $poster ['toid']);
         log_add("deleted_comment", "user", array($id));
     }
 
     /**
      * Очистка комментариев в ресурсе
-     * @global users $users
-     * @global db $db
      * @param int $toid ID ресурса
      * @param bool $all очистка ВСЕХ комментариев?
      * @return null 
      */
     public function clear($toid, $all = false) {
-        global $users, $db;
         if (!$this->state)
             return;
         $toid = (int) $toid;
-        $users->check_perms('del_comm', '2');
+        users::o()->check_perms('del_comm', '2');
         $vars = null;
         if ($all)
-            $db->truncate_table('comments');
+            db::o()->truncate_table('comments');
         else {
-            $db->delete('comments', 'WHERE toid=' . $toid . ' AND type=' . $db->esc($this->type));
+            db::o()->delete('comments', 'WHERE toid=' . $toid . ' AND type=' . db::o()->esc($this->type));
             $vars = array($this->type, $toid);
         }
         log_add("cleared_comments", "user", $vars);
@@ -220,32 +211,20 @@ class comments extends pluginable_object {
 
     /**
      * Функция получения контента цитируемого комментария
-     * @global users $users
-     * @global db $db
-     * @global bbcodes $bbcodes
      * @param int $id ID комментария
      * @return string тело комментария
      */
     public function quote($id) {
-        global $users, $db, $bbcodes;
         if (!$this->state)
             return;
-        $users->check_perms('comment', 2, 2);
+        users::o()->check_perms('comment', 2, 2);
         $id = longval($id);
-        $comment = $db->fetch_assoc($db->query('SELECT text FROM comments WHERE id =' . $id . " LIMIT 1"));
-        return $bbcodes->format_text($comment['text'], "QUOTE");
+        $comment = db::o()->fetch_assoc(db::o()->query('SELECT text FROM comments WHERE id =' . $id . " LIMIT 1"));
+        return bbcodes::o()->format_text($comment['text'], "QUOTE");
     }
 
     /**
      * Функция сохранения комментария
-     * @global lang $lang
-     * @global db $db
-     * @global users $users
-     * @global captcha $captcha
-     * @global etc $etc
-     * @global config $config
-     * @global mailer $mailer
-     * @global plugins $plugins
      * @param string $title заголовок комментария
      * @param string $content содержание комментария
      * @param int $resid ID ресурса
@@ -254,42 +233,43 @@ class comments extends pluginable_object {
      * @throws EngineException 
      */
     public function save($title, $content, $resid = "", $id = "") {
-        global $lang, $db, $users, $captcha, $etc, $config, $mailer, $plugins;
         if (!$this->state)
             return;
         $type = $this->type;
-        $lang->get('comments');
+        lang::o()->get('comments');
         $id = longval($id);
+        /* @var $etc etc */
+        $etc = n("etc");
         if (!$id) {
-            $users->check_perms('comment', 2, 2);
-            if (!$users->v()) {
+            users::o()->check_perms('comment', 2, 2);
+            if (!users::o()->v()) {
                 $error = array();
                 ref($captcha)->check($error);
                 if ($error)
                     return implode("\n", $error);
             }
         } else {
-            $poster = $db->fetch_assoc($db->query('SELECT poster_id FROM comments
+            $poster = db::o()->fetch_assoc(db::o()->query('SELECT poster_id FROM comments
                 WHERE id = ' . $id . ' LIMIT 1'));
             if (!$poster)
                 throw new EngineException('comment_was_deleted');
-            if ($poster ['poster_id'] == $users->v('id'))
-                $users->check_perms('edit_comm');
+            if ($poster ['poster_id'] == users::o()->v('id'))
+                users::o()->check_perms('edit_comm');
             else
-                $users->check_perms('edit_comm', 2);
+                users::o()->check_perms('edit_comm', 2);
         }
         $type = $type ? $type : "torrents";
         $title = trim($title);
         $content = trim($content);
-        $poster = ($users->v('id') ? $users->v('id') : - 1);
+        $poster = (users::o()->v('id') ? users::o()->v('id') : - 1);
         if ((!longval($resid) && $resid) || (!longval($id) && $id) || (!$id && !$resid))
             throw new EngineException('comment_wrong_data');
-        if (!$content || mb_strlen($content) < $config->v('min_comm_symb'))
+        if (!$content || mb_strlen($content) < config::o()->v('min_comm_symb'))
             throw new EngineException('comment_small_text');
-        if (preg_match('/^(\s*' . trim($lang->v('comment_re')) . '\s*)+$/siu', $title))
+        if (preg_match('/^(\s*' . trim(lang::o()->v('comment_re')) . '\s*)+$/siu', $title))
             $title = "";
         if (!$id)
-            anti_flood('comments', 'toid=' . $resid . ' AND type=' . $db->esc($type), array('poster_id',
+            anti_flood('comments', 'toid=' . $resid . ' AND type=' . db::o()->esc($type), array('poster_id',
                 'edited_time'));
         $upd = array(
             "subject" => $title);
@@ -301,26 +281,28 @@ class comments extends pluginable_object {
             }
         }
         $upd["text"] = $content;
-        
+
         try {
-            $plugins->pass_data(array('update' => &$upd), true)->run_hook('comments_save');
+            plugins::o()->pass_data(array('update' => &$upd), true)->run_hook('comments_save');
         } catch (PReturn $e) {
             return $e->r();
         }
-        
+
         if (!$id) {
             $upd = array_merge($upd, array("posted_time" => time(),
                 "edited_time" => time(),
                 "poster_id" => $poster,
                 "toid" => $resid,
                 "type" => $type));
-            $db->insert($upd, "comments");
+            db::o()->insert($upd, "comments");
             $etc->add_res('comm');
-            $db->no_error();
+            db::o()->no_error();
             $etc->add_res('comm', 1, $type, $resid);
+            /* @var $mailer mailer */
+            $mailer = n("mailer");
             $mailer->change_type($type)->update($resid);
         } else {
-            $db->update($upd, "comments", 'WHERE id =' . $id . ' LIMIT 1');
+            db::o()->update($upd, "comments", 'WHERE id =' . $id . ' LIMIT 1');
             log_add("edited_comment", "user", array($id));
         }
         return true;
@@ -328,27 +310,23 @@ class comments extends pluginable_object {
 
     /**
      * Проверка двойного коммментария
-     * @global db $db
-     * @global config $config
-     * @global users $users
      * @param int $resid ID ресурса
      * @param string $content текст комментария
      * @return int ID повторяющегося комментария
      */
     public function check_double_comment($resid, &$content = null) {
-        global $db, $config, $users;
         if (!$this->state)
             return;
         $type = $this->type;
-        if (!$config->v('dc_prevent') || !$users->v('id'))
+        if (!config::o()->v('dc_prevent') || !users::o()->v('id'))
             return null;
         $resid = (int) $resid;
-        $ret = $db->fetch_assoc($db->query('SELECT id, poster_id, text, edited_time FROM comments
-            WHERE toid=' . $resid . ' AND type=' . $db->esc($type) . '
-            ' . ($config->v('dc_maxtime') ? ' AND edited_time>=' . (time() - $config->v('dc_maxtime')) : "") . '
+        $ret = db::o()->fetch_assoc(db::o()->query('SELECT id, poster_id, text, edited_time FROM comments
+            WHERE toid=' . $resid . ' AND type=' . db::o()->esc($type) . '
+            ' . (config::o()->v('dc_maxtime') ? ' AND edited_time>=' . (time() - config::o()->v('dc_maxtime')) : "") . '
             ORDER BY edited_time DESC LIMIT 1'));
-        if ($users->v('id') == $ret["poster_id"]) {
-            $dc_text = $this->parse_dc_text($config->v('dc_text'), $ret["edited_time"]);
+        if (users::o()->v('id') == $ret["poster_id"]) {
+            $dc_text = $this->parse_dc_text(config::o()->v('dc_text'), $ret["edited_time"]);
             $content = $ret["text"] . "\n" . $dc_text . "\n" . $content;
             return $ret["id"];
         }
@@ -357,32 +335,25 @@ class comments extends pluginable_object {
 
     /**
      * Замена переменных %time% и %time_after% в Anti-Double Comment тексте
-     * @global display $display
      * @param string $dc_text текст для парсинга
      * @param int $fromtime время постинга пред. комментария
      * @return string спарсенный текст
      */
     public function parse_dc_text($dc_text, $fromtime) {
-        global $display;
-        $dc_text = str_replace('%time%', $display->date(time(), 'ymdhis'), $dc_text);
+        $dc_text = str_replace('%time%', display::o()->date(time(), 'ymdhis'), $dc_text);
         if ($fromtime)
-            $dc_text = str_replace('%time_after%', $display->get_estimated_time($fromtime, time()), $dc_text);
+            $dc_text = str_replace('%time_after%', display::o()->get_estimated_time($fromtime, time()), $dc_text);
         return $dc_text;
     }
 
     /**
      * Отображение комментариев пользователя/пользователей
-     * @global db $db
-     * @global tpl $tpl
-     * @global config $config
-     * @global lang $lang
      * @param int $id ID пользователя
      * @param string $where доп. условие
      * @return null
      */
     public function usertable($id = null, $where = null) {
-        global $db, $tpl, $config, $lang;
-        $lang->get('profile');
+        lang::o()->get('profile');
         if (!$this->state) {
             disabled();
             return false;
@@ -392,22 +363,22 @@ class comments extends pluginable_object {
         if (!$id)
             $select .= ",c.poster_id";
         $where = ($id ? 'c.poster_id=' . $id : ($where ? $where : ''));
-        $comm_row = $db->query('SELECT ' . $select . (!$id ? ",u.username,u.group" : "") . '
+        $comm_row = db::o()->query('SELECT ' . $select . (!$id ? ",u.username,u.group" : "") . '
             FROM comments AS c
             ' . (!$id ? 'LEFT JOIN users AS u ON c.poster_id=u.id' : '') . '
             ' . ($where ? " WHERE " . $where : "") . '
             ORDER BY c.posted_time DESC
-            LIMIT ' . $config->v('last_profile_comments'));
+            LIMIT ' . config::o()->v('last_profile_comments'));
         $cr = array();
-        while ($rows = $db->fetch_assoc($comm_row)) {
-            $res = $db->query('SELECT ' . $this->title_cols[$rows ["type"]] . ' AS title
+        while ($rows = db::o()->fetch_assoc($comm_row)) {
+            $res = db::o()->query('SELECT ' . $this->title_cols[$rows ["type"]] . ' AS title
                 FROM ' . $rows ["type"] . ' WHERE id=' . $rows ["toid"] . ' LIMIT 1');
-            $res = $db->fetch_assoc($res);
+            $res = db::o()->fetch_assoc($res);
             $rows ["title"] = $res ["title"];
             $cr [] = $rows;
         }
-        $tpl->assign("comm_row", $cr);
-        $tpl->display("profile/last_comments.tpl");
+        tpl::o()->assign("comm_row", $cr);
+        tpl::o()->display("profile/last_comments.tpl");
     }
 
 }

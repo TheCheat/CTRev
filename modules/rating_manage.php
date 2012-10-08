@@ -14,6 +14,12 @@ if (!defined('INSITE'))
     die("Remote access denied!");
 
 class rating_manage {
+    
+    /**
+     * Объект рейтинга
+     * @var rating
+     */
+    protected $rating = null;
 
     /**
      * Инициализация рейтинга
@@ -23,6 +29,7 @@ class rating_manage {
         $act = $_GET ['act'];
         $type = $_POST ['type'];
         $toid = $_POST ['toid'];
+        $this->rating = n("rating");
         switch ($act) {
             case "vote" :
                 $value = $_POST ['value'];
@@ -40,9 +47,6 @@ class rating_manage {
 
     /**
      * Метод голосования
-     * @global rating $rating
-     * @global lang $lang
-     * @global users $users
      * @param string $type тип ресурса
      * @param int $toid ID ресурса
      * @param float $value значение голоса
@@ -51,21 +55,18 @@ class rating_manage {
      * @return null
      */
     protected function vote_to($type, $toid, $value, $stoid, $stype) {
-        global $rating, $lang, $users;
-        $error = $rating->change_type($type)->change_stype($stype)->vote($toid, $value, $stoid);
+        $error = $this->rating->change_type($type)->change_stype($stype)->vote($toid, $value, $stoid);
         die("OK!");
     }
 
     /**
      * Получение среднего значения рейтинга
-     * @global rating $rating
      * @param string $type тип ресурса
      * @param int $toid ID ресурса
      * @return null
      */
     protected function get($type, $toid) {
-        global $rating;
-        die($rating->change_type($type)->get_avg_rating($toid));
+        die($this->rating->change_type($type)->get_avg_rating($toid));
     }
 
 }

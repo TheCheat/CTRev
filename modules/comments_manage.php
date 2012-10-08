@@ -14,6 +14,12 @@ if (!defined('INSITE'))
     die("Remote access denied!");
 
 class comments_manage {
+    
+    /**
+     * Объект комментариев
+     * @var comments
+     */
+    protected $comments = null;
 
     /**
      * Инициализация управления комментариями
@@ -21,6 +27,7 @@ class comments_manage {
      */
     public function init() {
         $act = $_GET ['act'];
+        $this->comments = n("comments");
         switch ($act) {
             case "edit" :
                 $id = longval($_POST ['id']);
@@ -54,38 +61,30 @@ class comments_manage {
 
     /**
      * Метод редактирования комментария
-     * @global comments $comments
-     * @global lang $lang
-     * @global db $db
-     * @global users $users
-     * @global tpl $tpl
      * @param int $id ID комментария
      * @return null
      */
     protected function edit_form($id) {
-        global $comments, $lang, $db, $users, $tpl;
         $id = (int) $id;
-        $lang->get('comments');
-        $poster = $db->query('SELECT poster_id, subject, text FROM comments WHERE id=' . $id . ' LIMIT 1');
-        $poster = $db->fetch_assoc($poster);
+        lang::o()->get('comments');
+        $poster = db::o()->query('SELECT poster_id, subject, text FROM comments WHERE id=' . $id . ' LIMIT 1');
+        $poster = db::o()->fetch_assoc($poster);
         if (!$poster)
             return;
-        if ($poster ['poster_id'] == $users->v('id'))
-            $users->check_perms('edit_comm');
+        if ($poster ['poster_id'] == users::o()->v('id'))
+            users::o()->check_perms('edit_comm');
         else
-            $users->check_perms('edit_comm', 2);
+            users::o()->check_perms('edit_comm', 2);
         $name = "comment_" . $id;
-        $tpl->assign("subject", $poster ['subject']);
-        $tpl->assign("text", $poster ['text']);
-        $tpl->assign("id", $id);
-        $tpl->assign("name", $name);
-        $comments->add_form("", $name, $id);
+        tpl::o()->assign("subject", $poster ['subject']);
+        tpl::o()->assign("text", $poster ['text']);
+        tpl::o()->assign("id", $id);
+        tpl::o()->assign("name", $name);
+        $this->comments->add_form("", $name, $id);
     }
 
     /**
      * Метод сохранения комментария
-     * @global comments $comments
-     * @global lang $lang
      * @param string $title заголовок
      * @param string $content текст
      * @param int $resid ID ресурса
@@ -95,11 +94,10 @@ class comments_manage {
      * @throws EngineException
      */
     protected function save($title, $content, $resid, $type, $id) {
-        global $comments, $lang;
         check_formkey();
         $id = (int) $id;
         $resid = (int) $resid;
-        $ret = $comments->change_type($type)->save($title, $content, $resid, $id);
+        $ret = $this->comments->change_type($type)->save($title, $content, $resid, $id);
         if ($ret !== true)
             die($ret);
         die("OK!");
@@ -107,48 +105,40 @@ class comments_manage {
 
     /**
      * Метод отображения комментариев
-     * @global comments $comments
-     * @global lang $lang
      * @param int $resid ID ресурса
      * @param string $type тип комментариев
      * @return null
      */
     protected function show($resid, $type) {
-        global $comments, $lang;
         $resid = (int) $resid;
-        $lang->get('comments');
-        $comments->change_type($type)->display($resid, '', true);
+        lang::o()->get('comments');
+        $this->comments->change_type($type)->display($resid, '', true);
     }
 
     /**
      * Метод удаления комментария
-     * @global comments $comments
-     * @global lang $lang
      * @param int $id ID комментария
      * @return null
      * @throws EngineException
      */
     protected function delete($id) {
-        global $comments, $lang;
         check_formkey();
         $id = (int) $id;
-        $lang->get('comments');
+        lang::o()->get('comments');
         if (!$id)
             throw new EngineException;
-        $comments->delete($id);
+        $this->comments->delete($id);
         die("OK!");
     }
 
     /**
      * Метод цитирования комментария
-     * @global comments $comments
      * @param int $id ID комментария
      * @return null
      */
     protected function quote($id) {
-        global $comments;
         $id = (int) $id;
-        print($comments->quote($id));
+        print($this->comments->quote($id));
         die();
     }
 

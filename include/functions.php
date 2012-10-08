@@ -96,7 +96,6 @@ function s(&$string, $i, $val = null) {
 
 /**
  * Свой вывод ошибок
- * @global bittorrent $bt
  * @param int $errorno номер ошибки
  * @param string $errormsg текст ошибки
  * @param string $file файл с ошибкой
@@ -104,7 +103,6 @@ function s(&$string, $i, $val = null) {
  * @return null;
  */
 function myerror_report($errorno, $errormsg, $file, $line) {
-    global $bt;
     if (error_reporting() == 0) {
         return;
     }
@@ -143,8 +141,7 @@ function myerror_report($errorno, $errormsg, $file, $line) {
             break;
     }
     if (defined('INANNOUNCE')) {
-        if (!is_object($bt))
-            $bt = new fbenc();
+        $bt = new fbenc();
         $bt->err("[{$errtext}] №" . $errorno . ": " . $errormsg . "(" . $file . ":" . $line . ")");
     } else
         echo "<i>[{$errtext}]</i> №<b>" . $errorno . "</b>: " . $errormsg . " in <b>" . $file . "</b>, line <b>" . $line . "</b><br>";
@@ -152,7 +149,6 @@ function myerror_report($errorno, $errormsg, $file, $line) {
 
 /**
  * Функция отправки E-mail сообщения
- * @global config $config
  * @param string $subject тема сообщения
  * @param string $body текст сообщения
  * @param string|array $to кому
@@ -160,21 +156,20 @@ function myerror_report($errorno, $errormsg, $file, $line) {
  * @return null
  */
 function send_mail($subject, $body, $to, &$error = '') {
-    global $config;
     $to = (is_array($to) ? implode($to, ", ") : $to);
 //@header('Content-Type: text/plain');
-    if ($config->v('smtp_method') == "external") {
-        $params ['smtpServer'] = $config->v('smtp_host');
-        $params ['port'] = $config->v('smtp_port');
+    if (config::o()->v('smtp_method') == "external") {
+        $params ['smtpServer'] = config::o()->v('smtp_host');
+        $params ['port'] = config::o()->v('smtp_port');
         $params ['localdomain'] = $_SERVER ['SERVER_NAME'];
-        $params ['username'] = $config->v('smtp_user');
-        $params ['password'] = $config->v('smtp_password');
+        $params ['username'] = config::o()->v('smtp_user');
+        $params ['password'] = config::o()->v('smtp_password');
         $smtp = new smtp($to, $subject, $body, $params);
         $error = $smtp->endError;
         unset($smtp);
     } else {
-        $headers = 'From: ' . $config->v('contact_email') . "\r\n" .
-                'Reply-To: ' . $config->v('contact_email') . "\r\n" .
+        $headers = 'From: ' . config::o()->v('contact_email') . "\r\n" .
+                'Reply-To: ' . config::o()->v('contact_email') . "\r\n" .
                 'Content-Type: text/html; charset=utf-8' . "\r\n" .
                 'X-Mailer: PHP/' . phpversion();
         $error = @mail($to, $subject, $body, $headers);
@@ -218,8 +213,6 @@ function strip_magic_quotes($arr) {
 
 /**
  * Функция вывода сообщения
- * @global lang $lang
- * @global tpl $tpl
  * @global bool $ajax
  * @param string $lang_var языковая переменная, в соответствии с которой будет выводится на экран сообщение,
  * либо цельный текст.
@@ -233,7 +226,7 @@ function strip_magic_quotes($arr) {
  * @return null
  */
 function mess($lang_var, $vars = array(), $type = "error", $die = true, $title = false, $align = 'left', $no_image = false, $only_box = false) {
-    global $lang, $tpl, $ajax;
+    global $ajax;
     if (is_array($lang_var)) {
         if ($lang_var ['vars'])
             $vars = $lang_var ['vars'];
@@ -252,32 +245,32 @@ function mess($lang_var, $vars = array(), $type = "error", $die = true, $title =
         if ($lang_var ['lang_var'])
             $lang_var = $lang_var ['lang_var'];
     }
-    if ($die && !$tpl->displayed('overall_header.tpl') && !$tpl->displayed('admin/header.tpl') && !$only_box && !$ajax)
-        $tpl->display('overall_header.tpl');
+    if ($die && !tpl::o()->displayed('overall_header.tpl') && !tpl::o()->displayed('admin/header.tpl') && !$only_box && !$ajax)
+        tpl::o()->display('overall_header.tpl');
     $type = ($type ? $type : "error");
     $align = ($align ? $align : "left");
     if (!$title && $title !== 0)
-        $title = $lang->v($type);
-    elseif ($title && $lang->visset($title))
-        $title = $lang->v($title);
-    $tpl->assign('type', $type);
-    $tpl->assign('align', $align);
-    $tpl->assign('title', $title);
-    $tpl->assign('no_image', $no_image);
-    $lv = $lang->if_exists($lang_var);
+        $title = lang::o()->v($type);
+    elseif ($title && lang::o()->visset($title))
+        $title = lang::o()->v($title);
+    tpl::o()->assign('type', $type);
+    tpl::o()->assign('align', $align);
+    tpl::o()->assign('title', $title);
+    tpl::o()->assign('no_image', $no_image);
+    $lv = lang::o()->if_exists($lang_var);
     $vars = $vars ? (array) $vars : null;
     if (is_array($vars))
-        $tpl->assign('message', vsprintf($lv, $vars));
+        tpl::o()->assign('message', vsprintf($lv, $vars));
     else
-        $tpl->assign('message', $lv);
+        tpl::o()->assign('message', $lv);
     if ($die)
-        $tpl->assign("died_mess", true);
-    $tpl->display('message.tpl');
+        tpl::o()->assign("died_mess", true);
+    tpl::o()->display('message.tpl');
     if ($die && !$only_box && !$ajax) {
-        if ($tpl->displayed('overall_header.tpl') && !$tpl->displayed('overall_footer.tpl'))
-            $tpl->display('overall_footer.tpl');
-        elseif ($tpl->displayed('admin/header.tpl') && !$tpl->displayed('admin/footer.tpl'))
-            $tpl->display('admin/footer.tpl');
+        if (tpl::o()->displayed('overall_header.tpl') && !tpl::o()->displayed('overall_footer.tpl'))
+            tpl::o()->display('overall_footer.tpl');
+        elseif (tpl::o()->displayed('admin/header.tpl') && !tpl::o()->displayed('admin/footer.tpl'))
+            tpl::o()->display('admin/footer.tpl');
     }
     if ($die)
         die();
@@ -286,8 +279,6 @@ function mess($lang_var, $vars = array(), $type = "error", $die = true, $title =
 /**
  * Функция вывода ошибки(именно ошибки типа fatal error, а не сообщения об ошибке,
  * которое выводится через функцию mess)
- * @global lang $lang
- * @global tpl $tpl
  * @global bool $ajax
  * @param string|array $lang_var языковая переменная, в соответствии с коорой будет выводится на экран сообщение,
  * либо цельный текст, так же, может содержать в себе все остальные паремтры в качестве ассоциативного массива.
@@ -296,49 +287,47 @@ function mess($lang_var, $vars = array(), $type = "error", $die = true, $title =
  * @return null
  */
 function error($lang_var, $vars = array(), $title = false) {
-    global $lang, $tpl, $ajax;
+    global $ajax;
     ob_end_clean();
     if (!$title && !is_null($title))
-        $title = $lang->v('error');
-    elseif ($title && $lang->visset($title))
-        $title = $lang->v($title);
-    if ($lang->visset($lang_var)) {
+        $title = lang::o()->v('error');
+    elseif ($title && lang::o()->visset($title))
+        $title = lang::o()->v($title);
+    if (lang::o()->visset($lang_var)) {
         $vars = (!is_array($vars) && $vars ? array(
                     $vars) : $vars);
         if (is_array($vars))
-            $message = vsprintf($lang->v($lang_var), $vars);
+            $message = vsprintf(lang::o()->v($lang_var), $vars);
         else
-            $message = $lang->v($lang_var);
+            $message = lang::o()->v($lang_var);
     } else
         $message = $lang_var;
     if ($ajax) {
         print($title . ": " . $message);
         die();
     }
-    $tpl->assign('message', $message);
-    $tpl->assign('title', $title);
-    $tpl->display("error.tpl");
+    tpl::o()->assign('message', $message);
+    tpl::o()->assign('title', $title);
+    tpl::o()->display("error.tpl");
     die();
 }
 
 /**
  * Обрезаем XSS "примочки" у массивов
- * @global display $display
  * @param string|array $arr "обрезаемый" массив
  * @return string|array "обрезанный" массив
  */
 function xss_array_protect($arr) {
-    global $display;
     if (!$arr)
         return $arr;
     if (!is_array($arr) && !is_numeric($arr)) {
-        return $display->html_encode($arr);
+        return display::o()->html_encode($arr);
     } else {
         foreach ($arr as $key => $value) {
             if (is_array($value))
                 $arr [$key] = xss_array_protect($value);
             elseif (!is_numeric($value))
-                $arr [$key] = $display->html_encode($value);
+                $arr [$key] = display::o()->html_encode($value);
         }
         return $arr;
     }
@@ -442,13 +431,12 @@ function longval($string) {
  * Инициализация базового пути к сайту
  * @global string $BASEURL
  * @global string $PREBASEURL
- * @global config $config
  * @return null
  */
 function init_baseurl() {
-    global $BASEURL, $PREBASEURL, $config;
-    if ($config && $config->v('baseurl'))
-        $PREBASEURL = ($config->v('baseurl') == "/" ? "/" : $config->v('baseurl') . "/");
+    global $BASEURL, $PREBASEURL;
+    if (class_exists("config") && config::o()->v('baseurl'))
+        $PREBASEURL = (config::o()->v('baseurl') == "/" ? "/" : config::o()->v('baseurl') . "/");
     else
         $PREBASEURL = preg_replace('/^(.*)(\/|\\\)(.*?)$/siu', '\1/', $_SERVER['PHP_SELF']);
     $BASEURL = 'http://' . $_SERVER ['SERVER_NAME'] . $PREBASEURL;
@@ -456,32 +444,28 @@ function init_baseurl() {
 
 /**
  * Инициализация путей для Smarty
- * @global users $users
  * @global string $BASEURL
  * @global string $theme_path
- * @global tpl $tpl
  * @global string $_style
  * @return null
  */
 function init_spaths() {
-    global $users, $BASEURL, $theme_path, $tpl, $_style;
-    if ($users  && $_style == $users->get_theme() && $_style)
+    global $BASEURL, $theme_path, $_style;
+    if ($users && $_style == users::o()->get_theme() && $_style)
         return;
-    if ($users && $users->get_theme())
-        $_style = $users->get_theme();
+    if ($users && users::o()->get_theme())
+        $_style = users::o()->get_theme();
     else
         $_style = DEFAULT_THEME;
-    $tpl->left_delimiter = "[*";
-    $tpl->right_delimiter = "*]";
-    $tpl->set_theme($_style);
+    tpl::o()->left_delimiter = "[*";
+    tpl::o()->right_delimiter = "*]";
+    tpl::o()->set_theme($_style);
     $theme_path = $BASEURL . THEMES_PATH . '/' . $_style . '/';
-    $tpl->assign('theme_path', $theme_path);
+    tpl::o()->assign('theme_path', $theme_path);
 }
 
 /**
  * Функция получения ключа для передачи в форму, для защиты от CSRF
- * @global config $config
- * @global users $users
  * @param int $ajax 2, если в AJAX, возвращается, как элемент объекта(напр. fk:'1',)
  * 1 - если в AJAX, возвращается, как часть строки запроса(напр. ?fk=1&)
  * иначе - если элемент формы(напр. <input type='hidden' value='1' name='fk'>)
@@ -490,7 +474,6 @@ function init_spaths() {
  * @return string сформированное значение ключа
  */
 function get_formkey($ajax = null, $var = "fk") {
-    global $config, $users;
     if (is_array($ajax)) {
         if ($ajax["var"])
             $var = $ajax["var"];
@@ -502,8 +485,8 @@ function get_formkey($ajax = null, $var = "fk") {
     if (!$var || !is_string($var))
         $var = "fk";
     //// Перепереперепереперестраховался
-    $ret = md5($config->v('secret_key') . md5(session_id() . $config->v('secret_key')) .
-            $users->get_ip() . $users->v('id') . $_SERVER["HTTP_USER_AGENT"] . $var);
+    $ret = md5(config::o()->v('secret_key') . md5(session_id() . config::o()->v('secret_key')) .
+            users::o()->get_ip() . users::o()->v('id') . $_SERVER["HTTP_USER_AGENT"] . $var);
     if (is_null($ajax))
         return $ret;
     elseif ($ajax == 2)
@@ -516,15 +499,12 @@ function get_formkey($ajax = null, $var = "fk") {
 
 /**
  * Проверка ключа формы для защиты от CSRF
- * @global lang $lang
- * @global users $users
  * @param string $var имя ключа
  * @return bool true, если ключ верен
  * @throws EngineException 
  */
 function check_formkey($var = "fk") {
-    global $lang, $users;
-    if ($users->check_adminmode())
+    if (users::o()->check_adminmode())
         return true;
     if (!$var)
         $var = "fk";
@@ -536,11 +516,6 @@ function check_formkey($var = "fk") {
 
 /**
  * Анти-флуд проверка
- * @global lang $lang
- * @global db $db
- * @global config $config
- * @global display $display
- * @global users $users
  * @param string $table таблица
  * @param string $where условие
  * @param array $column столбец автора и времени постинга соотв.
@@ -548,20 +523,19 @@ function check_formkey($var = "fk") {
  * @throws EngineException 
  */
 function anti_flood($table, $where, $columns = array("poster_id", "posted_time")) {
-    global $db, $config, $display, $users;
-    if (!is_array($columns) || !$config->v('antispam_time'))
+    if (!is_array($columns) || !config::o()->v('antispam_time'))
         return;
     list($author, $time_var) = $columns;
-    $time = time() - $config->v('antispam_time');
+    $time = time() - config::o()->v('antispam_time');
     $lang_var = 'anti_flood_subj';
-    $uid = $users->v('id') ? $users->v('id') : -1;
-    $c = $db->query('SELECT `' . $time_var . '` FROM `' . $table . '` WHERE ' . ($where ? $where . " AND " : "") .
+    $uid = users::o()->v('id') ? users::o()->v('id') : -1;
+    $c = db::o()->query('SELECT `' . $time_var . '` FROM `' . $table . '` WHERE ' . ($where ? $where . " AND " : "") .
             '`' . $author . "`=" . $uid . "
                 AND `" . $time_var . "` >= " . $time . '
                 ORDER BY `' . $time_var . '` DESC LIMIT 1');
-    $c = $db->fetch_assoc($c);
+    $c = db::o()->fetch_assoc($c);
     if ($c) {
-        $intrvl_time = $display->get_estimated_time($config->v('antispam_time') + 1, time() - $c[$time_var]);
+        $intrvl_time = display::o()->get_estimated_time(config::o()->v('antispam_time') + 1, time() - $c[$time_var]);
         throw new EngineException($lang_var, $intrvl_time);
     }
 }
@@ -594,9 +568,6 @@ function array_merge_inside($input) {
 
 /**
  * Добавление логов
- * @global db $db
- * @global lang $lang
- * @global users $users
  * @param string $subject тема записи
  * @param string $type тип записи(user|admin|system|other)
  * @param array $vars массив переменных для vsprintf
@@ -604,8 +575,7 @@ function array_merge_inside($input) {
  * @return null
  */
 function log_add($subject, $type = "user", $vars = array(), $touid = null) {
-    global $db, $lang, $users;
-    $langs = $lang->get('logs', DEFAULT_LANG, false);
+    $langs = lang::o()->get('logs', DEFAULT_LANG, false);
     $subject = "log_" . $subject;
     if (!isset($langs[$subject]))
         $subject = 'NOSUBJECT_' . $subject;
@@ -627,10 +597,10 @@ function log_add($subject, $type = "user", $vars = array(), $touid = null) {
         "descr" => $descr,
         "type" => $type,
         "time" => time(),
-        "byuid" => $users->v('id'), // -1 - система
-        "byip" => $users->get_ip(),
+        "byuid" => users::o()->v('id'), // -1 - система
+        "byip" => users::o()->get_ip(),
         "touid" => (int) $touid);
-    $db->insert($contents, "logs");
+    db::o()->insert($contents, "logs");
 }
 
 /**
@@ -703,15 +673,13 @@ if (!function_exists('class_alias')) {
 
     /**
      * Очистка алиасов классов
-     * @global file $file
      * @return null
      */
     function clear_aliases() {
-        global $file;
         $content = '<?php
 // Autogenerated file. DO NOT EDIT
 ?>';
-        $file->write_file($content, CLASS_ALIASES);
+        file::o()->write_file($content, CLASS_ALIASES);
     }
 
 }
@@ -766,35 +734,46 @@ final class arr2obj {
 
 /**
  * Бонус за сидирование
- * @global etc $etc
- * @global config $config
  * @param int $uoffset загрузил за интервал апдейта
  * @param int $time время загрузки
  * @param int $user ID пользователя
  * @return null
  */
 function peer_bonus($uoffset, $time, $user) {
-    global $etc, $config;
     $d = 0;
-    if (!$config->v('announce_interval'))
+    if (!config::o()->v('announce_interval'))
         return;
-    $k = (time() - $time) / ($config->v('announce_interval') * 60);
+    $k = (time() - $time) / (config::o()->v('announce_interval') * 60);
     if ($k > 2)
         return; // что-то тут не то.
     if ($k > 1)
         $k = 1; // Слоупоки не приветствуются
-    if ($config->v('maxbonus_mb')) {
-        $d = $uoffset / ($config->v('maxbonus_mb') * 1024 * 1024);
+    if (config::o()->v('maxbonus_mb')) {
+        $d = $uoffset / (config::o()->v('maxbonus_mb') * 1024 * 1024);
         if ($d > 1)
             $d = 1;
         if ($d < 0)
             $d = 0;
     }
-    $bonus = $config->v('minbonus') + ($config->v('maxbonus') - $config->v('minbonus')) * $d;
+    $bonus = config::o()->v('minbonus') + (config::o()->v('maxbonus') - config::o()->v('minbonus')) * $d;
     $bonus = number_format($k * $bonus, 2);
-    if ($bonus < 1 || $bonus < $config->v('minbonus') * 0.1)
+    if ($bonus < 1 || $bonus < config::o()->v('minbonus') * 0.1)
         return; // Да ладно, всего 1 бонус, ну.. или чуть побольше, в зависимости от желаний администратора.
+    /* @var $etc etc */
+    $etc = n("etc");
     $etc->add_res('bonus', $bonus, "users", $user);
+}
+
+/**
+ * Получение объекта переопределённого класса
+ * @param string $class имя класса
+ * @param bool $name только имя?
+ * @return object объект класса
+ */
+function n($class, $name = false) {
+    if (!class_exists('plugins'))
+        return $name ? $class : new $class();
+    return plugins::o()->get_class($class, $name);
 }
 
 ?>
