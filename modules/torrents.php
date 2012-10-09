@@ -1,3 +1,4 @@
+
 <?php
 
 /**
@@ -159,8 +160,9 @@ class torrents {
         ob_clean();
         @header("Content-Type: application/xml");
         $cat_rows = array();
+        $cats = $this->cats;
         if ($cat)
-            $where = (ref($cats)->condition($cat, $cat_rows));
+            $where = ($cats->condition($cat, $cat_rows));
         else
             $where = "on_top='1'";
         $row = db::o()->query('SELECT t.title, t.posted_time, u.username,
@@ -352,13 +354,14 @@ class torrents {
             $data = $_GET;
         $id = (int) $id;
         $where = array();
+        $cats = $this->cats;
         if (!$id) {
             $cat = mb_strtolower(display::o()->strip_subpath($data ['cat']));
             $cat_rows = array();
             if (!$cat)
                 $where [] = "t.on_top='1'";
             else
-                $where [] = ref($cats)->condition($cat, $cat_rows);
+                $where [] = $cats->condition($cat, $cat_rows);
             if ($cat_rows)
                 $this->title = $cat_rows [0];
             $year = (int) $data ["year"];
@@ -599,7 +602,6 @@ class torrents {
             preg_match('/^' . mpc($purl) . '([0-9]+)\./', $l, $matches);
             $fi = $matches[1] + 1;
         }
-        ref($uploader);
         foreach ($sfile as $n => $tmp) {
             $s++;
             if ($s > $maxscreenshots)
@@ -674,7 +676,8 @@ class torrents {
             throw new EngineException('torrents_no_title');
         if (!is_null($cat) || !$id) {
             $mcats = $cat;
-            $cat = ref($cats)->save_selected($mcats);
+            $cats = $this->cats;
+            $cat = $cats->save_selected($mcats);
             if (!$cat)
                 throw new EngineException('torrents_no_selected_cat');
         }

@@ -311,7 +311,7 @@ class bittorrent extends announce_parser {
      * @return string инфохеш торрент файла
      */
     public function torrent_file($id, $filevar, &$filelist = null, &$filesize = null, &$announce_list = null) {
-        ref($uploader)->check($filevar, /* ссылка */ $tmp = 'torrents');
+        n("uploader")->check($filevar, /* ссылка */ $tmp = 'torrents');
         $t = $filevar["tmp_name"];
 
         list($dict, $idict) = $this->check_dict($t, $filelist, $filesize, $announce_list);

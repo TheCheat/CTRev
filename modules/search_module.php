@@ -140,7 +140,6 @@ class search_module {
                     "content");
                 break;
         }
-        ref($search);
         $regexp = true;
         if ($search_str)
             $where[] = $search->make_where($search_str, $columns, $regexp);
@@ -277,7 +276,6 @@ class search_module_ajax {
             'orderby');
         extract(rex($data, $data_params));
 
-        ref($search);
         if ($unco)
             $where [] = "confirmed <> '3'";
         if ($uname && ($cwhere = $search->like_where($uname, 'username')))

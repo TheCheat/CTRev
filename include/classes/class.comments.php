@@ -245,7 +245,7 @@ class comments extends pluginable_object {
             users::o()->check_perms('comment', 2, 2);
             if (!users::o()->v()) {
                 $error = array();
-                ref($captcha)->check($error);
+                n("captcha")->check($error);
                 if ($error)
                     return implode("\n", $error);
             }

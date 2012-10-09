@@ -137,7 +137,7 @@ class registration {
             if ($wbe)
                 $error [] = $wbe;
         }
-        ref($captcha)->check($error);
+        n("captcha")->check($error);
         if ($step >= 2) {
             $birthday = display::o()->make_time("birthday", "ymd");
             if (!$birthday || $birthday_year < 1930 || ($gender != "f" && $gender != "m"))
