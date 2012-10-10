@@ -153,7 +153,7 @@ class chat {
         $u = null;
         switch ($cmd) {
             case "private":
-                if (!$row['poster_id'] || mb_strtolower($row['username']) == mb_strtolower($p1))
+                if (!$row['poster_id'] || !$p1 || mb_strtolower($row['username']) == mb_strtolower($p1))
                     return;
                 if (!users::o()->perm('chat_sprivate') &&
                         users::o()->v('username_lower') != mb_strtolower($p1) &&
