@@ -30,7 +30,7 @@
     </table>
 [*else*] 
     [*assign var='lv' value='users_no_torrents'*]
-    [*if !isset($torrents_row[0].username)*]
+    [*if 'downm_no_torrents'|islang*]
         [*assign var='lv' value='downm_no_torrents'*]
     [*/if*]
     [*message lang_var=$lv type='info'*] 

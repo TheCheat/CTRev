@@ -34,7 +34,7 @@
     </table>
 [*else*] 
     [*assign var='lv' value='users_no_comments'*]
-    [*if !isset($comm_row[0].username)*]
+    [*if 'downm_no_comments'|islang*]
         [*assign var='lv' value='downm_no_comments'*]
     [*/if*]
     [*message lang_var=$lv type='info'*] 

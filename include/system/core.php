@@ -38,6 +38,7 @@ init_baseurl();
 lang::o()->change_folder(config::o()->v('default_lang'));
 init_spaths();
 tpl::o()->register_modifier('lang', array(lang::o(), 'v')); // языковая переменная
+tpl::o()->register_modifier('islang', array(lang::o(), 'visset')); // языковая переменная
 tpl::o()->register_modifier('config', array(config::o(), 'v')); // конфиг. переменная
 tpl::o()->register_modifier('perm', array(users::o(), "perm")); // проверка на права
 tpl::o()->register_modifier('user', array(users::o(), "v")); // поле юзера
