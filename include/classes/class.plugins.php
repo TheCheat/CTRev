@@ -1000,8 +1000,10 @@ final class plugins extends plugins_modifier {
      * @return plugins $this
      */
     public static function o() {
-        if (!self::$o)
+        if (!self::$o) {
+            self::$o = 1; // предотвращение зацикливания при вызове plugins::o() в плагине 
             self::$o = new self();
+        }
         return self::$o;
     }
 
