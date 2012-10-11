@@ -36,6 +36,9 @@ class categories {
             self::cats2array();
             cache::o()->write(self::$c);
         }
+        tpl::o()->register_modifier("print_cats", array(
+            $this,
+            'print_selected'));
     }
 
     /**
@@ -267,8 +270,8 @@ class categories {
     public function print_selected($cat_arr, $parents = null, $type = "torrents") {
         if (!$cat_arr)
             return;
-        if (!$type)
-            $type = 'torrents';
+        $this->change_type($type);
+        $type = $this->curtype;
         $html = '';
         if ($parents) {
             $html = '<b>&nbsp;&raquo;&nbsp;</b>';

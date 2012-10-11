@@ -91,7 +91,7 @@ final class allowed {
     /**
      * Добавление модуля/класса/переменных в список разрешённых
      * @param string $what что добавляем
-     * @param string $type тип
+     * @param string $type тип(modules|acp_modules|acp_pages|classes)
      * @return bool|allowed false, если не добавили, иначе - $this
      */
     public function add($what, $type = "modules") {

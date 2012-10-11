@@ -45,6 +45,7 @@ tpl::o()->assign('slbox_mbinited', false);
 // Для модификаторов нет описания, ибо проще посмотреть сами функции.
 $bbcodes = bbcodes::o();
 $input = input::o();
+$display = display::o();
 
 /* @var $blocks blocks */
 $blocks = n("blocks");
@@ -59,31 +60,31 @@ tpl::o()->register_modifier('uamp', 'w3c_amp_replace');
 tpl::o()->register_modifier('ue', 'urlencode');
 tpl::o()->register_modifier('gval', 'smarty_group_value');
 tpl::o()->register_modifier('cut', array(
-    display::o(),
+    $display,
     "cut_text"));
 tpl::o()->register_modifier('he', array(
-    display::o(),
+    $display,
     "html_encode"));
 tpl::o()->register_modifier("ft", array(
     $bbcodes,
     "format_text"));
 tpl::o()->register_modifier("ge", array(
-    display::o(),
+    $display,
     "get_estimated_time"));
 tpl::o()->register_modifier("ul", 'smarty_user_link');
 tpl::o()->register_modifier('gc', array(
-    display::o(),
+    $display,
     "group_color"));
 tpl::o()->register_modifier('gcl', 'smarty_group_color_link');
 tpl::o()->register_modifier("ua", array(
-    display::o(),
+    $display,
     "display_user_avatar"));
 tpl::o()->register_modifier("pf", "smarty_print_format");
 tpl::o()->register_modifier('cs', array(
-    display::o(),
+    $display,
     "convert_size"));
 tpl::o()->register_modifier("zodiac_sign", array(
-    display::o(),
+    $display,
     'get_zodiac_image'));
 tpl::o()->register_modifier("decus", array(
     users::o(),
@@ -91,9 +92,6 @@ tpl::o()->register_modifier("decus", array(
 tpl::o()->register_modifier("filetype", array(
     file::o(),
     'get_filetype'));
-tpl::o()->register_modifier("print_cats", array(
-    'categories',
-    'print_selected'));
 tpl::o()->register_modifier("is_writable", array(
     file::o(),
     'is_writable'));
@@ -109,7 +107,7 @@ tpl::o()->register_modifier('rnl', 'replace_newline');
 tpl::o()->register_function("atom_tag", "smarty_make_atom_tag");
 /*
   tpl::o()->register_modifier("parse_array", array(
-  display::o(),
+  $display,
   'parse_smarty_array')); */
 /**
  * @tutorial Вывод статистики запросов(query_stat)
@@ -179,10 +177,10 @@ tpl::o()->register_modifier("genlink", array(
  * string format формат вывода(ymd или ymdhis, к примеру)
  */
 tpl::o()->register_function("date", array(
-    display::o(),
+    $display,
     'date'));
 tpl::o()->register_modifier("date_time", array(
-    display::o(),
+    $display,
     'date'));
 /**
  * @tutorial Поле выбора даты(select_date)
@@ -303,10 +301,9 @@ tpl::o()->register_function("modsettings_create", array(
     'create'));
 unset($bbcodes);
 unset($input);
+unset($display);
 
-unset($comments);
-unset($rating);
-unset($polls);
+unset($blocks);
 /// Конец
 /// Обнаруживаем IE
 if (preg_match("/MSIE\\s*([0-9]+)/siu", $_SERVER ['HTTP_USER_AGENT'], $matches)) {
