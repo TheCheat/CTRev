@@ -50,7 +50,7 @@ class downm {
         $users = plugins::o()->get_module("user", false, true);
         tpl::o()->assign("sticky", (int) $sticky);
         tpl::o()->display('blocks/contents/dtorrents.tpl');
-        users::o()->show_last_torrents(null, ($sticky ? "sticky='1'" : ""));
+        $users->show_last_torrents(null, ($sticky ? "sticky='1'" : ""));
     }
 
     /**
