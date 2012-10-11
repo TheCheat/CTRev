@@ -10,8 +10,6 @@
  * @name 		Функции для Smarty
  * @version           	1.00
  */
-
-
 if (!defined('INSITE'))
     die('Remote access denied!');
 
@@ -19,12 +17,15 @@ if (!defined('INSITE'))
  * Аналог функции addslashes, но с возможностью убирания перевода на новую строку
  * @param string $string обрабатываемая строка
  * @param bool $cut_newline при true, экранируются переводы на новую строку
+ * @param bool $slbsl обратный слеш перед слешем(для W3C)
  * @return string экранированная строка
  */
-function slashes_smarty($string, $cut_newline = true) {
+function slashes_smarty($string, $cut_newline = true, $slbsl = true) {
     $string = addslashes($string);
     if ($cut_newline)
         $string = str_replace("\n", "\\" . "\n", $string);
+    if ($slbsl)
+        $string = str_replace("/", "\/", $string);
     return $string;
 }
 
