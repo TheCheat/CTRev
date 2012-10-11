@@ -891,6 +891,7 @@ final class plugins extends plugins_modifier {
         $r = '';
         if ($this->state) {
             try {
+                $class = get_class($obj);
                 $extended = (array) $this->init[$class][$m];
                 $c = count($extended);
                 for ($i = 0; $i < $c; $i++)
