@@ -17,7 +17,7 @@ final class globals {
 
     /**
      * Массив переменных
-     * @var array
+     * @var array $vars
      */
     private static $vars = array();
 

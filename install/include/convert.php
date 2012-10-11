@@ -326,7 +326,6 @@ class convert {
 
     /**
      * Выборка и вставка значений из таблицы
-     * @param string 
      * @param string $table имя таблицы вставки
      * @param string $orderby сортировка таблицы выборки
      * @param string $ftable имя таблицы выборки
