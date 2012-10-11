@@ -844,15 +844,9 @@ class display extends display_modifier {
      */
     public static function o() {
         if (!self::$o) {
-            $cn = 'display';
+            $cn = __CLASS__;
             $c = n($cn, true);
-            if ($c != $cn) {
-                if (is_callable(array($c, 'o')))
-                    self::$o = call_user_func(array($c, "o")); // static
-                else
-                    self::$o = new $c();
-            } else
-                self::$o = new self();
+            self::$o = new $c();
         }
         return self::$o;
     }
