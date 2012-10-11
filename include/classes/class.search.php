@@ -307,7 +307,9 @@ class search {
      * @return string условие для поиска
      */
     public function search_settings($area, $value, $column = 'settings') {
-        return '`' . $column . '` LIKE  "%' . db::o()->sesc($area) . ':' . db::o()->sesc($value) . "\n" . '%"';
+        $value = db::o()->sesc(str_replace("\n", '\n', $value));
+        $area = db::o()->sesc($area);
+        return '`' . $column . '` LIKE  "%' . $area . ':' . $value . "\n" . '%"';
     }
 
     /**
