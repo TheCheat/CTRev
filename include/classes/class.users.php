@@ -595,24 +595,6 @@ class users_modifier extends users_getter {
     }
 
     /**
-     * Декодирование настроек пользователя
-     * @param array $uservars параметры пользователя
-     * @param string $what декодируемый столбец
-     * @return array декодированные параметры пользователя
-     */
-    public function decode_settings($uservars = null, $what = "settings") {
-        if (!$uservars) {
-            $this->vars = $this->decode_settings($this->vars, $what);
-            return $this->vars;
-        }
-        $t = unserialize($uservars[$what]);
-        unset($uservars[$what]);
-        if (!is_array($t))
-            return $uservars;
-        return array_merge($uservars, $t);
-    }
-
-    /**
      * Десериализация поля пользователя
      * @param string $var имя поля
      * @return mixed значение
@@ -664,14 +646,47 @@ class users_modifier extends users_getter {
     }
 
     /**
+     * Декодирование настроек пользователя
+     * @param array $uservars параметры пользователя
+     * @param string $what декодируемый столбец
+     * @return array декодированные параметры пользователя
+     */
+    public function decode_settings($uservars = null, $what = "settings") {
+        if (!$uservars) {
+            $this->vars = $this->decode_settings($this->vars, $what);
+            return $this->vars;
+        }
+        $t = explode("\n", $uservars[$what]);
+        unset($uservars[$what]);
+        $c = count($t);
+        $a = array();
+        for ($i = 0; $i < $c; $i++) {
+            $tc = $t[$i];
+            $ap = mb_strpos($tc, ":");
+            $area = mb_substr($tc, 0, $ap);
+            if (!$area)
+                continue;
+            $a[$area] = str_replace('\n', "\n", mb_substr($tc, $ap + 1));
+        }
+        if (!is_array($a) || !$a)
+            return $uservars;
+        return array_merge($uservars, $a);
+    }
+
+    /**
      * Сериализация массива с настройками пользователя
      * @param array $settings массив настроек(show_age, website, icq,
      *      skype, country, town, name_surname)
      * @return string сериализованные настройки
      */
     public function make_settings($settings) {
-        if (is_array($settings))
-            return serialize($settings);
+        if (is_array($settings)) {
+            $r = '';
+            foreach ($settings as $area => $value)
+                if ($value)
+                    $r .= $area . ':' . str_replace("\n", '\n', $value) . "\n";
+            return $r;
+        }
         return "";
     }
 

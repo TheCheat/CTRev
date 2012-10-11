@@ -307,13 +307,7 @@ class search {
      * @return string условие для поиска
      */
     public function search_settings($area, $value, $column = 'settings') {
-        if (is_numeric($value))
-            $value = mpc(serialize($value));
-        else {
-            $value = str_replace('\*', '[^"]*', mpc($value));
-            $value = 's\:([0-9]+)\:"' . $value . '"\;';
-        }
-        return '`' . $column . '` RLIKE  ' . db::o()->esc(mpc(serialize($area)) . $value);
+        return '`' . $column . '` LIKE  "%' . db::o()->sesc($area) . ':' . db::o()->sesc($value) . "\n" . '%"';
     }
 
     /**
