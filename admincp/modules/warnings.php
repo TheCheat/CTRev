@@ -52,13 +52,11 @@ class warnings_man {
 
     /**
      * Сохранение предупреждения
-     * @global string $admin_file
      * @param array $data массив данных
-     * @param int $id ID предупреждения
      * @return null
      */
     protected function save($data) {
-        global $admin_file;
+        $admin_file = globals::g('admin_file');
         $id = (int) $data['id'];
         $cols = array(
             'user' => 'username',

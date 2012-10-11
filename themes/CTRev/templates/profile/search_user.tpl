@@ -14,7 +14,7 @@
             $form_data += "&orderby="+search_user_subpost;
         var si = 'search_status_icon';
         status_icon(si, 'loading_white');
-        jQuery.post("[*$BASEURL|sl*]index.php?"
+        jQuery.post("[*$baseurl|sl*]index.php?"
     [*if $admin_file*]
                 + '[*$admin_sid*]&'
         [*if $s_unco*]

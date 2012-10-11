@@ -15,7 +15,7 @@ if (!defined('INSITE'))
 
 final class lang {
     /**
-     * @const presplitter префикс для сплиттера
+     * Префикс для сплиттера
      */
 
     const presplitter = '{lang_splitted}';
@@ -34,8 +34,8 @@ final class lang {
 
     /**
      * Языковые переменные
-     * @tutorial protected, ибо предполагается, что неизменно в процессе работы. 
      * @var array $vars
+     * @note protected, ибо предполагается, что неизменно в процессе работы. 
      */
     private $vars = array();
 
@@ -199,7 +199,7 @@ final class lang {
     }
 
     /**
-     * Автоматически подгружать файл {@link $with} вместе с {@link $file}
+     * Автоматически подгружать соединяемый файл вместе с оригинальным
      * @param string $file оригинальный файл
      * @param string $with соединяемый файл
      * @return lang $this

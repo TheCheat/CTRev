@@ -8,13 +8,13 @@
         <div class="down_tabs cbb_tabs">
             <ul class="tabs-nav">      
                 [*if 'comment'|perm*]
-                    <li><a href="[*$BASEURL*]index.php?module=downm&amp;act=comments&amp;from_ajax=1"><span>[*'downm_menu_item_comments'|lang*]</span></a></li>
+                    <li><a href="[*$baseurl*]index.php?module=downm&amp;act=comments&amp;from_ajax=1"><span>[*'downm_menu_item_comments'|lang*]</span></a></li>
                 [*/if*]
                 [*if 'torrents'|perm*]
-                    <li><a href="[*$BASEURL*]index.php?module=downm&amp;act=torrents&amp;from_ajax=1"><span>[*'downm_menu_item_torrents'|lang*]</span></a></li>
+                    <li><a href="[*$baseurl*]index.php?module=downm&amp;act=torrents&amp;from_ajax=1"><span>[*'downm_menu_item_torrents'|lang*]</span></a></li>
                 [*/if*]
                 [*if 'profile'|perm*]
-                    <li class="tabs-selected"><a href="[*$BASEURL*]index.php?module=downm&amp;act=online&amp;from_ajax=1"><span>[*'downm_menu_item_online'|lang*]</span></a></li>
+                    <li class="tabs-selected"><a href="[*$baseurl*]index.php?module=downm&amp;act=online&amp;from_ajax=1"><span>[*'downm_menu_item_online'|lang*]</span></a></li>
                 [*/if*]
             </ul>
         </div>

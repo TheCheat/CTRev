@@ -34,7 +34,7 @@ final class file {
     private $cached = null;
 
     /**
-     * @const cachefile кеш-файл
+     * Кеш-файл
      */
 
     const cachefile = 'writable';

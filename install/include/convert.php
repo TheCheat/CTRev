@@ -23,20 +23,20 @@ db::o()->connect();
 
 class convert {
     /**
-     * @const fpath путь к файлу таблицы с расширением
+     * Путь к файлу таблицы с расширением
      */
 
     const fpath = 'install/database/%s.conv';
     /**
-     * @const fpath путь к файлу геттеров с расширением
+     * Путь к файлу геттеров с расширением
      */
     const gpath = 'install/include/convert/%s.php';
     /**
-     * @const pname имя плагина конвертации
+     * Имя плагина конвертации
      */
     const pname = 'convert_%s';
     /**
-     * @const stfield временное поле stats для макс. ID категорий
+     * Временное поле stats для макс. ID категорий
      */
     const stfield = 'convert_maxcatid';
 

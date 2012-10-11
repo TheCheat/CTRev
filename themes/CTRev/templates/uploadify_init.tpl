@@ -6,7 +6,7 @@ src="[*$theme_path*]js/uploader/jquery.uploadify.js"></script>
     jQuery(document).ready(function ($) {
         $("#uploadify_[*$postfix*]").uploadify({
             'uploader'       : '[*$theme_path|sl*]js/uploader/uploadify.swf',
-            'script'         : '[*$BASEURL|sl*]index.php',
+            'script'         : '[*$baseurl|sl*]index.php',
             'scriptData'	 : {[*$scriptData*]},
             'method'		 : 'GET',
             'cancelImg'      : '[*$theme_path|sl*]engine_images/cancel.png',

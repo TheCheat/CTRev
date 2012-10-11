@@ -241,14 +241,13 @@ class input {
 
     /**
      * Функция вывода списка стран\одной страны
-     * @global string $BASEURL
      * @param array $country выводимая страна(не для списка)(вкл. в себя name и image)
      * @param string $name имя для списка стран
      * @param int $current ID данной страны
      * @return string HTML код выборки списка стран\данной страны
      */
     public function select_countries($country = '', $name = 'country', $current = 0) {
-        global $BASEURL;
+        $baseurl = globals::g('baseurl');
         if (is_array($country)) {
             $name = $country ['name'];
             $current = $country ['current'];
@@ -256,7 +255,7 @@ class input {
         }
         $name = ($name ? $name : 'country');
         $select = "";
-        $show_flag = "show_flag_image('" . addslashes($BASEURL . config::o()->v('countries_folder') . "/") . "',
+        $show_flag = "show_flag_image('" . addslashes($baseurl . config::o()->v('countries_folder') . "/") . "',
 			'#" . addslashes("country_" . $name) . "',
 			'" . addslashes("flag_image_" . $name) . "');";
         $select .= "<script type=\"text/javascript\">
@@ -279,7 +278,7 @@ class input {
         }
         $select .= "</select>";
         $select = "<span id=\"flag_image_" . $name . "\" style=\"display:none;\">
-            <img src=\"" . $BASEURL . config::o()->v('countries_folder') . "/" . ($this_i ? $this_i : $image) . "\"
+            <img src=\"" . $baseurl . config::o()->v('countries_folder') . "/" . ($this_i ? $this_i : $image) . "\"
                 height=\"20\" alt=\"\" align=\"left\"></span>" . $select;
         return $select;
     }

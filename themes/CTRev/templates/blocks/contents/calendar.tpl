@@ -28,7 +28,7 @@ src="[*$theme_path*]/js/jquery.jCal.animate.js"></script>
                 //    calendar_inited = true;
                 //}
                 jQuery('#calendar_loader').show();
-                jQuery.post("[*$BASEURL|sl*]index.php?module=ajax_index&from_ajax=1&act=calendar_torrents", {"year":days.getFullYear(), "month":days.getMonth()+1}, function (data) {
+                jQuery.post("[*$baseurl|sl*]index.php?module=ajax_index&from_ajax=1&act=calendar_torrents", {"year":days.getFullYear(), "month":days.getMonth()+1}, function (data) {
                     jQuery("#to_append_new_days").empty();
                     jQuery("#to_append_new_days").append(data);
                     $('#block_calendar').jCal(jCalData);

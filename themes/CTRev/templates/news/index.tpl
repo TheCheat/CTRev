@@ -14,7 +14,7 @@
         if (!confirm('[*'news_are_you_sure_to_delete'|lang*]'))
         return;
         var fk = {[*fk ajax=2*]};
-        jQuery.post('[*$BASEURL*]index.php?module=news&act=delete&from_ajax=1&id='+$id, fk, function() {
+        jQuery.post('[*$baseurl*]index.php?module=news&act=delete&from_ajax=1&id='+$id, fk, function() {
             jQuery('#news_id'+$id).fadeOut(300, function () {
                 jQuery(this).remove()
             });

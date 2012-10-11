@@ -1,8 +1,8 @@
-<link rel="shortcut icon" href="[*$BASEURL*]favicon.png" type="image/png">
+<link rel="shortcut icon" href="[*$baseurl*]favicon.png" type="image/png">
 <meta http-equiv="Content-Language" content="ru-en">
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <script type="text/javascript">
-baseurl = '[*$BASEURL|sl*]';
+baseurl = '[*$baseurl|sl*]';
 theme_path = '[*$theme_path|sl*]';
 loading_text = '[*'loading'|lang|sl*]';
 success_text = '[*'success'|lang|sl*]';

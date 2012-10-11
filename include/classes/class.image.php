@@ -236,7 +236,7 @@ class image {
      * @param int $maxheight макс. высота изображения
      * @param int $curwidth текущая ширина изображения
      * @param int $curheight текущая высота изображения
-     * @param string $tmp_name имя файла, если оно отличается от имени, указанном в {@link $filepath}
+     * @param string $tmp_name имя файла, если оно отличается от имени, указанном в пути к файлу
      * @param string $new_name путь, куда будет сохраняться уменьшенное изображение
      * @return bool true, в случае успешного выполения функции
      * @throws EngineException 

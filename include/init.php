@@ -10,7 +10,7 @@
  * @name 		Инициализация функций и модификаторов для Smarty,
  * а так же защита от XSS
  * @version           	1.00
- * @tutorial            перед отправкой AJAX формы с input_form, необходимо первоначально вызвать make_tobbcode();
+ * @attention            перед отправкой AJAX формы с input_form, необходимо первоначально вызвать make_tobbcode();
  */
 if (!defined('INSITE'))
     die('Remote access denied!');
@@ -98,7 +98,7 @@ tpl::o()->register_modifier("is_writable", array(
 tpl::o()->register_modifier('rnl', 'replace_newline');
 
 /**
- * @tutorial Создание тега для atom:id(для торрентов)(atom_tag)
+ * @note Создание тега для atom:id(для торрентов)(atom_tag)
  * params:
  * int time время постинга
  * string title заголовок
@@ -110,11 +110,11 @@ tpl::o()->register_function("atom_tag", "smarty_make_atom_tag");
   $display,
   'parse_smarty_array')); */
 /**
- * @tutorial Вывод статистики запросов(query_stat)
+ * @note Вывод статистики запросов(query_stat)
  */
 tpl::o()->register_function("query_stat", "query_stat");
 /**
- * @tutorial Получение ключа формы(fk)
+ * @note Получение ключа формы(fk)
  * params:
  * int ajax 2, если в AJAX, возвращается, как элемент объекта(напр. fk:'1',)
  * 1 если в AJAX, возвращается, как часть строки запроса(напр. ?fk=1&)
@@ -124,7 +124,7 @@ tpl::o()->register_function("query_stat", "query_stat");
  */
 tpl::o()->register_function("fk", "get_formkey");
 /**
- * @tutorial Отображение блоков(display_blocks)
+ * @note Отображение блоков(display_blocks)
  * params:
  * string pos положение
  */
@@ -132,7 +132,7 @@ tpl::o()->register_function("display_blocks", array(
     $blocks,
     'display'));
 /**
- * @tutorial Вывод сообщения на экран(message)
+ * @note Вывод сообщения на экран(message)
  * params:
  * string lang_var языковая переменная, в соответствии с которой будет выводится на экран сообщение,
  * либо цельный текст.
@@ -146,7 +146,7 @@ tpl::o()->register_function("display_blocks", array(
  */
 tpl::o()->register_function('message', 'message');
 /**
- * @tutorial BBCode форма для ввода текста(input_form)
+ * @note BBCode форма для ввода текста(input_form)
  * params:
  * string name имя формы
  * string text текст формы
@@ -155,12 +155,12 @@ tpl::o()->register_function("input_form", array(
     $bbcodes,
     'input_form'));
 /**
- * @tutorial Генерация ЧПУ(gen_link)
+ * @note Генерация ЧПУ(gen_link)
  * params:
  * string module имя модуля
  * bool page является ли указанный модуль ссылкой на документ?
  * bool no_end нужно ли в конец добавлять .html/index.html?
- * bool nobaseurl не добавлять в начало $BASEURL
+ * bool nobaseurl не добавлять в начало $baseurl
  * bool slashes экранирует результат для JavaScript, иначе & заменяется на &amp;
  * mixed параметры ссылки
  */
@@ -171,7 +171,7 @@ tpl::o()->register_modifier("genlink", array(
     furl::o(),
     'construct'));
 /**
- * @tutorial Форматирование времени UNIXTIME в человекопонятный формат(date)
+ * @note Форматирование времени UNIXTIME в человекопонятный формат(date)
  * params:
  * int time время
  * string format формат вывода(ymd или ymdhis, к примеру)
@@ -183,7 +183,7 @@ tpl::o()->register_modifier("date_time", array(
     $display,
     'date'));
 /**
- * @tutorial Поле выбора даты(select_date)
+ * @note Поле выбора даты(select_date)
  * params:
  * string name префикс полей
  * string type тип формы(ymd, ymdhis, к примеру)
@@ -195,7 +195,7 @@ tpl::o()->register_function("select_date", array(
     "select_date"));
 
 /**
- * @tutorial Поле выбора часового пояса(select_gmt)
+ * @note Поле выбора часового пояса(select_gmt)
  * params:
  * string name имя поля
  * float current текущее значение
@@ -204,7 +204,7 @@ tpl::o()->register_function("select_gmt", array(
     $input,
     'select_gmt'));
 /**
- * @tutorial Поле выбора страны(select_countries)
+ * @note Поле выбора страны(select_countries)
  * params:
  * array country выводимая страна(не для списка)(вкл. в себя name и image)
  * string name имя поля
@@ -214,12 +214,12 @@ tpl::o()->register_function("select_countries", array(
     $input,
     'select_countries'));
 /**
- * @tutorial Получение кол-во используемой памяти(get_memory_usage)
+ * @note Получение кол-во используемой памяти(get_memory_usage)
  */
 tpl::o()->register_function("get_memory_usage", "smarty_get_memory_usage");
 
 /**
- * @tutorial Поле выбора дирректорий(select_folder)
+ * @note Поле выбора дирректорий(select_folder)
  * params:
  * string name имя поля
  * string folder имя дирректории в корне
@@ -233,7 +233,7 @@ tpl::o()->register_function("select_folder", array(
     $input,
     'select_folder'));
 /**
- * @tutorial Поле выбора групп(select_groups)
+ * @note Поле выбора групп(select_groups)
  * params:
  * string name имя поля
  * int current текущее значение
@@ -245,7 +245,7 @@ tpl::o()->register_function("select_groups", array(
     $input,
     'select_groups'));
 /**
- * @tutorial Поле выбора интервала подписок(select_mailer)
+ * @note Поле выбора интервала подписок(select_mailer)
  * params:
  * string name имя поля
  * int current текущее значение
@@ -254,7 +254,7 @@ tpl::o()->register_function("select_mailer", array(
     $input,
     'select_mailer'));
 /**
- * @tutorial Поле выбора периода(select_periods)
+ * @note Поле выбора периода(select_periods)
  * params:
  * string name имя поля
  * int current текущее значение
@@ -263,14 +263,14 @@ tpl::o()->register_function("select_periods", array(
     $input,
     'select_periods'));
 /**
- * @tutorial Генератор пароля(passgen)
+ * @note Генератор пароля(passgen)
  * params:
  * string pname имя поля пароля
  * string paname имя поля повтора пароля 
  */
 tpl::o()->register_function("passgen", 'smarty_passgen');
 /**
- * @tutorial Поле выбора категорий(select_categories)
+ * @note Поле выбора категорий(select_categories)
  * params:
  * string name имя поля
  * int size размер поля(если больше 1 множественная выборка)
@@ -281,7 +281,7 @@ tpl::o()->register_function("select_categories", array(
     $input,
     'select_categories'));
 /**
- * @tutorial Простой селектор(simple_selector)
+ * @note Простой селектор(simple_selector)
  * params:
  * string name имя поля
  * array values массив значений
@@ -294,7 +294,7 @@ tpl::o()->register_function("simple_selector", array(
     $input,
     'simple_selector'));
 /**
- * @tutorial Создание настроек для модуля(modsettings_create)
+ * @note Создание настроек для модуля(modsettings_create)
  */
 tpl::o()->register_function("modsettings_create", array(
     modsettings::o(),
@@ -328,8 +328,7 @@ if (function_exists("get_magic_quotes_gpc") && get_magic_quotes_gpc()) {
     }
 }
 // INCLUDE BACK-END
-$POST = $_POST;
-$GET = $_GET;
+globals::s('POST', $_POST);
 $_POST = xss_array_protect($_POST);
 $_GET = xss_array_protect($_GET);
 $_REQUEST = $_POST + $_GET;

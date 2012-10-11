@@ -42,7 +42,7 @@
             });
         }
         function post_data($id, $num) {
-            jQuery.post("[*$BASEURL|sl*]/index.php?module=ajax_index&act=children_cat&from_ajax=1", {
+            jQuery.post("[*$baseurl|sl*]/index.php?module=ajax_index&act=children_cat&from_ajax=1", {
                 'id':$id,
                 'num':$num,
                 'type':'[*$cattype|sl*]'}, function (data) {

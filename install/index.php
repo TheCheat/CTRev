@@ -15,6 +15,7 @@ if (!defined('INSITE'))
 
 define('ININSTALL', true);
 include "include/functions.php";
+include "include/system/globals.php";
 include "include/system/php_config.php";
 include "include/classes/class.file.php";
 include "include/classes/class.db.php";

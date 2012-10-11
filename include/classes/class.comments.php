@@ -52,7 +52,7 @@ class comments extends pluginable_object {
         $this->access_var('title_cols', PVAR_ADD);
         $this->access_var('allowed_types', PVAR_ADD);
         /**
-         * @tutorial Отображение комментариев(display_comments)
+         * @note Отображение комментариев(display_comments)
          * params: 
          * int resid ID ресурса
          * string type тип ресурса

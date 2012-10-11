@@ -17,9 +17,9 @@ final class config {
 
     /**
      * Конфиг. переменные
-     * @tutorial protected, ибо предполагается, что неизменно в процессе работы.
-     * Ибо это данные из БД и для изменения юзать {@see config::add()} и {@see config::set()}
      * @var array $vars
+     * @note protected, ибо предполагается, что неизменно в процессе работы.
+     * Ибо это данные из БД и для изменения юзать {@see config::add()} и {@see config::set()}
      */
     private $vars = array();
 

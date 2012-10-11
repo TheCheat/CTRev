@@ -15,7 +15,7 @@ if (!defined('INSITE'))
 
 final class captcha implements captcha_interface {
     /**
-     * @const time время очистки капч(в сек.)
+     * Время очистки капч(в сек.)
      */
 
     const time = 1800;

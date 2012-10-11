@@ -49,7 +49,7 @@
                         [*if !$curuser*]
                             <div class='loginbox_unlogged'>
                                 <form method="post" id="small_login_form"
-                                      action="javascript:login('[*$BASEURL|sl*]/index.php?module=login&amp;from_ajax=1', '#small_login_form', '#small_status_icon');">
+                                      action="javascript:login('[*$baseurl|sl*]/index.php?module=login&amp;from_ajax=1', '#small_login_form', '#small_status_icon');">
                                     <input type='text' class='styled_login autoclear_fields' 
                                            name="login" value="[*'login'|lang*]" id="small_login">
                                     <input type='password' class='styled_password autoclear_fields' 
@@ -98,9 +98,9 @@
                 </div>
                 <div class='header_menu'>
                     <ul class='header_menu_buttons'>
-                        <li><a href="[*$BASEURL*]"><img src="[*$theme_path*]images/menu/home.png" alt="[*'links_index'|lang*]">&nbsp;[*'links_index'|lang*]</a></li>
+                        <li><a href="[*$baseurl*]"><img src="[*$theme_path*]images/menu/home.png" alt="[*'links_index'|lang*]">&nbsp;[*'links_index'|lang*]</a></li>
                                 [*if 'acp'|perm*]
-                            <li><a href="[*$BASEURL*]admincp.php"><img
+                            <li><a href="[*$baseurl*]admincp.php"><img
                                         src="[*$theme_path*]images/menu/acp.png" alt="[*'links_admincp'|lang*]">&nbsp;[*'links_admincp'|lang*]</a></li>
                                 [*/if*] 
                                 [*if 'torrents'|perm*]

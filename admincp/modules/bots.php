@@ -17,11 +17,10 @@ class bots_man {
 
     /**
      * Инициализация модуля ботов
-     * @global array $POST
      * @return null
      */
     public function init() {
-        global $POST;
+        $POST = globals::g('POST');
         lang::o()->get('admin/bots');
         $act = $_GET["act"];
         switch ($act) {
@@ -66,13 +65,12 @@ class bots_man {
 
     /**
      * Сохранение бота
-     * @global string $admin_file
      * @param array $data массив данных
      * @return null
      * @throws EngineException 
      */
     protected function save($data) {
-        global $admin_file;
+        $admin_file = globals::g('admin_file');
         $cols = array(
             'id',
             'name',

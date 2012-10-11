@@ -8,7 +8,7 @@
  * @copyright         	(c) 2008-2012, Cyber-Team
  * @author 	  	The Cheat <cybertmdev@gmail.com>
  * @name                Класс подписок
- * @tutorial            Подписка только для данной категории, на дочерние не действует.
+ * @note            Подписка только для данной категории, на дочерние не действует.
  * @version           	1.00
  */
 if (!defined('INSITE'))

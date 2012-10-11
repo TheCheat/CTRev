@@ -136,13 +136,12 @@ class blocks_man {
 
     /**
      * Сохранение блока
-     * @global string $admin_file
      * @param array $data массив данных блока
      * @return null
      * @throws EngineException 
      */
     protected function save($data) {
-        global $admin_file;
+        $admin_file = globals::g('admin_file');
         $cols = array('title',
             'file',
             'type',

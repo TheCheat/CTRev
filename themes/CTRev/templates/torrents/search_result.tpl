@@ -3,7 +3,7 @@
         function change_spage(to_page) {
             var $post = '[*$post|sl*]';
             var $get = '[*$get|sl*]';
-            jQuery.post('[*$BASEURL|sl*]index.php?module=search_module&nno=1&from_ajax=1&page='+to_page+
+            jQuery.post('[*$baseurl|sl*]index.php?module=search_module&nno=1&from_ajax=1&page='+to_page+
                 ($get?'&'+$get:''), $post, function (data) {
                 jQuery("#to_update_page").empty();
                 jQuery("#to_update_page").append(data);

@@ -22,7 +22,7 @@
                     <div class="right_shadow">
                         <div class="body_div">
                             <div id="top-menu" class="transperent-container">
-                                <a href="[*$BASEURL*]" class="top_home_image">
+                                <a href="[*$baseurl*]" class="top_home_image">
                                     <img src="[*$theme_path*]images/menu/home.png"
                                          alt="[*'to_index_page'|lang*]" title="[*'to_index_page'|lang*]">
                                 </a>

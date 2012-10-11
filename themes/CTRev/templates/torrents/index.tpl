@@ -1,7 +1,7 @@
 [*if !$from_edit*]
     <script type="text/javascript">
         init_tablesorter();
-        $pageurl = '[*$BASEURL|sl*]index.php?module=torrents&from_ajax=1&[*$add_url|sl*]&page=';
+        $pageurl = '[*$baseurl|sl*]index.php?module=torrents&from_ajax=1&[*$add_url|sl*]&page=';
         [*if !$from_ajax*]
             fk_ajax = '?[*fk ajax=1*]';
             full_torrents = '[*if $full_torrents*]1[*else*]0[*/if*]';

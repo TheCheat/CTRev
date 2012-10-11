@@ -75,12 +75,11 @@ class EngineException extends Exception {
 
     /**
      * "Ловля" исключений по-умолчанию
-     * @global bool $ajax
      * @param bool $eajax ручная настройка из Ajax или нет
      * @return null 
      */
     public function defaultCatch($eajax = null) {
-        global $ajax;
+        $ajax = globals::g('ajax');
         $eajax = is_null($eajax) ? $ajax : $eajax;
         if ($eajax)
             die($this->getEMessage());
@@ -90,9 +89,7 @@ class EngineException extends Exception {
 
 }
 
-/**
- * @usage пустой класс
- */
+// пустой класс
 class empty_class {
 
     /**

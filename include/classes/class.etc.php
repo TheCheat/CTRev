@@ -25,7 +25,7 @@ class etc {
     protected $signed_res = false;
 
     /**
-     * Значение для {@link $count}, когда обнуляется счётчик 
+     * Значение для параметра кол-ва, когда обнуляется счётчик 
      * @see etc::add_res()
      */
 
@@ -106,17 +106,16 @@ class etc {
 
     /**
      * Отправка сообщения с подстановкой переменных
-     * @global string $BASEURL
      * @param string|array $email E-mail пользователя
      * @param string $shablon шаблон сообщения
      * @param array $vars массив переменных
      * @return string|int статус отыслки или список ошибок
      */
     public function send_mail($email, $shablon, $vars = array()) {
-        global $BASEURL;
+        $baseurl = globals::g('baseurl');
         lang::o()->get("mail_shablons");
         $body = lang::o()->v("mail_body_" . $shablon);
-        $vars['siteurl'] = $BASEURL;
+        $vars['siteurl'] = $baseurl;
         $vars['sitename'] = $vars['site_title'] = config::o()->v('site_title');
         foreach ($vars as $key => $value)
             $body = str_replace('$' . $key, $value, $body);

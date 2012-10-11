@@ -5,7 +5,7 @@
                 <center><strong>[*'register_user_agree'|lang*]</strong> <br>
                     Настоящее Соглашение определяет условия использования 
                     Пользователями материалов и сервисов
-                    сайта <a href="[*$BASEURL*]">[*$BASEURL*]</a> (далее — «Сайт»).</center>
+                    сайта <a href="[*$baseurl*]">[*$baseurl*]</a> (далее — «Сайт»).</center>
                 <br>
                 <ol>
                     <li><b>Общие условия</b><br>

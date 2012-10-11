@@ -67,7 +67,7 @@
                             <tr>
                                 <td width='16'><span class="sortable_icon"></span></td>  
                                 <td width='90'>
-                                    <img src="[*$BASEURL*][*'smilies_folder'|config*]/[*$image*]"
+                                    <img src="[*$baseurl*][*'smilies_folder'|config*]/[*$image*]"
                                          alt="[*$row[1]*]" title="[*$row[1]*]" 
                                          class=' cornerText preview_smilie clickable'
                                          onclick='reload_smilie_image(this);'>

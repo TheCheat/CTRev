@@ -9,7 +9,7 @@
         <script type="text/javascript">init_corners();</script>
         <meta http-equiv="Content-Language" content="ru-en">
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-        <link rel="shortcut icon" href="[*$BASEURL*]favicon.png"
+        <link rel="shortcut icon" href="[*$baseurl*]favicon.png"
               type="image/x-icon">
     </head>
     <body>

@@ -29,7 +29,7 @@ class main {
         'install/lock');
 
     /**
-     * @const need_filesize необходимый объём загружаемых файлов(в МБ.)
+     * Необходимый объём загружаемых файлов(в МБ.)
      */
 
     const need_filesize = 5;
@@ -178,8 +178,8 @@ class main {
     }
 
     /**
-     * Конвертация объёма данных вида \d(K|M|G|T) в \d({@link $to}), 
-     * если {@link $to} больше входного значения
+     * Конвертация объёма данных вида %число%(K|M|G|T) в %число%(куда конвертируем), 
+     * если конвертируемый объём больше входного значения
      * @param string $v объём данных
      * @param string $to куда конвертируем
      * @return string значение
@@ -198,10 +198,10 @@ class main {
     }
 
     /**
-     * Сравнение объёма данных вида \d(K|M|G)
+     * Сравнение объёма данных вида %число%(K|M|G|T)
      * @param string $v1 певрое значение
      * @param string $v2 второе значение
-     * @return bool true, если {@link $v1} больше или равно {@link $v2}
+     * @return bool true, если первое значение больше или равно второму
      */
     public function check_filesize($v1, $v2) {
         $to1 = $v2[strlen($v2) - 1];
@@ -269,14 +269,14 @@ class main {
 
     /**
      * Отображение конфигурации сайта
-     * @global string $PREBASEURL
      * @return null 
      */
     protected function show_config() {
-        global $PREBASEURL;
+        $prebaseurl = globals::g('prebaseurl');
         init_baseurl();
-        $PREBASEURL = $PREBASEURL == "/" ? "/" : rtrim($PREBASEURL, '/');
-        tpl::o()->assign('baseurl', $PREBASEURL);
+        $prebaseurl = $prebaseurl == "/" ? "/" : rtrim($prebaseurl, '/');
+        tpl::o()->assign('baseurl', $prebaseurl);
+        globals::s('prebaseurl', $prebaseurl);
         tpl::o()->display('config');
     }
 

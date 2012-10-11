@@ -17,19 +17,19 @@ class users_checker {
 
     /**
      * Данная группа юзера
-     * @tutorial protected, ибо предполагается, что неизменно в процессе работы. 
+     * @var array $perms
+     * @note protected, ибо предполагается, что неизменно в процессе работы. 
      * Ибо это данные из БД и для изменения юзать соотв. функции {@link db}.
      * Если необходимо какое-то доп. поле, его можно получить через groups
-     * @var array $perms
      */
     protected $perms = array();
 
     /**
      * Массив данных данного юзера
-     * @tutorial protected, ибо предполагается, что неизменно в процессе работы. 
+     * @var array $vars
+     * @note protected, ибо предполагается, что неизменно в процессе работы. 
      * Ибо это данные из БД и для изменения юзать соотв. функции {@link db}.
      * Если необходимо временно переопределить, юзаем {@see users::set_tmpvars()}
-     * @var array $vars
      */
     protected $vars = array();
 
@@ -196,15 +196,13 @@ class users_checker {
 
     /**
      * Проверка сессии в АЦ
-     * @global string $BASEURL
-     * @global string $eadmin_file
      * @param string $module имя модуля
      * @param bool $onlylink только получение ссылки?(тобишь без переадресаций)
      * @param bool $hardmode для АЦ, к примеру. Проверяет SID, даже если отсутствует
      * @return bool в АЦ?
      */
     public function check_inadmin($module, $onlylink = false, $hardmode = false) {
-        global $BASEURL, $eadmin_file;
+        $baseurl = globals::g('baseurl');
         if ($hardmode)
             $onlylink = false;
         elseif (!$this->perms['can_acp'] || (!$_REQUEST['sid'] && !$onlylink))
@@ -214,8 +212,9 @@ class users_checker {
             $_SESSION['sid'] = '';
         if (!$_REQUEST['sid'] && $_SESSION['sid'])  // Дабы не входить снова, если SID отсутствует
             $sid = $_SESSION['sid']; // Но переадресация нужна
-        $afile = $BASEURL . "admincp.php?sid=";
+        $afile = $baseurl . "admincp.php?sid=";
         $eadmin_file = $afile . $sid;
+        globals::s('eadmin_file', $eadmin_file);
         if (!$onlylink) {
             try {
                 check_formkey("sid");
@@ -324,7 +323,7 @@ class users_checker {
     /**
      * Функция проверки прав пользователей, в случае отсутствия прав - посылает на страницу логина
      * @param string $rule право пользователя(!без префикса can_!)
-     * @param int $value значение права, от {@link $value} и выше.
+     * @param int $value значение права, от данного и выше.
      * @param int $def 2 - все
      * 1 - все, кроме гостей
      * 0 - все, кроме гостей и пользователей по-умолчанию
@@ -357,7 +356,7 @@ class users_checker {
      * Проверка права
      * @param string $rule право пользователя(!без префикса can_!) или параметры system, pm_count, acp_modules
      * @param int $value проверяемое значение
-     * @return bool|mixed true, если значение больше или равно {@link $value} или значение параметра
+     * @return bool|mixed true, если значение больше или равно данному, или значение параметра
      */
     public function perm($rule, $value = null) {
         $nocan = false;
@@ -441,7 +440,7 @@ class users_getter extends users_checker {
     protected $guest_group = 0;
 
     /**
-     * @const banned_group группа заблокированных
+     * Группа заблокированных
      */
 
     const banned_group = -1;
@@ -518,7 +517,7 @@ class users_getter extends users_checker {
     }
 
     /**
-     * Получение группы с ID {@link $id}
+     * Получение группы
      * @param int $id ID группы
      * @return array массив группы
      */
@@ -680,7 +679,7 @@ class users_modifier extends users_getter {
 
 class users extends users_modifier {
     /**
-     * @const bot_prefix префикс для бота
+     * Префикс для бота
      */
 
     const bot_prefix = '[BOT]';

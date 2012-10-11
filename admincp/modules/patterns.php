@@ -28,11 +28,10 @@ class patterns_man {
 
     /**
      * Инициализация управления шаблонами
-     * @global array $POST
      * @return null
      */
     public function init() {
-        global $POST;
+        $POST = globals::g('POST');
         lang::o()->get('admin/patterns');
         $act = $_GET['act'];
         switch ($act) {
@@ -84,13 +83,12 @@ class patterns_man {
 
     /**
      * Сохранение шаблона
-     * @global string $admin_file
      * @param array $data массив данных шаблона
      * @return null
      * @throws EngineException 
      */
     protected function save($data) {
-        global $admin_file;
+        $admin_file = globals::g('admin_file');
         $cols = array(
             'name',
             'rname',

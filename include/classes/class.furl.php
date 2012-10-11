@@ -461,18 +461,17 @@ final class furl extends pluginable_object {
     /**
      * Функция создания Человекопонятного URL, исходя из заданных параметров, 
      * по предустановленным правилам
-     * @global string $BASEURL
      * @param string $module имя модуля
      * @param array $params массив параметров, например:
      * array('id' => 1, 'name' => 'CTRev', 'cat' => 'demo')
      * ключ slashes экранирует результат для JavaScript, иначе & заменяется на &amp;
      * @param bool $page является ли указанный модуль ссылкой на документ?
      * @param bool $no_end нужно ли в конец добавлять .html/index.html?
-     * @param bool $nobaseurl не добавлять в начало $BASEURL
+     * @param bool $nobaseurl не добавлять в начало $baseurl
      * @return string ЧПУ
      */
     public function construct($module, $params = array(), $page = false, $no_end = false, $nobaseurl = false) {
-        global $BASEURL;
+        $baseurl = globals::g('baseurl');
         $burl = true;
         if (is_array($module)) {
             $module_t = $module ['module'];
@@ -503,7 +502,7 @@ final class furl extends pluginable_object {
             $filetype = (strpos($params ["_filetype"], ".") === 0 ? $params ["_filetype"] : "." . $params ["_filetype"]);
         else
             $filetype = ".html";
-        $url = ($burl ? $BASEURL : "");
+        $url = ($burl ? $baseurl : "");
         if (config::o()->v('furl')) {
             $url .= $module . ($page ? '' : "/");
             $function = $module . '_furl_rules';
@@ -558,14 +557,13 @@ final class furl extends pluginable_object {
 
     /**
      * Функция переадресации
-     * @global string $BASEURL
      * @param string $url URL переадресации
      * @param int $time время переадресации
      * @param bool $no_clean не очищать экран и не выполнять функцию die()?
      * @return null
      */
     public function location($url, $time = 0, $no_clean = false) {
-        global $BASEURL;
+        $baseurl = globals::g('baseurl');
         if ($this->denied_locations)
             return;
         if ($this->forlocation && $this->forlocation[1] == $url)
@@ -576,7 +574,7 @@ final class furl extends pluginable_object {
             $contents = ob_get_contents();
         ob_end_clean();
         if (!preg_match("/^http\\:\\/\\/(.*?)$/siu", $url))
-            $url = $BASEURL . $url;
+            $url = $baseurl . $url;
         if (!$time)
             @header("Location: " . $url);
         else

@@ -18,10 +18,11 @@ define('DELAYED_UINIT', true); // отложенная инициализаци�
 include_once "./include/include.php";
 $module = $_GET ['module'];
 blocks::set_module($module ? $module : "index");
-$this_file = $BASEURL . "index.php?module=" . $module;
+$this_file = globals::g('baseurl') . "index.php?module=" . $module;
 tpl::o()->assign("this_file", $this_file);
 $ajax = (bool) ($_REQUEST ['from_ajax']); // Из AJAX
 $nno = (bool) ($_REQUEST ['nno']); // Стандартный класс(без постфикса '_ajax')
+globals::s('ajax', $ajax);
 tpl::o()->assign('from_ajax', $ajax);
 tpl::o()->assign('module_loaded', $module);
 if ($module) {

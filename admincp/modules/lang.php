@@ -17,11 +17,9 @@ class lang_man {
 
     /**
      * Инициализация управления языковыми пакетами
-     * @global array $POST
      * @return null
      */
     public function init() {
-        global $POST;
         lang::o()->get('admin/languages');
         $act = $_GET['act'];
         switch ($act) {
@@ -176,13 +174,12 @@ class lang_man {
 
     /**
      * Сохранение языкового файла
-     * @global string $admin_file
      * @param array $data массив данных языкового файла
      * @return null
      * @throws EngineException 
      */
     protected function save($data) {
-        global $admin_file;
+        $admin_file = globals::g('admin_file');
         $cols = array(
             'name' => 'id',
             'of2e' => 'file',
@@ -243,11 +240,10 @@ class lang_man_ajax {
 
     /**
      * Инициализация AJAX-части модуля
-     * @global array $POST
      * @return null
      */
     public function init() {
-        global $POST;
+        $POST = globals::g('POST');
         $act = $_GET['act'];
         $name = $_POST['id'];
         if (!validfolder($name, LANGUAGES_PATH))

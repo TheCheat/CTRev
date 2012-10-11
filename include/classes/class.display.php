@@ -40,7 +40,7 @@ class display_html {
         "22.12" => "capricorn");
 
     /**
-     * @const paginator_id_prefix префикс перед ID пейджинатора
+     * Префикс перед ID пейджинатора
      */
 
     const paginator_id_prefix = 'paginator';
@@ -52,7 +52,7 @@ class display_html {
     protected $paginator_id = 0;
 
     /**
-     * @const avatar_prefix префикс имя файла аватары
+     * Префикс имя файла аватары
      */
 
     const avatar_prefix = "avatar-id";
@@ -102,7 +102,6 @@ class display_html {
 
     /**
      * Постраничный вывод записей
-     * @global string $theme_path
      * @param int $count кол-во записей
      * @param int $perpage записей на страницу
      * @param string $file добавление переменных в URL на ссылке со страницей, может являться JS функцией, тогда
@@ -114,7 +113,7 @@ class display_html {
      * а во втором - limit для БД
      */
     public function pages($count, $perpage = 50, $file = "", $var = "page", $page_on_this = 5, $ajax = false) {
-        global $theme_path;
+        $theme_path = globals::g('theme_path');
         if (!is_numeric($perpage) || !$perpage)
             $perpage = 50;
         if (!is_numeric($page_on_this) || !$page_on_this)
@@ -191,13 +190,12 @@ class display_html {
 
     /**
      * Функция для показа пользовательского аватара
-     * @global string $BASEURL
-     * @global string $theme_path
      * @param string $avatar_path путь к аватару
      * @return string HTML код аватары
      */
     public function display_user_avatar($avatar_path) {
-        global $BASEURL, $theme_path;
+        $baseurl = globals::g('baseurl');
+        $theme_path = globals::g('theme_path');
         /* @var $uploader uploader */
         $uploader = n("uploader");
         $avatar_path = trim($avatar_path);
@@ -206,7 +204,7 @@ class display_html {
         if (preg_match('/^' . display::url_pattern . '\.(' . $av_allowed . ')$/siu', $avatar_path))
             $url = $avatar_path;
         elseif (preg_match('/^' . self::avatar_prefix . users::o()->v('id') . '\.(' . $av_allowed . ')$/siu', $avatar_path))
-            $url = $BASEURL . config::o()->v('avatars_folder') . '/' . $avatar_path;
+            $url = $baseurl . config::o()->v('avatars_folder') . '/' . $avatar_path;
         else
             $url = $theme_path . 'images/default_avatar.png';
         $max_width = $aft ['max_width'];
@@ -217,12 +215,11 @@ class display_html {
 
     /**
      * Вывод изображения знака зодиака, согласно ДР пользователя
-     * @global string $BASEURL
      * @param int $birthday день рождения в формате UNIXTIME
      * @return string HTML код картинки
      */
     public function get_zodiac_image($birthday) {
-        global $BASEURL;
+        $baseurl = globals::g('baseurl');
         lang::o()->get('zodiac');
         $month = date("m", $birthday);
         $day = date("d", $birthday);
@@ -247,14 +244,13 @@ class display_html {
             if ($time >= $curtime && $time < $nexttime)
                 break;
         }
-        return '<img src="' . $BASEURL . config::o()->v('zodiac_folder') . '/' . $word . '.png"
+        return '<img src="' . $baseurl . config::o()->v('zodiac_folder') . '/' . $word . '.png"
                  height="11" alt="' . lang::o()->v('zodiac_sign_' . $word) . '"
 		 title="' . lang::o()->v('zodiac_sign_' . $word) . '">&nbsp;' . lang::o()->v('zodiac_sign_' . $word);
     }
 
     /**
      * Выборка файлов(для АЦ)
-     * @global bool $ajax
      * @param string $path путь к дирректории
      * @param string $name имя дирректории
      * @param string $folder выбранная дирректория
@@ -262,7 +258,7 @@ class display_html {
      * @return null
      */
     public function filechooser($path, $name, $folder = null, $apaths = null) {
-        global $ajax;
+        $ajax = globals::g('ajax');
         if (!validfolder($name, $path))
             return;
         lang::o()->get('admin/filechooser');
@@ -646,7 +642,7 @@ class display_modifier extends display_time {
 class display extends display_modifier {
     /**
      * 
-     * @const url_pattern паттерн URL
+     * Паттерн URL
      * 2 - протокол
      * 3 - домен
      * 4 - порт
@@ -658,7 +654,7 @@ class display extends display_modifier {
     const url_pattern = '((http|https|ftp|udp)\:\/\/((?:[a-zа-я0-9\-\_]+\.[a-zа-я0-9\-\_\.]+)|localhost)(\:[0-9]+)?([a-zа-я0-9\.\?\%\=\&\/\-\_\#\;]*?))';
 
     /**
-     * Цвета для ратио(если первая буква $n, то цвет будет #$n$n0000)
+     * Цвета для ратио(если первая буква n, то HEX цвет будет nn0000)
      * @var string $ratio_color
      */
     protected $ratio_color = "fedcba9876";
@@ -670,7 +666,7 @@ class display extends display_modifier {
     protected $ratio_per = 0.1;
 
     /**
-     * Цвета для ратио торрента(если первая буква $n, то цвет будет #$n$n0000)
+     * Цвета для ратио торрента(если первая буква n, то HEX цвет будет nn0000)
      * @var string $slr_color
      */
     protected $slr_color = "fedcba987654321";

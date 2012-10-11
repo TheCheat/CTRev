@@ -57,7 +57,7 @@ class torrents {
     protected $scr_height = 150;
 
     /**
-     * @const image_prefix префикс в имени скриншота, хранимого на сервере
+     * Префикс в имени скриншота, хранимого на сервере
      */
 
     const image_prefix = "i";
@@ -279,7 +279,6 @@ class torrents {
 
     /**
      * Отображение изображения/изображений для торрента
-     * @global string $BASEURL
      * @param string $images сериалиованный массив изображений
      * @param bool $poster постер?
      * @param bool $rss для RSS?
@@ -287,7 +286,7 @@ class torrents {
      * @return string HTML код изображения(ий)
      */
     public function show_image($images, $poster = true, $rss = false, $align = 'right') {
-        global $BASEURL;
+        $baseurl = globals::g('baseurl');
         $images = unserialize($images);
         if (!is_array($images) || !reset($images))
             return;
@@ -305,7 +304,7 @@ class torrents {
                 list($image, $preview) = $image;
                 if (!$preview)
                     $preview = $image;
-                $pre = $BASEURL . config::o()->v('screenshots_folder') . '/';
+                $pre = $baseurl . config::o()->v('screenshots_folder') . '/';
                 $image = $pre . $image;
                 $preview = $pre . $preview;
             } else
@@ -326,14 +325,13 @@ class torrents {
 
     /**
      * Модификатор для заголовка торрент, добавляющий к нему иконку
-     * @global string $theme_path
      * @param string $title заголовок торрента
      * @param string $image имя иконки(типа .png, хранящяяся в engine_images)
      * @param string $text подсказка к иконке
      * @return string заголовок с картинкой
      */
     public function prepend_title_icon($title, $image, $text = "") {
-        global $theme_path;
+        $theme_path = globals::g('theme_path');
         $title = '<img src="' . $theme_path . '/engine_images/' . $image . '.png" alt="' . $text . '"
         title="' . $text . '" align="left">' . $title;
         return $title;

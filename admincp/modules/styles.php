@@ -36,11 +36,10 @@ class styles_man {
 
     /**
      * Инициализация управления темами
-     * @global array $POST
      * @return null
      */
     public function init() {
-        global $POST;
+        $POST = globals::g('POST');
         lang::o()->get('admin/styles');
         $act = $_GET['act'];
         switch ($act) {
@@ -173,13 +172,12 @@ class styles_man {
 
     /**
      * Сохранение файла темы
-     * @global string $admin_file
      * @param array $data массив данных файла темы
      * @return null
      * @throws EngineException 
      */
     protected function save($data) {
-        global $admin_file;
+        $admin_file = globals::g('admin_file');
         $cols = array(
             'name' => 'id',
             'of2e' => 'file',
@@ -217,11 +215,10 @@ class styles_man_ajax {
 
     /**
      * Инициализация AJAX-части модуля
-     * @global array $POST
      * @return null
      */
     public function init() {
-        global $POST;
+        $POST = globals::g('POST');
         $act = $_GET['act'];
         $name = $_POST['id'];
         if (!validfolder($name, THEMES_PATH))

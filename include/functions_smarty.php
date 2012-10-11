@@ -61,18 +61,17 @@ function smarty_print_format($str) {
 
 /**
  * Создание тега для atom:id
- * @global string $PREBASEURL
  * @param array $params массив параметров(time - время, title - заголовок, id - ID торрента)
  * @return string тег
  */
 function smarty_make_atom_tag($params) {
-    global $PREBASEURL;
+    $prebaseurl = globals::g('prebaseurl');
     $time = $params ['time'];
     $title = $params ['title'];
     $id = $params ['id'];
     $tag = $_SERVER ['SERVER_NAME'] . ",";
     $tag .= display::o()->date($time, "Y-m-d") . ":";
-    $tag .= $PREBASEURL . furl::o()->construct('torrents', array(
+    $tag .= $prebaseurl . furl::o()->construct('torrents', array(
                 'title' => $title,
                 'id' => $id), false, false, true);
     return $tag;
@@ -80,12 +79,10 @@ function smarty_make_atom_tag($params) {
 
 /**
  * Информация об использовании приложением ОЗУ и генерации страницы
- * @global int $start
- * @global string $theme_path
  * @return string строка с информацией
  */
 function smarty_get_memory_usage() {
-    global $start, $theme_path;
+    $start = globals::g('start');
     if (function_exists('memory_get_usage'))
         $memory_usage = display::o()->convert_size(memory_get_usage());
     return sprintf(lang::o()->v('page_loaded_in'), timer() - $start, count(db::o()->query_stat)) .
@@ -94,12 +91,11 @@ function smarty_get_memory_usage() {
 
 /**
  * Генератор пароля для шаблонов Smarty
- * @global string $theme_path
  * @param array $params массив параметров(pname - имя поля пароля, paname - имя поля повтора пароля)
  * @return string HTML код генератора
  */
 function smarty_passgen($params) {
-    global $theme_path;
+    $theme_path = globals::g('theme_path');
     $name = $params["pname"];
     $name2 = $params["paname"];
     return '<img src="' . $theme_path . 'engine_images/passgen.png" alt="' . lang::o()->v('passgen') . '" class="passgen clickable"

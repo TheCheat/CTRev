@@ -105,14 +105,13 @@ class groups_man {
 
     /**
      * Сохранение группы
-     * @global string $admin_file
      * @param array $data массив данных группы
      * @param array $fgroup изначальные права группы(для прав пользователя)
      * @return null
      * @throws EngineException 
      */
     public function save($data, $fgroup = null) {
-        global $admin_file;
+        $admin_file = globals::g('admin_file');
         if (!$fgroup) {
             $cols = array('name',
                 'color',

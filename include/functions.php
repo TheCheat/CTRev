@@ -10,7 +10,6 @@
  * @name 		Функции, которые не нуждаются в помещении в класс
  * @version           	1.00
  */
-
 if (!defined('INSITE'))
     die('Remote access denied!');
 
@@ -211,7 +210,6 @@ function strip_magic_quotes($arr) {
 
 /**
  * Функция вывода сообщения
- * @global bool $ajax
  * @param string $lang_var языковая переменная, в соответствии с которой будет выводится на экран сообщение,
  * либо цельный текст.
  * @param array $vars массив значений, включаемых в сообщение, работают, блягодаря функции vsprintf
@@ -224,7 +222,7 @@ function strip_magic_quotes($arr) {
  * @return null
  */
 function message($lang_var, $vars = array(), $type = "error", $die = true, $title = false, $align = 'left', $no_image = false, $only_box = false) {
-    global $ajax;
+    $ajax = globals::g('ajax');
     if (is_array($lang_var)) {
         if ($lang_var ['vars'])
             $vars = $lang_var ['vars'];
@@ -277,7 +275,6 @@ function message($lang_var, $vars = array(), $type = "error", $die = true, $titl
 /**
  * Функция вывода ошибки(именно ошибки типа fatal error, а не сообщения об ошибке,
  * которое выводится через функцию message)
- * @global bool $ajax
  * @param string|array $lang_var языковая переменная, в соответствии с коорой будет выводится на экран сообщение,
  * либо цельный текст, так же, может содержать в себе все остальные паремтры в качестве ассоциативного массива.
  * @param array $vars массив значений, включаемых в сообщение, работают, блягодаря функции vsprintf
@@ -285,7 +282,7 @@ function message($lang_var, $vars = array(), $type = "error", $die = true, $titl
  * @return null
  */
 function error($lang_var, $vars = array(), $title = false) {
-    global $ajax;
+    $ajax = globals::g('ajax');
     ob_end_clean();
     if (!$title && !is_null($title))
         $title = lang::o()->v('error');
@@ -427,39 +424,40 @@ function longval($string) {
 
 /**
  * Инициализация базового пути к сайту
- * @global string $BASEURL
- * @global string $PREBASEURL
  * @return null
  */
 function init_baseurl() {
-    global $BASEURL, $PREBASEURL;
     if (class_exists("config") && config::o()->v('baseurl'))
-        $PREBASEURL = (config::o()->v('baseurl') == "/" ? "/" : config::o()->v('baseurl') . "/");
+        $prebaseurl = (config::o()->v('baseurl') == "/" ? "/" : config::o()->v('baseurl') . "/");
     else
-        $PREBASEURL = preg_replace('/^(.*)(\/|\\\)(.*?)$/siu', '\1/', $_SERVER['PHP_SELF']);
-    $BASEURL = 'http://' . $_SERVER ['SERVER_NAME'] . $PREBASEURL;
+        $prebaseurl = preg_replace('/^(.*)(\/|\\\)(.*?)$/siu', '\1/', $_SERVER['PHP_SELF']);
+    $baseurl = 'http://' . $_SERVER ['SERVER_NAME'] . $prebaseurl;
+    globals::s('prebaseurl', $prebaseurl);
+    globals::s('baseurl', $baseurl);
+    if (class_exists('tpl'))
+        tpl::o()->assign("baseurl", $baseurl);
 }
 
 /**
  * Инициализация путей для Smarty
- * @global string $BASEURL
- * @global string $theme_path
- * @global string $_style
  * @return null
  */
 function init_spaths() {
-    global $BASEURL, $theme_path, $_style;
-    if ($users && $_style == users::o()->get_theme() && $_style)
+    $baseurl = globals::g('baseurl');
+    $_style = globals::g('_style');
+    if (class_exists('users') && $_style == users::o()->get_theme() && $_style)
         return;
-    if ($users && users::o()->get_theme())
+    if (class_exists('users') && users::o()->get_theme())
         $_style = users::o()->get_theme();
     else
         $_style = DEFAULT_THEME;
     tpl::o()->left_delimiter = "[*";
     tpl::o()->right_delimiter = "*]";
     tpl::o()->set_theme($_style);
-    $theme_path = $BASEURL . THEMES_PATH . '/' . $_style . '/';
+    $theme_path = $baseurl . THEMES_PATH . '/' . $_style . '/';
     tpl::o()->assign('theme_path', $theme_path);
+    globals::s('theme_path', $theme_path);
+    globals::s('_style', $_style);
 }
 
 /**

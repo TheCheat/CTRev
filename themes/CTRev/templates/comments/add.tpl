@@ -11,7 +11,7 @@
             var si = "comments_status_icon";
             status_icon(si, 'loading_white');
             prehide_ls();
-            jQuery.post("[*$BASEURL|sl*]index.php?module=comments_manage&act=add&from_ajax=1", $comment, function (data) {
+            jQuery.post("[*$baseurl|sl*]index.php?module=comments_manage&act=add&from_ajax=1", $comment, function (data) {
                 if (data=="OK!") {
                     reload_comment($resid, $type);
                     status_icon(si, 'success');
@@ -27,7 +27,7 @@
             var wysiwyg = arr[1];
             var txt = trim(getSelectionText(window));
             if (    !txt) {
-                jQuery.post('[*$BASEURL|sl*]index.php?module=comments_manage&act=quote&from_ajax=1', {'id':id}, function (data) {
+                jQuery.post('[*$baseurl|sl*]index.php?module=comments_manage&act=quote&from_ajax=1', {'id':id}, function (data) {
                     add_tota(arr,author,data);
                 });
             } else

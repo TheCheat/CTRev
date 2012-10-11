@@ -72,7 +72,7 @@
                         </dd>
                         [*if $row.country_name*]
                             <dt>[*'users_country'|lang*]</dt>
-                            <dd><img src="[*$BASEURL*][*'countries_folder'|config*]/[*$row.country_image*]"
+                            <dd><img src="[*$baseurl*][*'countries_folder'|config*]/[*$row.country_image*]"
                                      alt="[*$row.country_name*]" title="[*$row.country_name*]"></dd>
 
                         [*/if*] 
@@ -112,7 +112,7 @@
                     function submenu_user_select(obj, act, first) {
                         if (first)
                             prehide_ls();
-                        jQuery.post('[*$BASEURL|sl*]index.php?module=user&act='+act+'&from_ajax=1', {'id':'[*$row.id|sl*]'}, function (data) {
+                        jQuery.post('[*$baseurl|sl*]index.php?module=user&act='+act+'&from_ajax=1', {'id':'[*$row.id|sl*]'}, function (data) {
                             jQuery("#users_title_of_menu").empty();
                             jQuery("#users_title_of_menu").append(jQuery(obj).text());
                             jQuery("#users_menus ul li").removeClass("selected");

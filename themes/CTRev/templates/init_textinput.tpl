@@ -9,7 +9,7 @@
         please_enter_pos = '[*'bbcode_please_enter_img_position'|lang|sl*]';
         bbcode_error = '[*'bbcode_error'|lang|sl*]';
         smilies_array = [*$smilies_array*];
-        smilies_src = '[*$BASEURL|sl*][*'smilies_folder'|config|sl*]/';
+        smilies_src = '[*$baseurl|sl*][*'smilies_folder'|config|sl*]/';
         lang_bbcodes = {
             "code":'[*'bbcode_wysiwyg_code'|lang|sl*]',
             "spoiler":'[*'bbcode_wysiwyg_spoiler'|lang|sl*]',
@@ -106,7 +106,7 @@
                     <div class="menu fixed_height_menu" style="width: 120px;">
                         <div class="cornerText">
                             [*foreach from=$smilies item=res key=num*]
-                                <img src="[*$BASEURL*][*'smilies_folder'|config*]/[*$res.image*]"
+                                <img src="[*$baseurl*][*'smilies_folder'|config*]/[*$res.image*]"
                                      alt="[*$res.name*]" title="[*$res.name*]"
                                      onclick="insert_smilie('[*$textarea_name|sl*]', '[*$res.code|sl*]');">
                                 <!--&nbsp;

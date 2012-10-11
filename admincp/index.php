@@ -43,6 +43,7 @@ if ($_GET ['item'] && $admin_modules[$_GET ['item']]) {
 $module = $_GET ['module'];
 $admin_page = $_GET['page'];
 $ajax = (bool) ($_REQUEST ['from_ajax']); // Из AJAX
+globals::s('ajax', $ajax);
 $nno = (bool) ($_REQUEST ['nno']); // Стандартный класс(без постфикса '_ajax')
 $plugins_isblock = 1;
 /**
@@ -117,6 +118,7 @@ if ($imod)
 tpl::o()->assign("imods", $admin_modules);
 lang::o()->get("admin/main");
 users::o()->check_inadmin($module, false, true);
+$eadmin_file = globals::g('eadmin_file');
 $iadmin_file = $eadmin_file . '&item=' . $item;
 tpl::o()->assign("iadmin_file", $iadmin_file);
 if ($module) {
@@ -130,6 +132,7 @@ if ($module) {
     $admin_file = $iadmin_file . '&page=' . $admin_page;
     tpl::o()->assign("admin_file", $admin_file);
 }
+globals::s('admin_file', $admin_file);
 /**
  * Загружаем модуль, или индексную страничку во вкладке
  */

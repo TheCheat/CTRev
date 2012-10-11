@@ -11,7 +11,7 @@
                 if (!confirm("[*'pm_are_you_sure_to_delete_many'|lang|sl*]"))
                 return;
             }
-            jQuery.post("[*$BASEURL|sl*]index.php?[*fk ajax=1*]module=messages&from_ajax=1&act="+$act, $post, function (data) {
+            jQuery.post("[*$baseurl|sl*]index.php?[*fk ajax=1*]module=messages&from_ajax=1&act="+$act, $post, function (data) {
                 if (data=="OK!") {
                     jQuery($pmcbox).each(function () {
                         if (!jQuery(this).attr("checked"))

@@ -8,7 +8,7 @@
         </div>
     </div><br>
     <form method="post" id="big_login_form"
-          action="javascript:login('[*$BASEURL|sl*]/index.php?module=login&amp;from_ajax=1', '#big_login_form', '#big_status_icon', '[*$referer|sl*]');">
+          action="javascript:login('[*$baseurl|sl*]/index.php?module=login&amp;from_ajax=1', '#big_login_form', '#big_status_icon', '[*$referer|sl*]');">
         <div style="width: 350px;">
             <div class="cornerText styled_color">
                 <input class="styled_login autoclear_fields" type="text"

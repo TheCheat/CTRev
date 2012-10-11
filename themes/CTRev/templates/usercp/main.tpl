@@ -4,7 +4,7 @@
         $(".container_ucp").show();
     });
     function delete_avatar() {
-        jQuery.post("[*$BASEURL|sl*]index.php?"
+        jQuery.post("[*$baseurl|sl*]index.php?"
     [*if $admin_file*]
                 +"[*$admin_sid*]&id=[*'id'|user*]"
     [*else*]
@@ -22,7 +22,7 @@
             var si = 'usercp_status_icon';
             status_icon(si, 'loading_white');
             var $form = jQuery("#"+id).serialize();
-            jQuery.post("[*$BASEURL|sl*]index.php?"
+            jQuery.post("[*$baseurl|sl*]index.php?"
     [*if $admin_file*]
                 +"[*$admin_sid*]&id=[*'id'|user*]"
     [*else*]

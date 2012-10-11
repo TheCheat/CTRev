@@ -90,9 +90,9 @@ abstract class pluginable_object {
      * Добавление метода
      * @param string $method имя метода
      * @param callback $callback функция для вызова
-     * @tutorial список параметров смотреть по call_method, 
-     * последним параметром будет ориг. функция, если доступна
      * @return pluginable_object $this
+     * @note список параметров смотреть по call_method, 
+     * последним параметром будет ориг. функция, если доступна
      */
     final public function add_method($method, $callback) {
         if (is_callable($callback))
@@ -493,14 +493,14 @@ class plugins_modifier {
      * @param string $f файл шаблона(относительно дирректории, с расширением)
      * @param string $what что заменять? (рег. выражение без делимиттеров)
      * @param string $with чем заменять? Чтобы добавить, достаточно дописать 
-     * $0 в нужное место, ибо {@link $what} преобразуется в рег. выражение в любом случае.
+     * $0 в нужное место, ибо работает рег. выражение в любом случае.
      * !Использовать только вставки вида ${номер группы}, для рег. выражений.
      * @param bool $regexp рег. выражение?
      * @param string $folder дирректория шаблонов
      * @return bool|int 2, если все шаблоны успешно изменены, true, если стандартный шаблон
      * успешно изменён
-     * @tutorial CSS, JS не нужно модифицировать, проще подцепить свой, 
-     * ибо всё переопределяемо. Алсо:
+     * @note CSS, JS не нужно модифицировать, проще подцепить свой, 
+     * ибо всё переопределяемо.
      * @see function join_js()
      * @see function join_css()
      */
@@ -705,7 +705,7 @@ final class plugins extends plugins_modifier {
      * @param string $name имя хука
      * @param callback $callback реализация
      * @return plugins $this 
-     * @tutorial единственный параметр, который получить функция при вызове - массив данных
+     * @note единственный параметр, который получить функция при вызове - массив данных
      */
     public function add_hook($name, $callback) {
         if (!$this->state)
@@ -723,7 +723,7 @@ final class plugins extends plugins_modifier {
      * @param array $data массив переменных
      * @param bool $clear очистить старый массив?
      * @return plugins $this
-     * @tutorial если необходимо передать переменную по ссылке, 
+     * @note если необходимо передать переменную по ссылке, 
      * так и указываем в массиве, например:
      * plugins::o()->pass_data(array('a' => &$linktoa,
      * 'b' => $simplevar))
@@ -801,7 +801,7 @@ final class plugins extends plugins_modifier {
      * @param string $original имя базового класса
      * @param string $new имя нового класса
      * @return plugins $this
-     * @tutorial данный метод создаёт алиас для наследования базового класса 
+     * @note данный метод создаёт алиас для наследования базового класса 
      * несколькими плагинами, новый класс должен наследовать класс с именем:
      * <b>plugin_extend_<i>{$plugin_name}</i>_base_<i>{$original}</i></b>
      * где, <i>{$plugin_name}</i> - имя базового класса, а <i>{$original}</i> - имя базового класса

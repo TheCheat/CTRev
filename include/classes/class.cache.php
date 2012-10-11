@@ -28,8 +28,8 @@ final class cache {
     private $cache_files = array();
 
     /**
-     * Объект Memcache(d)
-     * @var Memcache(d) $m
+     * Объект Memcache/Memcached
+     * @var Memcached|Memcached $m
      */
     private $m = null;
 

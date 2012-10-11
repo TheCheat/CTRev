@@ -112,14 +112,13 @@ class smilies_man {
     }
 
     /**
-     * Сохранение бота
-     * @global string $admin_file
+     * Сохранение смайлов
      * @param array $data массив данных
      * @return null
      * @throws EngineException 
      */
     protected function save($data) {
-        global $admin_file;
+        $admin_file = globals::g('admin_file');
         $cols = array(
             'id',
             'name',

@@ -9,29 +9,32 @@
  * @author 	  	The Cheat <cybertmdev@gmail.com>
  * @name 		"Ядро" системы
  * @version           	1.00
- * @todo                recaptcha, массовая рассылка почты, управление странами,
- * магазин бонусов, проверка на отключенные модули вне их самих, 
- * отключение нек. модулей в папке modules(напр. messages, statics, chat, news, 
- * search_module и class.search в т.ч.) и части модулей(напр. invites, 
- * bookmarks(в т.ч. и кнопки) в usercp)
- * @todo                апдейтер, магазин плагинов
+ * @todo                recaptcha
+ * @todo                массовая рассылка почты
+ * @todo                управление странами
+ * @todo                магазин бонусов
+ * @todo                проверка на отключенные модули вне их самих
+ * @todo                отключение нек. модулей в папке modules(напр. messages, 
+ * statics, chat, news, search_module и class.search в т.ч.) и части модулей(напр. 
+ * invites, bookmarks(в т.ч. и кнопки) в usercp)
+ * @todo                апдейтер
+ * @todo                магазин плагинов
  */
-
 if (!defined('INSITE'))
     die('Remote access denied!');
-
+ 
 // $preloaded = array("cache", "db", "users", "lang");
 
 require_once (ROOT . 'include/system/allowed.php');
+require_once (ROOT . 'include/system/globals.php');
 require_once (ROOT . 'include/system/autoload.php');
 require_once (ROOT . 'include/functions.php');
-$start = timer(); // Start time
+globals::s('start', timer()); // Start time
 require_once (ROOT . 'include/smarty/Smarty.class.php');
 require_once (ROOT . 'include/functions_smarty.php');
 @set_error_handler("myerror_report"); // Присваиваем функцию myerror_report, вместо стандартной, помогает избежать раскрытия путей.
 db::o()->connect();
 init_baseurl();
-tpl::o()->assign("BASEURL", $BASEURL);
 lang::o()->change_folder(config::o()->v('default_lang'));
 init_spaths();
 tpl::o()->register_modifier('lang', array(lang::o(), 'v')); // языковая переменная

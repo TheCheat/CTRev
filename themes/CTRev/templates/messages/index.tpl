@@ -19,13 +19,13 @@
                 <div class="messajax_tabs">
                     <ul class="tabs-nav">
                         <li [*if !$out && !$send*] class="tabs-selected"[*/if*]><a
-                                href="[*$BASEURL*]/index.php?module=messages&amp;from_ajax=1"><span>[*'pm_input_msgs'|lang*]</span></a></li>
+                                href="[*$baseurl*]/index.php?module=messages&amp;from_ajax=1"><span>[*'pm_input_msgs'|lang*]</span></a></li>
                         <li [*if $out && !$sended && !$send*] class="tabs-selected"[*/if*]><a
-                                href="[*$BASEURL*]/index.php?module=messages&amp;from_ajax=1&out=1"><span>[*'pm_output_msgs'|lang*]</span></a></li>
+                                href="[*$baseurl*]/index.php?module=messages&amp;from_ajax=1&out=1"><span>[*'pm_output_msgs'|lang*]</span></a></li>
                         <li [*if $out && $sended && !$send*] class="tabs-selected"[*/if*]><a
-                                href="[*$BASEURL*]/index.php?module=messages&from_ajax=1&out=1&sended=1"><span>[*'pm_sended_msgs'|lang*]</span></a></li>
+                                href="[*$baseurl*]/index.php?module=messages&from_ajax=1&out=1&sended=1"><span>[*'pm_sended_msgs'|lang*]</span></a></li>
                         <li [*if $send*] class="tabs-selected"[*/if*]><a
-                                href="[*$BASEURL*]/index.php?module=messages&amp;from_ajax=1&act=send&to=[*$to_pm*]&id=[*$resend_id*]"><span>[*'pm_new_msgs'|lang*]</span></a></li>
+                                href="[*$baseurl*]/index.php?module=messages&amp;from_ajax=1&act=send&to=[*$to_pm*]&id=[*$resend_id*]"><span>[*'pm_new_msgs'|lang*]</span></a></li>
                     </ul>
                 </div>
             </div>

@@ -17,13 +17,13 @@
                         init_modalbox_close(function () {
                             if (!confirm("[*'pm_closed_before_new_notice'|lang*]"))
                             return false;
-                            jQuery.post('[*$BASEURL|sl*]index.php?module=ajax_index&act=save_last&from_ajax=1', {"time":'[*$unread_last.time*]'});
+                            jQuery.post('[*$baseurl|sl*]index.php?module=ajax_index&act=save_last&from_ajax=1', {"time":'[*$unread_last.time*]'});
                         });
                     });
                 }
                 start_up_unreadbox();
                 function move_message($cur_time, $type) {
-                    jQuery.post('[*$BASEURL|sl*]index.php?module=ajax_index&from_ajax=1&act=move_unread', {"time":$cur_time, "type":$type}, function (data) {
+                    jQuery.post('[*$baseurl|sl*]index.php?module=ajax_index&from_ajax=1&act=move_unread', {"time":$cur_time, "type":$type}, function (data) {
                         if (data == "ERROR!") {
                             alert("[*'error'|lang|sl*]");
                         } else {

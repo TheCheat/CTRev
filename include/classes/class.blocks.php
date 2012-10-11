@@ -15,16 +15,16 @@ if (!defined('INSITE'))
 
 final class blocks {
     /**
-     * @const allblock общий шаблон для блоков, в случае отсутсвия иных
+     * Общий шаблон для блоков, в случае отсутсвия иных
      */
 
     const allblock = "all_blocks";
     /**
-     * @const blocks_path путь к блокам в теме(без слеша в конце и в начале)
+     * Путь к блокам в теме(без слеша в конце и в начале)
      */
     const blocks_path = "blocks";
     /**
-     * @const blocks_standart постфикс к стандартному блоку
+     * Постфикс к стандартному блоку
      */
     const block_standart = "_block_standart";
 

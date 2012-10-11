@@ -155,13 +155,12 @@ class plugin_' . $plugin . ' {
 
     /**
      * Сохранение настроек плагина
-     * @global string $admin_file
      * @param array $data массив данных
      * @return null
      * @throws EngineException 
      */
     protected function save($data) {
-        global $admin_file;
+        $admin_file = globals::g('admin_file');
         $id = $data['id'];
         $settings = serialize(modsettings::o()->save($id, $data));
         db::o()->update(array('settings' => $settings), 'plugins', 'WHERE file=' . db::o()->esc($id) . ' LIMIT 1');

@@ -53,7 +53,7 @@ class polls extends pluginable_object {
         $this->access_var('styles', PVAR_ADD);
 
         /**
-         * @tutorial Добавление опроса(add_polls)
+         * @note Добавление опроса(add_polls)
          * params:
          * int toid ID ресурса
          * string type тип ресурса
@@ -64,7 +64,7 @@ class polls extends pluginable_object {
             $this,
             "add_form"));
         /**
-         * @tutorial Отображение опроса(display_polls)
+         * @note Отображение опроса(display_polls)
          * params:
          * int toid ID ресурса
          * string type тип ресурса

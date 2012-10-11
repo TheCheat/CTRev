@@ -25,7 +25,7 @@
                             <td width='16'><span class="sortable_icon"></span></td>   
                             <td width='200'>[*$row.name*]</td>                         
                             <td width='200'>[*$row.code*]</td>
-                            <td><img src="[*$BASEURL*][*'smilies_folder'|config*]/[*$row.image*]"
+                            <td><img src="[*$baseurl*][*'smilies_folder'|config*]/[*$row.image*]"
                                                  alt="[*$row.name*]" title="[*$row.name*]"></td>
                             <td width='80'>
                                 <a href='javascript:void(0);' onclick="switch_element_state(this, '[*$row.id*]', 'smilie_state_switch')" 

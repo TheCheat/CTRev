@@ -52,13 +52,12 @@ class bans_man {
 
     /**
      * Сохранение бана
-     * @global string $admin_file
      * @param array $data массив данных
      * @return null
      * @throws EngineException 
      */
     protected function save($data) {
-        global $admin_file;
+        $admin_file = globals::g('admin_file');
         $id = (int) $data['id'];
         $cols = array(
             'user' => 'username',

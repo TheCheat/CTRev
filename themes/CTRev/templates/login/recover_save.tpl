@@ -3,7 +3,7 @@
         var si ='recover_status_icon';
         status_icon(si, 'loading');
         var $form = jQuery("form#"+id).serialize();
-        jQuery.post('[*$BASEURL|sl*]index.php?module=login&act=recover_save&from_ajax=1', $form, function (data) {
+        jQuery.post('[*$baseurl|sl*]index.php?module=login&act=recover_save&from_ajax=1', $form, function (data) {
             if (data == "OK!") {
                 status_icon(si, 'success');
                 setTimeout("window.location = baseurl", 1000);

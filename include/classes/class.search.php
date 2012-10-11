@@ -3,17 +3,19 @@
 /**
  * Project:            	CTRev
  * File:                class.search.php
- *
+ * 
  * @link 	  	http://ctrev.cyber-tm.ru/
  * @copyright         	(c) 2008-2012, Cyber-Team
  * @author 	  	The Cheat <cybertmdev@gmail.com>
  * @name 		Поисковая система
  * @version           	1.00
- * @todo                юзать Sphinx, если доступен
  */
 if (!defined('INSITE'))
     die('Remote access denied!');
 
+/**
+ * @todo юзать Sphinx, если доступен
+ */
 class search {
 
     /**

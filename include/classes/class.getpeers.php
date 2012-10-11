@@ -28,7 +28,7 @@ class getpeers {
     protected $announce_url = "";
 
     /**
-     * @const time_limit ограничение на запрос по времени в секундах
+     * Ограничение на запрос по времени в секундах
      */
 
     const time_limit = 2;

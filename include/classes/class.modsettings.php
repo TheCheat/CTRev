@@ -15,13 +15,13 @@ if (!defined('INSITE'))
 
 final class modsettings {
     /**
-     * @const nocache_id ID модуля, при котором настройки не кешируются 
+     * ID модуля, при котором настройки не кешируются 
      */
 
     const nocache_id = "::nocache::";
 
     /**
-     * @const unlimited неограниченный массив
+     * Неограниченный массив
      */
     const unlimited = "unlimited";
 
@@ -365,14 +365,14 @@ final class modsettings {
 
     /**
      * Отображение настроек для их редактирования
+     * @note языковые файлы должны находится в папке %тип%/%settings_lang%
+     * где %тип% - тип настроек, а %settings_lang% - переменная в объекте
      * @param int|string $id ID модуля
      * @param object $object объект с полями settings и settings_lang
      * @param array $settings массив настроенного
      * @param string $langprefix языковой префикс для настройки
      * @param bool $parsed уже спарсенно? тогда в {$settings} содержится массив спарсенного
      * @return string HTML код настроек
-     * @tutorial языковые файлы должны находится в папке {$type}/{->settings_lang}
-     * где {$type} - тип настроек, а {->settings_lang} - переменная в объекте
      */
     public function display($id, $object, $settings, $langprefix, $parsed = false) {
         $lng = 'main';

@@ -5,7 +5,7 @@
         var $post = $obj.serialize();
         var si = 'pm_status_icon';
         status_icon(si, 'loading_white');
-        jQuery.post("[*$BASEURL|sl*]index.php?[*fk ajax=1*]module=messages&act=send_ok&from_ajax=1", $post, function (data) {
+        jQuery.post("[*$baseurl|sl*]index.php?[*fk ajax=1*]module=messages&act=send_ok&from_ajax=1", $post, function (data) {
             if (data != "OK!") {
                 status_icon(si, 'error');
                 alert(data);

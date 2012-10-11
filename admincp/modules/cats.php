@@ -14,7 +14,7 @@ if (!defined('INSITE'))
     die("Remote access denied!");
 
 class cats_man {
-    
+
     /**
      * Объект категорий
      * @var categories $cats
@@ -23,11 +23,10 @@ class cats_man {
 
     /**
      * Инициализация управления категориями
-     * @global string $admin_file
      * @return null
      */
     public function init() {
-        global $admin_file;
+        $admin_file = globals::g('admin_file');
         lang::o()->get('admin/cats');
         $act = $_GET['act'];
         $type = $_GET['type'];
@@ -36,6 +35,7 @@ class cats_man {
             $type = 'torrents';
         tpl::o()->assign('oldadmin_file', $admin_file);
         $admin_file .= '&type=' . $type;
+        globals::s('admin_file', $admin_file);
         tpl::o()->assign('admin_file', $admin_file);
         tpl::o()->assign('cat_type', $type);
         switch ($act) {
@@ -134,14 +134,13 @@ class cats_man {
 
     /**
      * Сохранение категории
-     * @global string $admin_file
      * @param array $data массив данных категории
      * @param array $type тип категории
      * @return null
      * @throws EngineException 
      */
     protected function save($type, $data) {
-        global $admin_file;
+        $admin_file = globals::g('admin_file');
         $cols = array(
             'parent_id',
             'name',

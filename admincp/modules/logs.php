@@ -37,11 +37,10 @@ class logs_man {
 
     /**
      * Инициализация модуля логов
-     * @global string $admin_file
      * @return null
      */
     public function init() {
-        global $admin_file;
+        $admin_file = globals::g('admin_file');
         lang::o()->get('admin/logs');
         $act = $_GET["act"];
         $type = $_GET["type"];

@@ -23,11 +23,9 @@ class registration {
 
     /**
      * Инициализация регистрации
-     * @global string $BASEURL
      * @return null
      */
     public function init() {
-        global $BASEURL;
         if (users::o()->v())
             furl::o()->location('');
         $step = $_REQUEST ['step'];

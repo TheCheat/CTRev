@@ -3,13 +3,13 @@
         <script type="text/javascript">
             init_tablesorter();
             function change_tpage(to_page) {
-                jQuery.get('[*$BASEURL|sl*]index.php', {'module': 'torrents', 'act':'unreaded', 'from_ajax':1, 'page':to_page, 'nno':1}, function (data) {
+                jQuery.get('[*$baseurl|sl*]index.php', {'module': 'torrents', 'act':'unreaded', 'from_ajax':1, 'page':to_page, 'nno':1}, function (data) {
                     jQuery("#update_unreaded_torrents").empty();
                     jQuery("#update_unreaded_torrents").append(data);
                 });
             }
             function make_readed(id) {
-                jQuery.post('[*$BASEURL|sl*]index.php?module=torrents&from_ajax=1&act=read', {'id':id}, function (data) {
+                jQuery.post('[*$baseurl|sl*]index.php?module=torrents&from_ajax=1&act=read', {'id':id}, function (data) {
                     if (data=="OK!") {
                         alert('[*'success'|lang|sl*]!');
                         delete_this(id);
@@ -26,10 +26,10 @@
                 });
             }
             function read_all() {
-                jQuery.get('[*$BASEURL|sl*]index.php', {'module': 'torrents', 'from_ajax': 1, 'act': 'read'}, function (data) {
+                jQuery.get('[*$baseurl|sl*]index.php', {'module': 'torrents', 'from_ajax': 1, 'act': 'read'}, function (data) {
                     if (data=="OK!") {
                         alert('[*'success'|lang|sl*]!');
-                        window.location = '[*$BASEURL|sl*]';
+                        window.location = '[*$baseurl|sl*]';
                     } else {
                         alert('[*'error'|lang|sl*]: '+data);
                     }

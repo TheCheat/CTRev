@@ -15,7 +15,7 @@ if (!defined('INSITE'))
 
 class config_man extends pluginable_object {
     /**
-     * @const config_prefix префикс полей конфига
+     * Префикс полей конфига
      */
 
     const config_prefix = 'config_';
@@ -132,11 +132,10 @@ class config_man_ajax {
 
     /**
      * Инициализация AJAX-части модуля
-     * @global array $POST
      * @return null
      */
     public function init() {
-        global $POST;
+        $POST = globals::g('POST');
         lang::o()->get('admin/config');
         $cprefix = config_man::config_prefix;
         $cprefix_length = strlen($cprefix);

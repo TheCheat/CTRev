@@ -63,17 +63,17 @@ class announce_parser extends fbenc {
 
 class bittorrent extends announce_parser {
     /**
-     * @const files_pattern паттерн для именования файлов в зависимости от времени загрузки
+     * Паттерн для именования файлов в зависимости от времени загрузки
      */
 
     const files_pattern = 's%d_%de';
     /**
-     * @const torrent_prefix префикс в имени торрент файла, хранимого на сервере
+     * Префикс в имени торрент файла, хранимого на сервере
      */
     const torrent_prefix = "t";
 
     /**
-     * @const max_filelist макс. кол-во файлов, записываемых в БД
+     * Макс. кол-во файлов, записываемых в БД
      */
     const max_filelist = 100;
 

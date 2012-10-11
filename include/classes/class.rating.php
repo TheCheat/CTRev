@@ -90,7 +90,7 @@ class rating extends pluginable_object {
         $this->access_var('min', PVAR_ADD);
         $this->access_var('part', PVAR_ADD);
         /**
-         * @tutorial Отображение рейтинга(display_rating)
+         * @note Отображение рейтинга(display_rating)
          * int rid ID ресурса
          * string type тип ресурса
          * int owner владелец ресурса

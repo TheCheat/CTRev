@@ -329,13 +329,12 @@ abstract class bbcode_formatter extends formatter_callbacks {
 
     /**
      * Инициализация паттернов и заменяемого текста для format_text
-     * @global string $BASEURL
      * @param array $patterns паттерны
      * @param array $replacement заменяемый текст
      * @return null
      */
     protected function format_text_init(&$patterns = "", &$replacement = "") {
-        global $BASEURL;
+        $baseurl = globals::g('baseurl');
         $global = false;
         if (!$patterns && !$replacement) {
             if ($this->executed_format)
@@ -354,7 +353,7 @@ abstract class bbcode_formatter extends formatter_callbacks {
         }
         if ($replacement) {
             $replacement = preg_replace_callback('/%LANG\[(?:"|\'|)([a-zA-Z0-9\-\_]+)(?:"|\'|)\]/siu', array($this, 'lang_macro'), $replacement);
-            $replacement = str_replace('%baseurl;', $BASEURL, $replacement);
+            $replacement = str_replace('%baseurl;', $baseurl, $replacement);
         }
     }
 
@@ -435,12 +434,11 @@ abstract class bbcode_formatter extends formatter_callbacks {
 
     /**
      * Форматирование текста, согласно паттернам(простые теги типа b, i, u и пр.)
-     * @global string $BASEURL
      * @param string $input входной текст
      * @return string форматированный текст
      */
     protected function format_text_simple($input) {
-        global $BASEURL;
+        $baseurl = globals::g('baseurl');
         $this->init_smilies();
 // $out = nl2br ( $input ); // лишь в 5.3 можно сделать для HTML Trans.
         $out = $input;
@@ -453,12 +451,11 @@ abstract class bbcode_formatter extends formatter_callbacks {
 
     /**
      * Замена смайликов
-     * @global string $BASEURL
      * @param string $input входящий текст
      * @return null
      */
     protected function smilies_replace(&$input) {
-        global $BASEURL;
+        $baseurl = globals::g('baseurl');
         if (!$this->smilies)
             return;
         foreach ($this->smilies as $smilies_pack) {
@@ -468,7 +465,7 @@ abstract class bbcode_formatter extends formatter_callbacks {
                     $image = $smilie ['image'];
                     $name = $smilie ['name'];
                     // preg_replace с модификатором i намного быстрее str_ireplace
-                    $input = preg_replace('/' . mpc($code) . '/i', "<img src=\"" . $BASEURL . config::o()->v('smilies_folder') . "/" . $image . "\" 
+                    $input = preg_replace('/' . mpc($code) . '/i', "<img src=\"" . $baseurl . config::o()->v('smilies_folder') . "/" . $image . "\" 
                                 alt=\"" . $name . "\" 
                                 title=\"" . $name . "\">", $input);
                 }

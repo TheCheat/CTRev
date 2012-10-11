@@ -1,6 +1,6 @@
 <script type="text/javascript">
     function click_downm_torrents(sticky, obj) {
-        jQuery.post("[*$BASEURL*]index.php?module=downm&act=torrents&sticky="+sticky+"&from_ajax=1",
+        jQuery.post("[*$baseurl*]index.php?module=downm&act=torrents&sticky="+sticky+"&from_ajax=1",
         function (data) {
             var sobj = jQuery(obj).parent("p").parent("div");
             sobj.empty();
