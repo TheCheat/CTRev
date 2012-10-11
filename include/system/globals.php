@@ -18,6 +18,13 @@ final class globals {
     /**
      * Массив переменных
      * @var array $vars
+     * @note POST - массив POST данных до экранирования
+     * @note BASEURL - URL до корня сайта
+     * @note PREBASEURL - часть BASEURL без протокола и домена
+     * @note theme_path - URL до данной темы
+     * @note eadmin_file - URL к админке
+     * @note admin_file - URL к админке с выбранным модулем
+     * @note ajax - AJAX-запрос?
      */
     private static $vars = array();
 
