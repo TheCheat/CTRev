@@ -29,9 +29,11 @@ class getpeers {
 
     /**
      * Ограничение на запрос по времени в секундах
+     * По-умолчанию DEFAULT_SOCKET_TIMEOUT
+     * @var int $time_limit
      */
 
-    const time_limit = 2;
+    protected $time_limit = 0;
 
     /**
      * Конструктор запроса для аннонсеров
@@ -62,7 +64,9 @@ class getpeers {
         $announce_url .= "&event=" . $event;
         $this->announce_url = $announce_url;
         $this->bt = n("bittorrent");
-        ini_set('default_socket_timeout', self::time_limit);
+        if (!$this->time_limit)
+            $this->time_limit = DEFAULT_SOCKET_TIMEOUT;
+            
     }
 
     /**
@@ -94,7 +98,7 @@ class getpeers {
             }
         }
         $query = $p['query'];
-        $r = @fsockopen($host, $port, $errno, $errstr, self::time_limit);
+        $r = @fsockopen($host, $port, $errno, $errstr, $this->time_limit);
         if (!$r)
             return;
         $out = "GET " . $path . "?" . $query . " HTTP/1.1\r\n";
@@ -151,8 +155,8 @@ class getpeers {
 
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_HEADER, false);
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, self::time_limit);
-            curl_setopt($ch, CURLOPT_TIMEOUT, self::time_limit);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->time_limit);
+            curl_setopt($ch, CURLOPT_TIMEOUT, $this->time_limit);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_USERAGENT, $ua);
 

@@ -114,7 +114,7 @@ class categories {
      * Создание условия для выборки всего из данной категории и всех подкатегорий
      * @param integer|string $cur имя или ID данной категории
      * @param array $cat_row массив верхней категории
-     * @return string условие
+     * @return string условие, если есть данные
      */
     public function condition($cur, &$cat_row = null) {
         if (!$cur)
@@ -135,7 +135,7 @@ class categories {
         $ids = array();
         $this->get_children_ids($c ['id'], $ids);
         $ids[] = $c['id'];
-        $where = $this->cat_where(implode('|', $ids), true);
+        $where = $this->cat_where($ids, true);
         return $where;
     }
 
@@ -158,13 +158,34 @@ class categories {
 
     /**
      * Создание условия для категории
-     * @param int $id ID категории
+     * @param int|array $id ID категории
      * @param bool $no_int не преобразовывать ID в целое число
-     * @return string условие
+     * @param string $column столбец для поиска
+     * @return string условие, если есть данные
      */
-    public function cat_where($id, $no_int = false) {
-        return '`category_id`
-            ' . ($no_int ? "R" : "") . 'LIKE "' . (!$no_int ? "%" : "") . ',' . ($no_int ? "(" . $id . ")" : (int) $id) . ',' . (!$no_int ? "%" : "") . '"';
+    public function cat_where($id, $no_int = false, $column = 'category_id') {
+        if (!$id)
+            return;
+        if (!$column)
+            $column = 'category_id';
+        //return '`'.$column.'`
+        //    ' . ($no_int ? "R" : "") . 'LIKE "' . (!$no_int ? "%" : "") . ',' . ($no_int ? "(" . $id . ")" : (int) $id) . ',' . (!$no_int ? "%" : "") . '"';
+        $column = db::o()->cesc($column) . ' LIKE ';
+        $r = "";
+        if ($no_int) {
+            if (!is_array($id))
+                $id = explode(',', $id);
+            foreach ($id as $n) {
+                $n = (int) trim($n);
+                if (!$n)
+                    continue;
+                $r .= ($r ? ' OR ' : '') . $column . '"%,' . $n . ',%"';
+            }
+            if ($r)
+                $r = "(" . $r . ")";
+        } else
+            $r = $column . '"%,' . intval($id) . ',%"';
+        return $r;
     }
 
     /**
@@ -262,7 +283,7 @@ class categories {
 
     /**
      * Вывод категорий с родителями
-     * @param array $cat_arr массив данных категорий
+     * @param array|string $cat_arr массив данных категорий/строка с их ID
      * @param array $parents массив родителей вида transl_name=>name
      * @param string $type тип категорий
      * @return string HTML код
@@ -270,6 +291,10 @@ class categories {
     public function print_selected($cat_arr, $parents = null, $type = "torrents") {
         if (!$cat_arr)
             return;
+        if (!is_array($cat_arr)) {
+            $cat_arr = $this->cid2arr($cat_arr);
+            $cat_arr = $cat_arr[1];
+        }
         $this->change_type($type);
         $type = $this->curtype;
         $html = '';

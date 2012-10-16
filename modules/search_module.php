@@ -124,8 +124,6 @@ class search_module {
             "status");
         extract(rex($data, $data_params));
 
-        if ($category && is_array($category))
-            $category = array_map("intval", $category);
         $search_in = (int) $search_in;
         $posted_from = (int) $posted_from;
         $posted_to = (int) $posted_to;
@@ -141,10 +139,10 @@ class search_module {
                 break;
         }
         $regexp = true;
-        if ($search_str)
-            $where[] = $search->make_where($search_str, $columns, $regexp);
-        if ($author)
-            $where[] = $search->like_where(mb_strtolower($author), "username_lower");
+        if ($search_str && ($cwhere = $search->make_where($search_str, $columns, $regexp)))
+            $where[] = $cwhere;
+        if ($author && ($chwere = $search->like_where(mb_strtolower($author), "username_lower")))
+            $where[] = $chwere;
         if ($tag)
             $where[] = 'CONCAT(",",`tags`,",") LIKE "%,' . db::o()->sesc($tag) . ',%"';
         if ($posted_from || $posted_to) {
@@ -176,7 +174,9 @@ class search_module {
         if ($category && is_array($category)) {
             /* @var $cats categories */
             $cats = n("categories");
-            $where[] = $cats->cat_where(implode('|', $category), true);
+            $cwhere = $cats->cat_where($category, true);
+            if ($cwhere)
+                $where[] = $cwhere;
         }
 
         $where = $where ? '(' . implode(') AND (', $where) . ')' : '';

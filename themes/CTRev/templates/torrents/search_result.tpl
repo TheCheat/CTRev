@@ -20,6 +20,7 @@
                         <br>
                     [*/if*]
                     <div class="cornerText gray_color gray_border">
+                        [*$row.category_id|print_cats*]:
                         <a href="[*gen_link module='torrents' title=$row.title id=$row.id*]">
                             <font size="3"><b>[*$row.title*]</b></font>
                         </a>

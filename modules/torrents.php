@@ -198,7 +198,7 @@ class torrents {
             $add .= ' AND t.posted_time>' . $last_clean;
         if ($category) {
             $cid = $this->cats->get($category);
-            if ($cid)
+            if ($cid['id'])
                 $add .= ' AND ' . $this->cats->cat_where($cid['id']);
         }
         $count = db::o()->query('SELECT COUNT(*) FROM torrents AS t
@@ -358,8 +358,8 @@ class torrents {
             $cat_rows = array();
             if (!$cat)
                 $where [] = "t.on_top='1'";
-            else
-                $where [] = $cats->condition($cat, $cat_rows);
+            elseif ($cwhere = $cats->condition($cat, $cat_rows))
+                $where [] = $cwhere;
             if ($cat_rows)
                 $this->title = $cat_rows [0];
             $year = (int) $data ["year"];
@@ -876,10 +876,12 @@ class torrents_ajax {
             $max_title_symb = (int) $settings['max_title_symb'];
             if (!$max_title_symb)
                 $max_title_symb = 100;
+            $where = n("categories")->cat_where(explode("|", $catids), true);
+            $where .= ($where ? ' AND' : '') . ' on_top="1"';
             $r = db::o()->query('SELECT t.id, t.title, t.seeders, t.leechers, 
             t.size, t.screenshots, u.username, u.group, t.posted_time 
             FROM torrents AS t LEFT JOIN users AS u ON u.id=t.poster_id
-            WHERE ' . n("categories")->cat_where($catids, true) . ' AND on_top="1"
+            WHERE ' . $where . '
             ORDER BY posted_time DESC
             LIMIT ' . $limit);
             $a = array();

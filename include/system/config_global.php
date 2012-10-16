@@ -26,6 +26,18 @@ define('ENGINE_STAGE', 'RC2');
 
 
 /**
+ * Макс. время соединения для сокетов
+ */
+define('DEFAULT_SOCKET_TIMEOUT', 2);
+/**
+ * Макс. время выполнения скрипта
+ * НЕ рекомендуется ставить 0
+ */
+define('MAX_SCRIPT_EXECUTION_TIME', 30);
+
+
+
+/**
  * Путь к модулям, относительно корня системы
  */
 define('MODULES_PATH', 'modules');
@@ -69,7 +81,6 @@ define('PLUGINS_REPLACED', 'replaced');
  * Алиасы для классов(при отсутствии функции)
  */
 define('CLASS_ALIASES', "include/system/aliases.php");
-
 
 
 /**

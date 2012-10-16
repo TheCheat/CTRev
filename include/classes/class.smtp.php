@@ -28,12 +28,6 @@ final class smtp {
     public $port = 25;
 
     /**
-     * Таймаут
-     * @var int $timeout
-     */
-    public $timeout = 45;
-
-    /**
      * Имя STMP пользователя
      * @var string $username
      */
@@ -74,13 +68,35 @@ final class smtp {
      * @var string $endError
      */
     public $endError = '';
-    // Промежуточные переменные
+    /**
+     * Ресурс сокета
+     * @var resourse $smtpConnect
+     */
     private $smtpConnect = false;
+    /**
+     * Получатель сообщения
+     * @var string $to
+     */
     private $to = false;
+    /**
+     * Заголовок сообщения
+     * @var string $subject
+     */
     private $subject = false;
+    /**
+     * Сообщение
+     * @var string $message 
+     */
     private $message = false;
-    private $headers = false;
+    /**
+     * Массив логов
+     * @var array $logArray
+     */
     private $logArray = array();
+    /**
+     * Текст ошибки
+     * @var string $Error
+     */
     private $Error = '';
 
     /**
@@ -114,7 +130,7 @@ final class smtp {
      * @return bool true, в случае удачной отправки
      */
     private function Connect2Server() {
-        $this->smtpConnect = fsockopen($this->smtpServer, $this->port, $errno, $error, $this->timeout);
+        $this->smtpConnect = fsockopen($this->smtpServer, $this->port, $errno, $error, DEFAULT_SOCKET_TIMEOUT);
         $this->logArray ['CONNECT_RESPONSE'] = $this->readResponse();
 
         if (!is_resource($this->smtpConnect)) {

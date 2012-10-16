@@ -191,9 +191,12 @@ class search {
      * Поиск со звёздочкой
      * @param string $value значение
      * @param string $column столбец
-     * @return string условие
+     * @return string условие, если верная строка поиска
      */
     public function like_where($value, $column) {
+        $this->check_str($value);
+        if (!$value)
+            return "";
         $value = str_replace(array('\*',
             '\?',
             '?',
@@ -209,6 +212,18 @@ class search {
     }
 
     /**
+     * Проверка строки поиска
+     * @param string $value искомые слова
+     * @return bool строка не пуста(содержит слово, мин. из трёх букв)
+     */
+    protected function check_str(&$value) {
+        $value = preg_replace('/\*+/', '*', $value);
+        if (!preg_match('/.{3,}/siu', $value))
+            $value = "";
+        return (bool) $value;
+    }
+
+    /**
      * Создание условия полнотекстового поиска и выделение слов для подсветки
      * @param string $value искомые слова
      * @param string|array $columns столбец\столбцы
@@ -216,9 +231,12 @@ class search {
      * Если изначально переменной присвоено значение true, 
      * то будут вычислены рег. выражения, иначе - нет
      * @param bool $boolean поиск в логическом режиме
-     * @return string условие поиска
+     * @return string условие, если верная строка поиска
      */
     public function make_where($value, $columns, &$regexp = true, $boolean = true) {
+        $this->check_str($value);
+        if (!$value)
+            return "";
         if (is_array($columns))
             $columns = implode(',', array_map(array(db::o(), "cesc"), $columns));
         else
@@ -285,7 +303,7 @@ class search {
      * Функция для поиска IP вида 127.0.0.*
      * @param string $ip IP адрес
      * @param string $column столбец поиска
-     * @return string условие для поиска
+     * @return string условие, если верные IP
      */
     public function search_ip($ip, $column = 'ip') {
         if (!$column)

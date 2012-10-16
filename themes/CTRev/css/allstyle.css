@@ -220,7 +220,6 @@ hr.gray_border, hr.gray_border2 {
 .popup_screen .modalbox_close {
     position: relative;
     float: right;
-    content: "x";
     font-size: 12px;
     cursor: pointer;
 }

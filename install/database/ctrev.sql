@@ -279,11 +279,11 @@ CREATE TABLE IF NOT EXISTS `pmessages` (
   `time` int(12) unsigned NOT NULL DEFAULT '0',
   `receiver` int(10) unsigned NOT NULL DEFAULT '0',
   `unread` enum('1','0') NOT NULL DEFAULT '1',
+  `deleted` enum( '0', '1', '2' ) NOT NULL DEFAULT '0' COMMENT '0-none,1-sender,2-reciever',
   PRIMARY KEY (`id`),
   KEY `time` (`time`),
-  KEY `sender` (`sender`),
-  KEY `receiver` (`receiver`),
-  KEY `unread` (`receiver`,`unread`)
+  KEY `sender` (`sender`,`deleted`),
+  KEY `reciever` (`receiver`,`unread`,`deleted`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `polls` (

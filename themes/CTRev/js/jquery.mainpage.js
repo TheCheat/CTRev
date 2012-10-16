@@ -184,7 +184,7 @@ function close_popup() {
 function init_modalbox_close($onclose) {
     if (typeof ($popup_id) == "undefined")
         return;
-    jQuery("#" + $popup_id + " .modalbox_title").append('<div class="modalbox_close"></div>');
+    jQuery("#" + $popup_id + " .modalbox_title").append('<div class="modalbox_close">x</div>');
     jQuery("#" + $popup_id + " .modalbox_close").bind("click", function() {
         if (!$popup_id)
             return;

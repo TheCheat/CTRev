@@ -100,10 +100,10 @@ class users_checker {
      */
     protected function bans_error($r, $what = "ip") {
         lang::o()->get('admin/bans');
-        $r = lang::o()->v("bans_this_" . $what . "_banned", true);
-        $r .= ($r['to_time'] ? lang::o()->v('bans_until') . display::o()->date($r['to_time'], "ymd") : lang::o()->v('bans_forever'));
-        $r .= lang::o()->v('bans_dot') . ($r["reason"] ? lang::o()->v('bans_reason') . $r['reason'] : "");
-        return $r;
+        $ret = lang::o()->v("bans_this_" . $what . "_banned", true);
+        $ret .= ($r['to_time'] ? lang::o()->v('bans_until') . display::o()->date($r['to_time'], "ymd") : lang::o()->v('bans_forever'));
+        $ret .= lang::o()->v('bans_dot') . ($r["reason"] ? lang::o()->v('bans_reason') . $r['reason'] : "");
+        return $ret;
     }
 
     /**
@@ -269,19 +269,16 @@ class users_checker {
         } elseif (class_exists('config') && config::o()->v('check_mx_email')) {
             $email_arr = explode('@', $email);
             $host = $email_arr [1];
-            $f = @fsockopen($host, 25, $errno, $errstr, 30);
-            fclose($f);
-            if (!$f) {
+            if (!checkdnsrr($host)) {
                 $with_bans = null;
                 return false;
             }
         }
         if ($with_bans) {
             $r = db::o()->query('SELECT to_time, reason FROM bans WHERE ' . db::o()->esc($email) .
-                    ' LIKE REPLACE("*", "%", REPLACE("%", "\\%", email)) AND email<>""
-                AND (to_time >= ' . time() . ' OR to_time=0)', 1);
-            if ($r) {
-                $r = db::o()->fetch_assoc($r);
+                    ' LIKE REPLACE(REPLACE(email, "%", "\\%"), "*", "%") AND email<>""
+                AND (to_time >= ' . time() . ' OR to_time=0) LIMIT 1');
+            if ($r = db::o()->fetch_assoc($r)) {
                 $with_bans = $this->bans_error($r, "email");
                 return false;
             }
