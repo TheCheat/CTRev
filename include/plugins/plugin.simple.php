@@ -109,7 +109,45 @@ class plugin_simple {
      * расширяет, какие хуки задействованы.
      */
     public function init($plugins) {
-        
+        // Полный мануал смотрите на http://ctrev.cyber-tm.ru
+        $plugins->add_hook('torrents_show_begin', array($this, 'torrents_show_begin'));
+        $plugins->extend_class('torrents', 'my_torrents');
+        $plugins->preload('cleanup', 'modify_var', array('methods', 'empty'));
+        $plugins->preload('cleanup', 'add_method', array('clear_empty', array($this, 'clear_empty')));
+        $plugins->modify_init('torrents', array($this, 'torrents_init'));
+    }
+
+    /**
+     * Метод для {@see cleanup}
+     * @return null
+     */
+    public function clear_empty() {
+        print('Executed cleanup');
+        print('<br>');
+    }
+
+    /**
+     * Модификация для инициализации торрентов
+     * @return null
+     */
+    public function torrents_init() {
+        print('Prepending text to torrents init');
+        print('<br>');
+    }
+
+    /**
+     * Реализация хука torrents_show_begin
+     * @params array $data массив данных
+     * @return null
+     */
+    public function torrents_show_begin($data) {
+        $where = &$data['where'];
+        $where[] = 'TRUE=TRUE';
+        print('Torrents hook "torrents_show_begin" WHERE condition = ');
+        print_r($where);
+        print('<br>');
+        print('Which is stops executing method by throwing PReturn');
+        throw new PReturn;
     }
 
     /**

@@ -41,7 +41,7 @@ final class PReturn extends Exception {
 
 }
 
-// В PHP не переопределить оператор, но можно сделать так, да и правильно.
+// Ограничиваем доступ к защищённым переменным, добавляем методы
 
 define('PVAR_READ', 0); // Чтение
 define('PVAR_ADD', 1); // Добавление ключа
@@ -112,7 +112,7 @@ abstract class pluginable_object {
     /**
      * Вызов метода
      * @param string $method имя метода
-     * @param array $params массив параметров
+     * @param mixed $params массив параметров/единственный параметр не массив
      * @param bool $redefine разрешить переопределять стандартные методы
      * @return mixed возвращаемое значение функции
      */
@@ -162,7 +162,7 @@ abstract class pluginable_object {
         $var = &$this->$var;
         $m = is($pv, PVAR_MOD);
         $a = is($pv, PVAR_ADD);
-        if (!is_array($this->$var)) {
+        if (!is_array($var)) {
             if ($m && !is_array($value))
                 $var = $value;
             return $this;
@@ -236,21 +236,26 @@ final class plugins_manager {
     private $parsed = array();
 
     /**
+     * Имя загружаемого плагина
+     * @var string $cplugin
+     */
+    private $cplugin = null;
+
+    /**
      * Конструктор
      * @param plugins $plugins объект плагинов
      * @param string $plugin_name имя загружаемого плагина
      * @return null
      */
     public function __construct($plugins, &$plugin_name) {
+        $this->cplugin = &$plugin_name;
         $this->p = $plugins;
         $this->plugins = db::o()->query('SELECT file,settings FROM plugins', array('n' => 'plugins',
             'k' => array('file' => 'settings')));
         foreach ($this->plugins as $plugin => $settings) {
-            $plugin_name = $plugin;
             $this->load($plugin);
             $this->settings($plugin, $settings);
         }
-        $plugin_name = '';
     }
 
     /**
@@ -259,12 +264,15 @@ final class plugins_manager {
      * @param bool $extend файл расширения классов?
      * @return bool статус выполнения
      */
-    private function load_incfile($plugin, $extend = false) {
+    public function load_incfile($plugin, $extend = false) {
         $prefix = ($extend ? 'ext' : 'inc');
         $path = ROOT . PLUGINS_PATH . '/' . PLUGINS_INC . '/' . $prefix . '.' . $plugin . '.php';
         if (!file_exists($path))
             return false;
-        include_once $path;
+        if (!$extend)
+            include_once $path;
+        else
+            include $path;
         return true;
     }
 
@@ -287,12 +295,14 @@ final class plugins_manager {
             return false;
         $obj = new $pname();
         $this->plugins[$plugin] = $obj;
+        $this->cplugin = $plugin;
         if (!$install) {
             $this->load_incfile($plugin);
             if (is_callable(array($obj, "init")))
                 $obj->init($this->p);
-            $this->load_incfile($plugin, true);
+            //$this->load_incfile($plugin, true);
         }
+        $this->cplugin = '';
         return true;
     }
 
@@ -659,6 +669,18 @@ final class plugins extends plugins_modifier {
     private $preloaded = array();
 
     /**
+     * Расширённые классы(параметры для {@see class_exists})
+     * @var array $extended
+     */
+    private $extended = array();
+
+    /**
+     * Список плагинов, для которых необходимо подключить файл ext.
+     * @var array $inc_redefined
+     */
+    private $inc_redefined = array();
+
+    /**
      * Массив переопределённых объектов
      * @var array $redefined
      */
@@ -705,7 +727,7 @@ final class plugins extends plugins_modifier {
      * @param string $name имя хука
      * @param callback $callback реализация
      * @return plugins $this 
-     * @note единственный параметр, который получить функция при вызове - массив данных
+     * @note единственный параметр, который должна получить функция при вызове - массив данных
      */
     public function add_hook($name, $callback) {
         if (!$this->state)
@@ -753,7 +775,7 @@ final class plugins extends plugins_modifier {
     /**
      * Вызов метода в конструкторе для класса, наследующего pluginable_object
      * @param string $class имя класса
-     * @param string $action действие
+     * @param string $action действие(метод из класса pluginable_object)
      * @param array $params массив параметров
      * @return plugins $this
      */
@@ -781,7 +803,10 @@ final class plugins extends plugins_modifier {
             return;
         if (!$obj || !is_object($obj) || !is_subclass_of($obj, 'pluginable_object'))
             return;
-        $pl = (array) $this->preloaded[get_class($obj)];
+        $c = get_class($obj);
+        if ($nc = array_search($c, $this->redefined))
+            $c = $nc;
+        $pl = (array) $this->preloaded[$c];
         if (!$pl)
             return;
         $c = count($actions);
@@ -813,8 +838,7 @@ final class plugins extends plugins_modifier {
             return $this;
         $name = "plugin_extend_" . $this->current_plugin . '_base_' . $original;
         $extend = $this->get_class($original, true);
-        if (!class_alias($extend, $name))
-            return $this;
+        $this->extended[$original][] = array($extend, $name);
         $this->redefine_class($original, $new);
         return $this;
     }
@@ -826,12 +850,36 @@ final class plugins extends plugins_modifier {
      * @return plugins $this
      */
     public function redefine_class($original, $new) {
-        if (!$this->state)
+        if (!$this->state || !$this->current_plugin)
             return $this;
         if (/* !class_exists($new, false) */!validword($new)) // подгружается апосле
             return $this;
         $this->redefined[$original] = $new;
+        $this->inc_redefined[$original][] = $this->current_plugin;
         return $this;
+    }
+
+    /**
+     * Подключение переопределённых классов
+     * @param string $class имя оригинала
+     * @return null
+     */
+    private function include_redefined($class) {
+        $a = (array) $this->extended[$class];
+        if ($a) {
+            $c = count($a);
+            for ($i = 0; $i < $c; $i++)
+                if (!class_exists($a[$i][1]))
+                    class_alias($a[$i][0], $a[$i][1]);
+        }
+        $a = (array) $this->inc_redefined[$class];
+        if ($a) {
+            $c = count($a);
+            for ($i = 0; $i < $c; $i++)
+                $this->manager->load_incfile($a[$i], true);
+        }
+        unset($this->extended[$class]); // защищаем от повторного ненужного добавления алиаса
+        unset($this->inc_redefined[$class]); // защищаем от повторного ненужного подключения
     }
 
     /**
@@ -841,6 +889,7 @@ final class plugins extends plugins_modifier {
      * @return object|string необходимый объект
      */
     public function get_class($class, $name = false) {
+        $this->include_redefined($class);
         if ($this->state) {
             if (function_exists('load_aliases') && !$this->aliases_inited) {
                 load_aliases();
@@ -862,7 +911,7 @@ final class plugins extends plugins_modifier {
      * @param string $class имя класса
      * @param callback $callback функция для вызова
      * @param bool $pre pre_init?
-     * @return plugins $this 
+     * @return plugins $this
      */
     public function modify_init($class, $callback, $pre = false) {
         if (!$this->state)
@@ -870,7 +919,6 @@ final class plugins extends plugins_modifier {
         if (!is_callable($callback))
             return $this;
         $m = ($pre ? "pre_" : '') . 'init';
-        $class = $this->get_class($class, true);
         if (!$this->init[$class])
             $this->init[$class] = array();
         if (!$this->init[$class][$m])
@@ -891,8 +939,10 @@ final class plugins extends plugins_modifier {
         $r = '';
         if ($this->state) {
             try {
-                $class = get_class($obj);
-                $extended = (array) $this->init[$class][$m];
+                $c = get_class($obj);
+                if ($nc = array_search($c, $this->redefined))
+                    $c = $nc;
+                $extended = (array) $this->init[$c][$m];
                 $c = count($extended);
                 for ($i = 0; $i < $c; $i++)
                     $r .= call_user_func($extended[$i]);
