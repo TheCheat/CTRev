@@ -2,9 +2,9 @@
 
 /**
  * Project:            	CTRev
- * File:                include_announce.php
+ * @file                include/include_announce.php
  *
- * @link 	  	http://ctrev.cyber-tm.ru/
+ * @page 	  	http://ctrev.cyber-tm.ru/
  * @copyright         	(c) 2008-2012, Cyber-Team
  * @author 	  	The Cheat <cybertmdev@gmail.com>
  * @name 		Загрузка основных файлов движка для аннонсера

@@ -2,9 +2,9 @@
 
 /**
  * Project:            	CTRev
- * File:                class.tpl.php
+ * @file                include/classes/class.tpl.php
  *
- * @link 	  	http://ctrev.cyber-tm.ru/
+ * @page 	  	http://ctrev.cyber-tm.ru/
  * @copyright         	(c) 2008-2012, Cyber-Team
  * @author 	  	The Cheat <cybertmdev@gmail.com>
  * @name		Класс, добавляющий некоторые фичи к Smarty

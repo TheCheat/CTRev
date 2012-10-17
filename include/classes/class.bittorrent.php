@@ -2,9 +2,9 @@
 
 /**
  * Project:            	CTRev
- * File:                class.bittorrent.php
+ * @file                include/classes/class.bittorrent.php
  *
- * @link 	  	http://ctrev.cyber-tm.ru/
+ * @page 	  	http://ctrev.cyber-tm.ru/
  * @copyright         	(c) 2008-2012, Cyber-Team
  * @author 	  	The Cheat <cybertmdev@gmail.com>
  * @name		Класс для работы с торрент-файлами

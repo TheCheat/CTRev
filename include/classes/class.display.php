@@ -2,9 +2,9 @@
 
 /**
  * Project:            	CTRev
- * File:                class.display.php
+ * @file                include/classes/class.display.php
  *
- * @link 	  	http://ctrev.cyber-tm.ru/
+ * @page 	  	http://ctrev.cyber-tm.ru/
  * @copyright         	(c) 2008-2012, Cyber-Team
  * @author 	  	The Cheat <cybertmdev@gmail.com>
  * @name		Класс, содержащий методы для вывода ч/л на экран

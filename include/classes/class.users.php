@@ -2,9 +2,9 @@
 
 /**
  * Project:            	CTRev
- * File:                class.users.php
+ * @file                include/classes/class.users.php
  *
- * @link 	  	http://ctrev.cyber-tm.ru/
+ * @page 	  	http://ctrev.cyber-tm.ru/
  * @copyright         	(c) 2008-2012, Cyber-Team
  * @author 	  	The Cheat <cybertmdev@gmail.com>
  * @name		Пользовательские функции
@@ -29,7 +29,8 @@ class users_checker {
      * @var array $vars
      * @note protected, ибо предполагается, что неизменно в процессе работы. 
      * Ибо это данные из БД и для изменения юзать соотв. функции {@link db}.
-     * Если необходимо временно переопределить, юзаем {@see users::set_tmpvars()}
+     * Если необходимо временно переопределить, юзаем set_tmpvars
+     * @see set_tmpvars()
      */
     protected $vars = array();
 

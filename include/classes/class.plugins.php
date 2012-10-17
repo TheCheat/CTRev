@@ -2,9 +2,9 @@
 
 /**
  * Project:            	CTRev
- * File:                class.plugins.php
+ * @file                include/classes/class.plugins.php
  *
- * @link 	  	http://ctrev.cyber-tm.ru/
+ * @page 	  	http://ctrev.cyber-tm.ru/
  * @copyright         	(c) 2008-2012, Cyber-Team
  * @author 	  	The Cheat <cybertmdev@gmail.com>
  * @name           	Класс, реализующий поддержку плагинов в движке
@@ -511,8 +511,8 @@ class plugins_modifier {
      * успешно изменён
      * @note CSS, JS не нужно модифицировать, проще подцепить свой, 
      * ибо всё переопределяемо.
-     * @see function join_js()
-     * @see function join_css()
+     * @see join_js()
+     * @see join_css()
      */
     public function modify_template($f, $what, $with, $regexp = false, $folder = null) {
         if (!$what)
@@ -669,8 +669,9 @@ final class plugins extends plugins_modifier {
     private $preloaded = array();
 
     /**
-     * Расширённые классы(параметры для {@see class_exists})
+     * Расширённые классы(параметры для class_exists)
      * @var array $extended
+     * @see function class_exists
      */
     private $extended = array();
 

@@ -2,9 +2,9 @@
 
 /**
  * Project:             CTRev
- * File:                torrents_simple.php
+ * @file                modules/blocks/torrents_simple.php
  *
- * @link 	  	http://ctrev.cyber-tm.ru/
+ * @page 	  	http://ctrev.cyber-tm.ru/
  * @copyright           (c) 2008-2012, Cyber-Team
  * @author 	  	The Cheat <cybertmdev@gmail.com>
  * @name 		"Лёгкий" блок торрентов

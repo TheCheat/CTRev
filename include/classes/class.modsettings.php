@@ -2,9 +2,9 @@
 
 /**
  * Project:            	CTRev
- * File:                class.modsettings.php
+ * @file                include/classes/class.modsettings.php
  *
- * @link 	  	http://ctrev.cyber-tm.ru/
+ * @page 	  	http://ctrev.cyber-tm.ru/
  * @copyright         	(c) 2008-2012, Cyber-Team
  * @author 	  	The Cheat <cybertmdev@gmail.com>
  * @name		Настройки для блоков/плагинов

@@ -2,9 +2,9 @@
 
 /**
  * Project:            	CTRev
- * File:                allowed.php
+ * @file                include/system/allowed.php
  *
- * @link 	  	http://ctrev.cyber-tm.ru/
+ * @page 	  	http://ctrev.cyber-tm.ru/
  * @copyright         	(c) 2008-2012, Cyber-Team
  * @author 	  	The Cheat <cybertmdev@gmail.com>
  * @name		Разрешённые классы, модули, переменные

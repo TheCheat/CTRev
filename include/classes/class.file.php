@@ -2,9 +2,9 @@
 
 /**
  * Project:            	CTRev
- * File:                class.file.php
+ * @file                include/classes/class.file.php
  *
- * @link 	  	http://ctrev.cyber-tm.ru/
+ * @page 	  	http://ctrev.cyber-tm.ru/
  * @copyright         	(c) 2008-2012, Cyber-Team
  * @author 	  	The Cheat <cybertmdev@gmail.com>
  * @name           	Работа с файлами. Базовые функции, расширять плагинами не нужно.

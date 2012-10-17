@@ -2,9 +2,9 @@
 
 /**
  * Project:            	CTRev
- * File:                class.bbcodes.php
+ * @file                include/classes/class.bbcodes.php
  *
- * @link 	  	http://ctrev.cyber-tm.ru/
+ * @page 	  	http://ctrev.cyber-tm.ru/
  * @copyright         	(c) 2008-2012, Cyber-Team
  * @author 	  	The Cheat <cybertmdev@gmail.com>
  * @name		Класс BB-кодов
@@ -92,7 +92,7 @@ abstract class formatter_callbacks extends pluginable_object {
         "hide" => '%LANG[hidden_text]');
 
     /**
-     * Переменная для очистки текста от тегов. Сначала {@link $bb_patterns}, потом {@link $spec_patterns}
+     * Переменная для очистки текста от тегов. Сначала {@link bbcodes::$bb_patterns}, потом {@link bbcodes::$spec_patterns}
      * @var array $removing_tags
      */
     protected $removing_tags = array(

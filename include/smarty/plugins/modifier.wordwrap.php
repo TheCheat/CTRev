@@ -11,7 +11,7 @@
  * Type:     modifier<br>
  * Name:     wordwrap<br>
  * Purpose:  wrap a string of text at a given length
- * @link http://smarty.php.net/manual/en/language.modifier.wordwrap.php
+ * @page http://smarty.php.net/manual/en/language.modifier.wordwrap.php
  *          wordwrap (Smarty online manual)
  * @author   Monte Ohrt <monte at ohrt dot com>
  * @param string

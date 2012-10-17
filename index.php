@@ -2,9 +2,9 @@
 
 /**
  * Project:             CTRev
- * File:                index.php
+ * @file                index.php
  *
- * @link 	  	http://ctrev.cyber-tm.ru/
+ * @page 	  	http://ctrev.cyber-tm.ru/
  * @copyright           (c) 2008-2012, Cyber-Team
  * @author 	  	The Cheat <cybertmdev@gmail.com>
  * @name 		Главная страница сайта
@@ -14,6 +14,7 @@ if (!file_exists('install/lock') && file_exists('install/')) {
     @header('Location: install.php');
     die();
 }
+
 define('DELAYED_UINIT', true); // отложенная инициализация юзерей...
 include_once "./include/include.php";
 $module = $_GET ['module'];

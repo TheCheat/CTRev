@@ -2,9 +2,9 @@
 
 /**
  * Project:            	CTRev
- * File:                functions_smarty.php
+ * @file                include/functions_smarty.php
  *
- * @link 	  	http://ctrev.cyber-tm.ru/
+ * @page 	  	http://ctrev.cyber-tm.ru/
  * @copyright         	(c) 2008-2012, Cyber-Team
  * @author 	  	The Cheat <cybertmdev@gmail.com>
  * @name 		Функции для Smarty

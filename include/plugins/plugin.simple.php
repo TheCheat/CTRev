@@ -2,9 +2,9 @@
 
 /**
  * Project:            	CTRev
- * File:                plugin.simple.php
+ * @file                include/plugins/plugin.simple.php
  *
- * @link 	  	http://ctrev.cyber-tm.ru/
+ * @page 	  	http://ctrev.cyber-tm.ru/
  * @copyright         	(c) 2008-2012, Cyber-Team
  * @author 	  	The Cheat <cybertmdev@gmail.com>
  * @name		Пример плагина
@@ -118,8 +118,9 @@ class plugin_simple {
     }
 
     /**
-     * Метод для {@see cleanup}
+     * Метод для cleanup
      * @return null
+     * @see cleanup
      */
     public function clear_empty() {
         print('Executed cleanup');
@@ -137,7 +138,7 @@ class plugin_simple {
 
     /**
      * Реализация хука torrents_show_begin
-     * @params array $data массив данных
+     * @param array $data массив данных
      * @return null
      */
     public function torrents_show_begin($data) {

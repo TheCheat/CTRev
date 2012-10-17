@@ -2,9 +2,9 @@
 
 /**
  * Project:            	CTRev
- * File:                class.config.php
+ * @file                include/classes/class.config.php
  *
- * @link 	  	http://ctrev.cyber-tm.ru/
+ * @page 	  	http://ctrev.cyber-tm.ru/
  * @copyright         	(c) 2008-2012, Cyber-Team
  * @author 	  	The Cheat <cybertmdev@gmail.com>
  * @name		Конфигурация движка
@@ -19,7 +19,9 @@ final class config {
      * Конфиг. переменные
      * @var array $vars
      * @note protected, ибо предполагается, что неизменно в процессе работы.
-     * Ибо это данные из БД и для изменения юзать {@see config::add()} и {@see config::set()}
+     * Ибо это данные из БД и для изменения юзать add и set
+     * @see add()
+     * @see set()
      */
     private $vars = array();
 

@@ -2,9 +2,9 @@
 
 /**
  * Project:            	CTRev
- * File:                class.uploader.php
+ * @file                include/classes/class.uploader.php
  *
- * @link 	  	http://ctrev.cyber-tm.ru/
+ * @page 	  	http://ctrev.cyber-tm.ru/
  * @copyright         	(c) 2008-2012, Cyber-Team
  * @author 	  	The Cheat <cybertmdev@gmail.com>
  * @name           	Загрузка/скачивание файлов
@@ -50,7 +50,7 @@ class uploader extends image {
     }
 
     /**
-     * Получение элемента из массива {@link $file_types}
+     * Получение элемента из массива {@link uploader::$file_types}
      * @param string $name ключ
      * @return array элемент 
      */
@@ -122,7 +122,7 @@ class uploader extends image {
             throw new EngineException('file_no_type');
         $maxfilesize = self::$file_types [$type] ["max_filesize"];
         if ($noturl) {
-            if (@filesize($tmp_name) > $maxfilesize && @filesize($tmp_name))
+            if (@fileinclude/classes/size($tmp_name) > $maxfilesize && @fileinclude/classes/size($tmp_name))
                 throw new EngineException('file_too_big_size');
         }
         if (is_array($minimized))
@@ -220,7 +220,7 @@ class uploader extends image {
             $filename = urlencode($filename);
         if (!file_exists($filepath))
             throw new EngineException('file_not_exists');
-        $content = @file_get_contents($filepath);
+        $content = @fileinclude/classes/_get_contents($filepath);
         $t = file::o()->get_content_type($filepath);
         $this->download_headers($content, $filename, $t);
     }

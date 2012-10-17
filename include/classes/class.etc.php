@@ -2,9 +2,9 @@
 
 /**
  * Project:            	CTRev
- * File:                class.etc.php
+ * @file                include/classes/class.etc.php
  *
- * @link 	  	http://ctrev.cyber-tm.ru/
+ * @page 	  	http://ctrev.cyber-tm.ru/
  * @copyright         	(c) 2008-2012, Cyber-Team
  * @author 	  	The Cheat <cybertmdev@gmail.com>
  * @name		Кое-что ещё
@@ -26,7 +26,7 @@ class etc {
 
     /**
      * Значение для параметра кол-ва, когда обнуляется счётчик 
-     * @see etc::add_res()
+     * @see add_res()
      */
 
     const reset_count = '<reset>';

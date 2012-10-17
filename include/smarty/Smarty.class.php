@@ -22,7 +22,7 @@
  * Smarty mailing list. Send a blank e-mail to
  * smarty-discussion-subscribe@googlegroups.com 
  *
- * @link http://www.smarty.net/
+ * @page http://www.smarty.net/
  * @copyright 2001-2005 New Digital Group, Inc.
  * @author Monte Ohrt <monte at ohrt dot com>
  * @author Andrei Zmievski <andrei@php.net>
@@ -124,7 +124,7 @@ class Smarty {
      *  <li>NONE => no debugging control allowed</li>
      *  <li>URL => enable debugging when SMARTY_DEBUG is found in the URL.</li>
      * </ul>
-     * @link http://www.foo.dom/index.php?SMARTY_DEBUG
+     * @page http://www.foo.dom/index.php?SMARTY_DEBUG
      * @var string $debugging_ctrl
      */
     var $debugging_ctrl  =  'NONE';

@@ -2,13 +2,13 @@
 
 /**
  * Project:            	CTRev
- * File:                class.smtp.php
+ * Author: 	  	Ivan Priorov(http://www.phpclasses.org/package/5032-PHP-Send-e-mail-messages-via-SMTP.html)
+ * Copyright:         	(c) 2009-2012, http://www.phpclasses.org
+ * @file                include/classes/class.smtp.php
  *
- * @link 	  	http://ctrev.cyber-tm.ru/
- * @author 	  	Ivan Priorov(http://www.phpclasses.org/package/5032-PHP-Send-e-mail-messages-via-SMTP.html)
+ * @page 	  	http://ctrev.cyber-tm.ru/
  * @name 	        Инициализация функции для отправки E-mail сообщения
  * @version           	1.00
- * @copyright         	(c) 2009-2012, http://www.phpclasses.org
  */
 if (!defined('INSITE'))
     die("Remote access denied!");

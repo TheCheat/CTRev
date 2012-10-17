@@ -2,9 +2,9 @@
 
 /**
  * Project:            	CTRev
- * File:                class.furl.php
+ * @file                include/classes/class.furl.php
  *
- * @link 	  	http://ctrev.cyber-tm.ru/
+ * @page 	  	http://ctrev.cyber-tm.ru/
  * @copyright         	(c) 2008-2012, Cyber-Team
  * @author 	  	The Cheat <cybertmdev@gmail.com>
  * @name		ЧПУ

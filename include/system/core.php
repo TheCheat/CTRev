@@ -2,13 +2,7 @@
 
 /**
  * Project:            	CTRev
- * File:                core.php
- *
- * @link 	  	http://ctrev.cyber-tm.ru/
- * @copyright         	(c) 2008-2012, Cyber-Team
- * @author 	  	The Cheat <cybertmdev@gmail.com>
- * @name 		"Ядро" системы
- * @version           	1.00
+ * @file                include/system/core.php
  * @todo                recaptcha
  * @todo                массовая рассылка почты
  * @todo                управление странами
@@ -19,6 +13,12 @@
  * invites, bookmarks(в т.ч. и кнопки) в usercp)
  * @todo                апдейтер
  * @todo                магазин плагинов
+ *
+ * @page 	  	http://ctrev.cyber-tm.ru/
+ * @copyright         	(c) 2008-2012, Cyber-Team
+ * @author 	  	The Cheat <cybertmdev@gmail.com>
+ * @name 		"Ядро" системы
+ * @version           	1.00
  */
 if (!defined('INSITE'))
     die('Remote access denied!');
@@ -29,6 +29,7 @@ require_once (ROOT . 'include/system/allowed.php');
 require_once (ROOT . 'include/system/globals.php');
 require_once (ROOT . 'include/system/autoload.php');
 require_once (ROOT . 'include/functions.php');
+
 globals::s('start', timer()); // Start time
 require_once (ROOT . 'include/smarty/Smarty.class.php');
 require_once (ROOT . 'include/functions_smarty.php');

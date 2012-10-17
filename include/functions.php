@@ -2,9 +2,9 @@
 
 /**
  * Project:            	CTRev
- * File:                functions.php
+ * @file                include/functions.php
  *
- * @link 	  	http://ctrev.cyber-tm.ru/
+ * @page 	  	http://ctrev.cyber-tm.ru/
  * @copyright         	(c) 2008-2012, Cyber-Team
  * @author 	  	The Cheat <cybertmdev@gmail.com>
  * @name 		Функции, которые не нуждаются в помещении в класс
@@ -22,7 +22,7 @@ function fNULL() {
 }
 
 /**
- * Проверка на то, разрешено ли в параметре {@link $v} действие {@link $c}
+ * Проверка на то, разрешено ли в параметре данное действие
  * @param int $v значение параметра
  * @param int $c значение действия
  * @return bool true, если да
@@ -97,7 +97,7 @@ function s(&$string, $i, $val = null) {
  * @param string $errormsg текст ошибки
  * @param string $file файл с ошибкой
  * @param int $line диния с ошибкой
- * @return null;
+ * @return null
  */
 function myerror_report($errorno, $errormsg, $file, $line) {
     if (error_reporting() == 0) {
@@ -192,7 +192,7 @@ function validword($word, $check = 'latin', $min = 2) {
 
 /**
  * Удаление "магических" кавычек
- * @param array $arr- исследуемый массив
+ * @param array $arr исследуемый массив
  * @return array полученный массив
  */
 function strip_magic_quotes($arr) {
@@ -464,7 +464,7 @@ function init_spaths() {
  * Функция получения ключа для передачи в форму, для защиты от CSRF
  * @param int $ajax 2, если в AJAX, возвращается, как элемент объекта(напр. fk:'1',)
  * 1 - если в AJAX, возвращается, как часть строки запроса(напр. ?fk=1&)
- * иначе - если элемент формы(напр. <input type='hidden' value='1' name='fk'>)
+ * иначе - если элемент формы(напр. &lt;input type='hidden' value='1' name='fk'&)
  * по-умолчанию возвращается лишь значение ключа
  * @param string $var имя ключа
  * @return string сформированное значение ключа
@@ -514,7 +514,7 @@ function check_formkey($var = "fk") {
  * Анти-флуд проверка
  * @param string $table таблица
  * @param string $where условие
- * @param array $column столбец автора и времени постинга соотв.
+ * @param array $columns столбецы автора и времени постинга соотв.
  * @return null
  * @throws EngineException 
  */
@@ -600,7 +600,7 @@ function log_add($subject, $type = "user", $vars = array(), $touid = null) {
 }
 
 /**
- * Добавление своего значения в массив после {@link $value}
+ * Добавление своего значения в данный массив
  * @param array $array массив
  * @param mixed $value после чего добавить?
  * @param mixed $what что добавить?
@@ -629,6 +629,50 @@ function array_value_append($array, $value, $what, $key = null) {
  */
 function disabled() {
     message('function_was_disabled_by_admin', null, "info", false);
+}
+
+/**
+ * Бонус за сидирование
+ * @param int $uoffset загрузил за интервал апдейта
+ * @param int $time время загрузки
+ * @param int $user ID пользователя
+ * @return null
+ */
+function peer_bonus($uoffset, $time, $user) {
+    $d = 0;
+    if (!config::o()->v('announce_interval'))
+        return;
+    $k = (time() - $time) / (config::o()->v('announce_interval') * 60);
+    if ($k > 2)
+        return; // что-то тут не то.
+    if ($k > 1)
+        $k = 1; // Слоупоки не приветствуются
+    if (config::o()->v('maxbonus_mb')) {
+        $d = $uoffset / (config::o()->v('maxbonus_mb') * 1024 * 1024);
+        if ($d > 1)
+            $d = 1;
+        if ($d < 0)
+            $d = 0;
+    }
+    $bonus = config::o()->v('minbonus') + (config::o()->v('maxbonus') - config::o()->v('minbonus')) * $d;
+    $bonus = number_format($k * $bonus, 2);
+    if ($bonus < 1 || $bonus < config::o()->v('minbonus') * 0.1)
+        return; // Да ладно, всего 1 бонус, ну.. или чуть побольше, в зависимости от желаний администратора.
+    /* @var $etc etc */
+    $etc = n("etc");
+    $etc->add_res('bonus', $bonus, "users", $user);
+}
+
+/**
+ * Получение объекта переопределённого класса
+ * @param string $class имя класса
+ * @param bool $name только имя?
+ * @return object объект класса
+ */
+function n($class, $name = false) {
+    if (!class_exists('plugins'))
+        return $name ? $class : new $class();
+    return plugins::o()->get_class($class, $name);
 }
 
 if (!function_exists('class_alias')) {
@@ -726,50 +770,6 @@ final class arr2obj {
         return isset($this->vars[$name]);
     }
 
-}
-
-/**
- * Бонус за сидирование
- * @param int $uoffset загрузил за интервал апдейта
- * @param int $time время загрузки
- * @param int $user ID пользователя
- * @return null
- */
-function peer_bonus($uoffset, $time, $user) {
-    $d = 0;
-    if (!config::o()->v('announce_interval'))
-        return;
-    $k = (time() - $time) / (config::o()->v('announce_interval') * 60);
-    if ($k > 2)
-        return; // что-то тут не то.
-    if ($k > 1)
-        $k = 1; // Слоупоки не приветствуются
-    if (config::o()->v('maxbonus_mb')) {
-        $d = $uoffset / (config::o()->v('maxbonus_mb') * 1024 * 1024);
-        if ($d > 1)
-            $d = 1;
-        if ($d < 0)
-            $d = 0;
-    }
-    $bonus = config::o()->v('minbonus') + (config::o()->v('maxbonus') - config::o()->v('minbonus')) * $d;
-    $bonus = number_format($k * $bonus, 2);
-    if ($bonus < 1 || $bonus < config::o()->v('minbonus') * 0.1)
-        return; // Да ладно, всего 1 бонус, ну.. или чуть побольше, в зависимости от желаний администратора.
-    /* @var $etc etc */
-    $etc = n("etc");
-    $etc->add_res('bonus', $bonus, "users", $user);
-}
-
-/**
- * Получение объекта переопределённого класса
- * @param string $class имя класса
- * @param bool $name только имя?
- * @return object объект класса
- */
-function n($class, $name = false) {
-    if (!class_exists('plugins'))
-        return $name ? $class : new $class();
-    return plugins::o()->get_class($class, $name);
 }
 
 ?>
