@@ -122,7 +122,7 @@ class uploader extends image {
             throw new EngineException('file_no_type');
         $maxfilesize = self::$file_types [$type] ["max_filesize"];
         if ($noturl) {
-            if (@fileinclude/classes/size($tmp_name) > $maxfilesize && @fileinclude/classes/size($tmp_name))
+            if (@filesize($tmp_name) > $maxfilesize && @filesize($tmp_name))
                 throw new EngineException('file_too_big_size');
         }
         if (is_array($minimized))
@@ -220,7 +220,7 @@ class uploader extends image {
             $filename = urlencode($filename);
         if (!file_exists($filepath))
             throw new EngineException('file_not_exists');
-        $content = @fileinclude/classes/_get_contents($filepath);
+        $content = @file_get_contents($filepath);
         $t = file::o()->get_content_type($filepath);
         $this->download_headers($content, $filename, $t);
     }
