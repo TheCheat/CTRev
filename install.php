@@ -2,7 +2,7 @@
 
 /**
  * Project:             CTRev
- * @file                install.php
+ * @file                /install.php
  *
  * @page 	  	http://ctrev.cyber-tm.ru/
  * @copyright           (c) 2008-2012, Cyber-Team

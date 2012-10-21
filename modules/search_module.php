@@ -171,9 +171,9 @@ class search_module {
             $orderby = "";
         if (!$where)
             message('search_nothing_searching');
+        /* @var $cats categories */
+        $cats = n("categories");
         if ($category && is_array($category)) {
-            /* @var $cats categories */
-            $cats = n("categories");
             $cwhere = $cats->cat_where($category, true);
             if ($cwhere)
                 $where[] = $cwhere;

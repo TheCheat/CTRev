@@ -1,7 +1,7 @@
 <?php
 /**
  * Project:             CTRev
- * @file                admincp.php
+ * @file                /admincp.php
  *
  * @page 	  	http://ctrev.cyber-tm.ru/
  * @copyright           (c) 2008-2012, Cyber-Team

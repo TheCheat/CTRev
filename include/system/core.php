@@ -3,7 +3,12 @@
 /**
  * Project:            	CTRev
  * @file                include/system/core.php
+ * @todo                забить данные, вложения, возможность отключить торренты, 
+ * превратив в новостную CMS, порезать большие методы, единый интерфейс для БД, 
+ * в т.ч. полнотекстовый поиск в класс БД, выбор между PostgreSQL, MySQL,
+ * MySQLi, etc. через наследование абстрактного основного, апдейтер
  * @todo                recaptcha
+ * @todo                sitemaps
  * @todo                массовая рассылка почты
  * @todo                управление странами
  * @todo                магазин бонусов
@@ -11,7 +16,6 @@
  * @todo                отключение нек. модулей в папке modules(напр. messages, 
  * statics, chat, news, search_module и class.search в т.ч.) и части модулей(напр. 
  * invites, bookmarks(в т.ч. и кнопки) в usercp)
- * @todo                апдейтер
  * @todo                магазин плагинов
  *
  * @page 	  	http://ctrev.cyber-tm.ru/
