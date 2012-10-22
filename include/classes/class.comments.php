@@ -116,7 +116,8 @@ class comments extends pluginable_object {
             $pos = db::o()->get_current_pos("comments", $where, 'id', $cid, $orderby);
             $page = longval($pos / $perpage) + 1;
             $_GET ["comments_page"] = $page;
-        }
+        } elseif (!$page)
+            $page = intval($count / $perpage) + 1; // на последнюю страницу
         list ( $pages, $limit ) = display::o()->pages($count, $perpage, 'change_page_comments', 'comments_page', '', true);
         $comments = db::o()->query('SELECT c.*, u.username,
             u.group, u.settings, u.avatar FROM comments AS c
