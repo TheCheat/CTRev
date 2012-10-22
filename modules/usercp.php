@@ -572,6 +572,8 @@ class usercp_ajax {
             return;
         $this->clear_avatar(true);
         $avatar_name = display::avatar_prefix . users::o()->v('id');
+        /* @var $uploader uploader */
+        $uploader = n("uploader");
         $uploader->upload($_FILES ["Filedata"], config::o()->v('avatars_folder'), /* ссылка */ $tmp = 'avatars', $avatar_name);
         db::o()->update(array(
             "avatar" => $avatar_name), "users", 'WHERE id=' . users::o()->v('id') . " LIMIT 1");
