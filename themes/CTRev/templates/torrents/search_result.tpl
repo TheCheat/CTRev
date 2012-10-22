@@ -48,4 +48,10 @@
             [*message lang_var="search_nothing_found" type="info" vars=$link*]
         [*/if*]
     </div>
-</div>
+</div>    
+[*if $from_ajax*]
+    <script type='text/javascript'>        
+        if (typeof init_sexylightbox != "undefined")
+            init_sexylightbox();
+    </script>
+[*/if*]
