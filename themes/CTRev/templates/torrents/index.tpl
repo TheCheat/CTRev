@@ -137,12 +137,12 @@
         [*if !$full_torrents*]
             <div align="left" class="cornerText gray_color torrents_paginator">
                 <noscript>
-                    [*if $page>1*]
-                        <a href="[*gen_link module='torrents' page=$page-1*]">[*'paginator_prev'|lang*]</a>&nbsp;
-                    [*/if*]
-                    [*if $page<$maxpage*]
-                        <a href="[*gen_link module='torrents' page=$page+1*]">[*'paginator_next'|lang*]</a>
-                    [*/if*]
+                [*if $page>1*]
+                    <a href="[*gen_link module='torrents' page=$page-1*]">[*'paginator_prev'|lang*]</a>&nbsp;
+                [*/if*]
+                [*if $page<$maxpage*]
+                    <a href="[*gen_link module='torrents' page=$page+1*]">[*'paginator_next'|lang*]</a>
+                [*/if*]
                 </noscript>
                 [*$pages*]
             </div>
@@ -151,4 +151,10 @@
 [*/if*]
 [*if !$from_edit && $full_torrents*]
     [*display_comments resid=$torrents.id*]
+[*/if*]
+[*if $from_ajax*]
+    <script type='text/javascript'>        
+        if (typeof init_sexylightbox != "undefined")
+            init_sexylightbox();
+    </script>
 [*/if*]

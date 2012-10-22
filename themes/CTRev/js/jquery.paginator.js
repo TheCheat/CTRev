@@ -31,9 +31,9 @@ var reset_paginators = []; // Костыль
             event.type = "mousewheel";
             event.delta = 0;
 
-            if (event.wheelDelta < 0 || event.detail > 0)
+            if (event.originalEvent.wheelDelta < 0 || event.detail > 0)
                 event.delta = -1;
-            else if (event.wheelDelta > 0 || event.detail < 0)
+            else if (event.originalEvent.wheelDelta > 0 || event.detail < 0)
                 event.delta = 1;
 
             $.event.handle.apply(this, [ event ]);
