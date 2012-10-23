@@ -22,6 +22,14 @@ class cats_man {
     protected $cats = null;
 
     /**
+     * Конструктор
+     * @return null
+     */
+    public function __construct() {
+        $this->cats = n("categories");
+    }
+
+    /**
      * Инициализация управления категориями
      * @return null
      */
@@ -30,7 +38,6 @@ class cats_man {
         lang::o()->get('admin/cats');
         $act = $_GET['act'];
         $type = $_GET['type'];
-        $this->cats = n("categories");
         if (!$type || !$this->cats->change_type($type))
             $type = 'torrents';
         tpl::o()->assign('oldadmin_file', $admin_file);
@@ -185,12 +192,19 @@ class cats_man_ajax {
     protected $cats = null;
 
     /**
+     * Конструктор
+     * @return null
+     */
+    public function __construct() {
+        $this->cats = n("categories");
+    }
+
+    /**
      * Инициализация AJAX-части модуля
      * @return null
      */
     public function init() {
         $act = $_GET['act'];
-        $this->cats = n("categories");
         switch ($act) {
             case "delete":
                 $this->delete((int) $_POST['id']);
