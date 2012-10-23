@@ -60,6 +60,14 @@ class torrents {
      */
 
     const image_prefix = "i";
+    
+    /**
+     * Конструктор
+     * @return null
+     */
+    public function __construct() {        
+        $this->cats = n("categories");
+    }
 
     /**
      * Инициализация торрентов
@@ -69,7 +77,6 @@ class torrents {
         $act = $_GET ['act'];
         lang::o()->get('torrents');
         users::o()->check_perms('torrents', 1, 2);
-        $this->cats = n("categories");
         switch ($act) {
             case "download":
                 $id = longval($_GET ['id']);

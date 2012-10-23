@@ -19,7 +19,7 @@ class cats_man {
      * Объект категорий
      * @var categories $cats
      */
-    private $cats = null;
+    protected $cats = null;
 
     /**
      * Инициализация управления категориями
@@ -179,11 +179,18 @@ class cats_man {
 class cats_man_ajax {
 
     /**
+     * Объект категорий
+     * @var categories $cats
+     */
+    protected $cats = null;
+
+    /**
      * Инициализация AJAX-части модуля
      * @return null
      */
     public function init() {
         $act = $_GET['act'];
+        $this->cats = n("categories");
         switch ($act) {
             case "delete":
                 $this->delete((int) $_POST['id']);
