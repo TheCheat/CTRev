@@ -294,7 +294,7 @@ class users_checker {
      * @return bool статус проверки
      */
     public function check_login($login) {
-        return !(mb_strlen($login) < 2 || mb_strlen($login) > 25) && preg_match('/^[a-zA-Zа-яА-Я0-9\-\_]+$/siu', $login);
+        return !(mb_strlen($login) < 2 || mb_strlen($login) > 25) && preg_match('/^[a-zA-Zа-яА-Я0-9\-\_ ]+$/siu', $login);
     }
 
     /**

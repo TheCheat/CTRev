@@ -146,13 +146,15 @@ class chat {
     public function chat_mf(&$row) {
         $t = $row["text"];
         $cmds = 'private|me|hello|bye';
-        preg_match('/^\/(' . $cmds . ')\s*(?:\((\w+)(?:,\s*([0-9]+))?\)\s+)?(.*)$/siu', $t, $matches);
+        preg_match('/^\/(' . $cmds . ')\s*(?:\((.+)(?:,\s*([0-9]+))?\)\s+)?(.*)$/siu', $t, $matches);
         if (!$matches)
             return;
         list(, $cmd, $p1, $p2, $t) = $matches;
         $u = null;
         switch ($cmd) {
             case "private":
+                if (!users::o()->check_login($p1))
+                    return;
                 if (!$row['poster_id'] || !$p1 || mb_strtolower($row['username']) == mb_strtolower($p1))
                     return;
                 if (!users::o()->perm('chat_sprivate') &&

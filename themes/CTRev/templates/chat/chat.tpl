@@ -11,9 +11,9 @@
             <span class='chat_message'>
                 [*$row.text|ft:"SIMPLE":true*]
             </span>
-            [*if check_owner($row.poster_id, 'edit_chat') || check_owner($row.poster_id, 'del_chat') || ('chat'|perm:2 && $row.username!='username'|user && $curuser)*]
+            [*if check_owner($row.poster_id, 'edit_chat') || check_owner($row.poster_id, 'del_chat') || ('chat'|perm:2 && $row.username!='username'|user && $curuser && $row.username)*]
                 <span class='chat_edit_row hidden'>[
-                    [*if 'chat'|perm:2 && $row.username!='username'|user && $curuser*]
+                    [*if 'chat'|perm:2 && $row.username!='username'|user && $curuser && $row.username*]
                         <a href="javascript:chat_clear('/private([*$row.username|sl*]) ')"><img
                                 src="[*$theme_path*]engine_images/key.png" height='12' 
                                 alt="[*'chat_private_message'|lang*]" title="[*'chat_private_message'|lang*]">
