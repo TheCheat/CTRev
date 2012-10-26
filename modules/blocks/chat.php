@@ -20,6 +20,8 @@ class chat_block {
      * @return null
      */
     public function init() {
+        if (!users::o()->perm('chat'))
+            return;
         lang::o()->get("blocks/chat");
         tpl::o()->display('chat/index.tpl');
     }
