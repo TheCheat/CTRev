@@ -25,7 +25,7 @@
                                 <a href="[*gen_link module=$thisrow.type id=$thisrow.toid title=$thisrow.title*]">[*$thisrow.title*]</a></font></p>
                     </td>
                     <td align="center">[*date time=$thisrow.posted_time*]</td>
-                    [*if isset($thisrow.username)*]
+                    [*if isset($thisrow.poster_id)*]
                         <td align="center"><b>[*$thisrow.username|gcl:$thisrow.group*]</b></td>
                     [*/if*]
                 </tr>

@@ -21,7 +21,7 @@
                         </p>
                     </td>
                     <td align="center">[*date time=$thisrow.posted_time*]</td>
-                    [*if $thisrow.username*]
+                    [*if $thisrow.poster_id*]
                         <td align="center"><b>[*$thisrow.username|gcl:$thisrow.group*]</b></td>
                     [*/if*]
                 </tr>
