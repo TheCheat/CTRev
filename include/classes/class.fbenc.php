@@ -166,7 +166,7 @@ class fbenc {
      * @return int число
      */
     protected function bdec_int($s, &$left = null) {
-        if (!preg_match('/^i(\d+)e(.*)$/s', $s, $m))
+        if (!preg_match('/^i([\-\d]+)e(.*)$/s', $s, $m))
             return;
         $v = $m [1];
         if ($v === "-0")
