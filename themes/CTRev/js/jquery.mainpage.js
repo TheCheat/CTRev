@@ -145,7 +145,7 @@ function init_popup(id, color) {
         else if ($popup_id && id == 'loading_container')
             return;
         $popup_id = id;
-        if (!jQuery('#'+id).is('.popup_container')) {
+        if (!jQuery('#'+id).is('.popup_container') || !jQuery('#'+id+' .popup_content').length) {
             if (!color)
                 color = 'white_color';
             jQuery('#'+id).addClass('popup_container')
@@ -167,6 +167,16 @@ function init_popup(id, color) {
     });
 }
 /**
+ * Замена контента модального окна
+ * @param html string контент нового окна
+ * @return null
+ */
+function replace_popup(html) {   
+    var o = jQuery("#" + $popup_id);
+    jQuery(".popup_content .cornerText", o).empty();
+    jQuery(".popup_content .cornerText", o).append(html);
+}
+/**
  * Закрытие модального окна
  * @return null
  */
@@ -175,6 +185,15 @@ function close_popup() {
         return;
     jQuery("#" + $popup_id).hide();
     $popup_id = "";
+}
+
+/**
+ * Всплывающее окно инициализировано?
+ * @param $cur string необходимый ID
+ * @return bool true если инициализировано
+ */
+function isinited_popup($cur) {
+    return typeof ($popup_id) != "undefined" && ($cur?$popup_id:$popup_id==$cur);
 }
 /**
  * Инициализация кнопки закрытия модального окна
@@ -1041,4 +1060,17 @@ function element_tablerow_height() {
             jQuery(this).height(getmaxheight(this));
         });
     });
+}
+
+/**
+ * Установка значения кукисов
+ * @param key string ключ
+ * @param value string значение
+ * @return null
+ */
+function setcookie(key, value) {
+    jQuery.cookie(key, value, {
+        'expires': 0x7fffffff, 
+        'path': '/'
+    })
 }

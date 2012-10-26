@@ -676,3 +676,12 @@ div.cbb_fr {
 div.center_block_padder {    
     padding: 0 20px;
 }
+
+#message_container .modalbox_content {
+    min-width: 500px;
+}
+
+#messages_status_icon {
+    position: relative;
+    float: left;
+}

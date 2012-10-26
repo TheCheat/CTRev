@@ -494,6 +494,12 @@ class display_time extends display_html {
 class display_modifier extends display_time {
 
     /**
+     * Временная переменная для хранения разделителя
+     * @var string $tmp_delim
+     */
+    protected $tmp_delim = '|';
+
+    /**
      * Входящие символы при транслитировании
      * @var array|string $from_transl
      */
@@ -635,6 +641,46 @@ class display_modifier extends display_time {
             return number_format($bytes / (1024), 2) . "&nbsp;kBytes";
         else
             return number_format($bytes, 2) . "&nbsp;Bytes";
+    }
+
+    /**
+     * Преобразование массива "от" и "до" в строку
+     * @param array $matches спарсенный массив
+     * @return string искомая строка
+     */
+    protected function between_string($matches) {
+        $f = (int) $matches[1];
+        $t = (int) $matches[2];
+        $r = '';
+        if ($f > $t) {
+            $tmp = $t;
+            $t = $f;
+            $f = $tmp;
+        }
+        for ($i = $f; $i < $t; $i++)
+            $r .= ($r ? $this->tmp_delim : "") . $i;
+        return $r;
+    }
+
+    /**
+     * Преобразование строки ID в массив, 
+     * разделённая делимиттером(по-умолчанию "|") и 
+     * знаком интервала, означающим "от" и "до"(по-умолчанию "-")
+     * @param string $input исходная строка
+     * @param string $del делимиттер
+     * @param string $interval знак интервала
+     * @return array искомый массив
+     */
+    public function idstring2array($input, $del = "|", $interval = "-") {
+        if (!preg_match('/^(\d+(\-\d+)?\|)+$/', $input . '|'))
+            return;
+        if (!$del)
+            $del = "|";
+        $this->tmp_delim = $del;
+        if ($interval)
+            $input = preg_replace_callback('/(\d+)' . mpc($interval) . '(\d+)/iu', array($this, 'between_string'), $input);
+        $input = explode($del, $input);
+        return $input;
     }
 
 }

@@ -60,12 +60,12 @@ class torrents {
      */
 
     const image_prefix = "i";
-    
+
     /**
      * Конструктор
      * @return null
      */
-    public function __construct() {        
+    public function __construct() {
         $this->cats = n("categories");
     }
 
@@ -858,21 +858,20 @@ class torrents_ajax {
 
     /**
      * Простое отображение торрентов для блока
-     * @param string $catids ID категорий через "|"
+     * @param string $name имя категории
      * @return null
      * @throws EngineException 
      */
-    protected function show($catids) {
+    protected function show($name) {
         if (!users::o()->perm('torrents'))
             return;
-        if (!preg_match('/^([0-9]+\|)+$/', $catids . '|'))
-            throw new EngineException;
-        $crc = crc32($catids);
+        $crc = crc32($name);
         $cfile = 'tsimple/cat-' . $crc;
         lang::o()->get('blocks/torrents');
-        if (($a = cache::o()->read($cfile)) === false) {
+        if (($a = cache::o()->read($cfile)) !== false) {
             $settings = n("blocks")->get_settings($this->block_name);
-            if (!$settings || !in_array($catids, $settings['cats']))
+            $catids = $settings['cats'][$name];
+            if (!$settings || !$catids)
                 throw new EngineException;
             $limit = (int) $settings['limit'];
             if ($limit > 20 || $limit <= 0)
@@ -882,7 +881,8 @@ class torrents_ajax {
             $max_title_symb = (int) $settings['max_title_symb'];
             if (!$max_title_symb)
                 $max_title_symb = 100;
-            $where = n("categories")->cat_where(explode("|", $catids), true);
+            $catids = display::o()->idstring2array($catids);
+            $where = n("categories")->cat_where($catids, true);
             $where .= ($where ? ' AND' : '') . ' on_top="1"';
             $r = db::o()->query('SELECT t.id, t.title, t.seeders, t.leechers, 
             t.size, t.screenshots, u.username, u.group, t.posted_time 

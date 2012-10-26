@@ -3,3 +3,5 @@ ALTER TABLE `pmessages` ADD `deleted` ENUM( '0', '1', '2' ) NOT NULL DEFAULT '0'
 ALTER TABLE `pmessages` DROP INDEX `sender` , ADD INDEX `sender` ( `sender` , `deleted` );
 ALTER TABLE `pmessages` DROP INDEX `receiver`;
 ALTER TABLE `pmessages` DROP INDEX `unread` , ADD INDEX `reciever` ( `receiver` , `unread` , `deleted` );
+SQL UPDATE 26.10.2012 17:15 GMT+7
+ALTER TABLE `pmessages` DROP INDEX `time` , ADD INDEX `time` ( `time` , `receiver` , `unread` , `deleted` );

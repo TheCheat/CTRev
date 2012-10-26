@@ -8,7 +8,7 @@
         <ul class="tabs-nav">
             [*foreach from=$curcats item='cats' key='cat'*]
                 <li>
-                    <a href='[*$baseurl*]index.php?module=torrents&amp;from_ajax=1&amp;act=show&amp;cats=[*$cats|ue*]'><span>[*$cat*]</span></a>
+                    <a href='[*$baseurl*]index.php?module=torrents&amp;from_ajax=1&amp;act=show&amp;cats=[*$cat|ue*]'><span>[*$cat*]</span></a>
                 </li>
             [*/foreach*]
         </ul>

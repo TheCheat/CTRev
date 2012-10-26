@@ -14,6 +14,7 @@
     are_you_sure_to_delete_this_bookmark = '[*'are_you_sure_to_delete_this_bookmark'|lang|sl*]';
 </script>
 <script type="text/javascript" src="[*$theme_path*]js/jquery.js"></script>
+<script type="text/javascript" src="[*$theme_path*]js/jquery.cookie.js"></script>
 <script type="text/javascript" src="[*$theme_path*]js/jquery.resizer.js"></script>
 <script type="text/javascript" src="[*$theme_path*]js/jquery.corners.js"></script>
 <script type="text/javascript" src="[*$theme_path*]js/jquery.mainpage.js"></script>

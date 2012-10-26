@@ -42,12 +42,8 @@ class ajax_index {
                 break;
             case "move_unread" :
                 $time = (int) $_POST ["time"];
-                $after = !($_POST ['type'] == "before");
+                $after = (bool) ($_POST ['after']);
                 $this->move_unread($time, $after);
-                break;
-            case "save_last" :
-                $time = (int) $_POST ["time"];
-                $this->save_last($time);
                 break;
             case "get_msgs" :
                 $this->get_msgs();
@@ -108,12 +104,13 @@ class ajax_index {
     protected function get_msgs() {
         users::o()->check_perms('pm');
         lang::o()->get("messages");
-        /* @var $messages messages */
+        $cvar = 'time_last_msg';
+        /* @var $messages messages_ajax */
         $messages = plugins::o()->get_module("messages", false, true);
         list($inbox, $outbox, $unread) = $messages->count();
         if ($unread) {
             $res = $messages->unread();
-            $time = (int) $_COOKIE ['time_last_msg'];
+            $time = (int) $_COOKIE [$cvar];
             $count = $messages->unread_count($res ["time"], true);
         }
         tpl::o()->assign("inbox", $inbox);
@@ -123,19 +120,8 @@ class ajax_index {
         tpl::o()->assign("count_prev", $unread - $count - 1);
         tpl::o()->assign("unread_time", $time);
         tpl::o()->assign("unread_last", $res);
+        tpl::o()->assign("msg_cookie_timer", $cvar);
         tpl::o()->display("messages/ajax_index_get.tpl");
-    }
-
-    /**
-     * Функция сохранения времени последнего закрытого сообщения в кукисах
-     * @param int $time время сообщения
-     * @return null
-     */
-    protected function save_last($time) {
-        $time = (int) $time;
-        users::o()->check_perms('pm');
-        @ob_clean();
-        users::o()->setcookie("time_last_msg", $time);
     }
 
     /**
@@ -148,7 +134,7 @@ class ajax_index {
         $time = (int) $time;
         users::o()->check_perms('pm');
         lang::o()->get("messages");
-        /* @var $messages messages */
+        /* @var $messages messages_ajax */
         $messages = plugins::o()->get_module("messages", false, true);
         $row = $messages->unread($time, $after);
         if (!$row)

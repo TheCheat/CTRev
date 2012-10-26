@@ -1,7 +1,7 @@
 <?php
 
 $languages = array(
-    "blocks_torrents_simple_settings_cats" => 'Категории(имя=>ID через "|")',
+    "blocks_torrents_simple_settings_cats" => 'Категории(имя=>ID через "|"; символ "-" означает "от" и "до")',
     "blocks_torrents_simple_settings_check_children" => 'Проверять на наличие детей?',
     "blocks_torrents_simple_settings_limit" => 'Отображать торрентов(не больше 20, кратно 2)',
     "blocks_torrents_simple_settings_max_title_symb" => 'Макс. кол-во символов в заголовке',

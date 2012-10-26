@@ -272,8 +272,8 @@ class main {
      * @return null 
      */
     protected function show_config() {
-        $prebaseurl = globals::g('prebaseurl');
         init_baseurl();
+        $prebaseurl = globals::g('prebaseurl');
         $prebaseurl = $prebaseurl == "/" ? "/" : rtrim($prebaseurl, '/');
         tpl::o()->assign('baseurl', $prebaseurl);
         globals::s('prebaseurl', $prebaseurl);
