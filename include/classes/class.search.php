@@ -286,6 +286,8 @@ class search {
             $id_col = "id";
         $regexp = false; // reference
         $where = $this->make_where($value, $columns, $regexp);
+        if (!$where)
+            return;
         if (is_array($columns))
             $cols = $columns + array(-1 => $id_col);
         else
