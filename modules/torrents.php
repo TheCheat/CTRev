@@ -868,7 +868,7 @@ class torrents_ajax {
         $crc = crc32($name);
         $cfile = 'tsimple/cat-' . $crc;
         lang::o()->get('blocks/torrents');
-        if (($a = cache::o()->read($cfile)) !== false) {
+        if (($a = cache::o()->read($cfile)) === false) {
             $settings = n("blocks")->get_settings($this->block_name);
             $catids = $settings['cats'][$name];
             if (!$settings || !$catids)
