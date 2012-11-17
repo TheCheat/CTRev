@@ -333,12 +333,14 @@ class users_checker {
             return;
         $default = $this->perms ['guest'] || $this->perms ['bot'] ? 2 : $this->perms['default'];
         $if = false;
+        if ($rule == 'polls')
+            $die = 1;
         if ($rule) {
             $rule = $this->perms ['can_' . $rule];
             $if = ((int) $rule) < ((int) $value);
         }
         $if = $if || $default > $def;
-        if ($this->perm_exception) {
+        if ($if && $this->perm_exception) {
             throw new EngineException;
             if ($this->perm_exception !== 2)
                 $this->perm_exception(0);
