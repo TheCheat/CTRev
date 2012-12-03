@@ -686,6 +686,23 @@ other_tags = [
     'spoiler=',
     ];
 
+
+/// Вроде всё работает! *happy*
+
+/**
+http://test.ru/test
+[left]test[/left][right]test[/right][center]test[/center][p]test[/p][sub]test[/sub][sup]test[/sup][size="12px"]test[/size]
+[color="634141"]test[/color][url="http://тест.пхп"]test[/url]
+[size="19px"][color="704e4e"]test[/color][/size]
+ :-)
+[spoiler="trololo"][img="test" middle]http://localhost/CTRev/themes/CTRev/engine_images/online.png[/img][/spoiler]
+[code="PHP"][spoiler="ok"]sss[/spoiler]<div>test</div>[/code]
+[hide][spoiler]blahblahblah[/spoiler][/hide][spoiler][hide]blahblahblah[/hide][/spoiler]
+[quote="admin"]
+& what de fuck? lold
+[/quote]
+ */
+
 // ББ-код паттерны
 bb_patterns = {
     'newline' : /\r?\n\r?/,
@@ -699,7 +716,7 @@ bb_patterns = {
     //"base" : /\[baseurl\]/,
     "url" : /\[url\]%URL_PATTERN;\[\/url\]/,
     "url=" : /\[url=%Q;%URL_PATTERN;%Q;\]([\s\S]*?)\[\/url\]/,
-    'auto_url' : /(^|\s+|\>)%URL_PATTERN;(\s+|$|\<)/,
+    'auto_url' : /(^|\s+)%URL_PATTERN;(\s+|$|\<)/,
     "size" : /\[size=%Q;([0-9\.]+)\s*(px|pt|\%)\;?%Q;\]([\s\S]*?)\[\/size\]/,
     "color" : /\[color=%Q;\#?([0-9a-fA-F]{3,6})\;?%Q;\]([\s\S]*?)\[\/color\]/,
     "other" : ""
@@ -722,8 +739,8 @@ html_patterns = {
     'newline' : /<br\/?>\n?/,
     'nbspd' : /\&nbsp\;\&nbsp\;/,
     'nbsp' : /\&nbsp\;/,
-    "code" : /<div(?:[^\>]*?)>\s*<span>(?:[\s\S]+?)(js|html|php|css|java|delphi|cs|cpp|ls)?\:<\/span>\s*<code>([\s\S]+?)<\/code>\s*<\/div>/,
-    "hide" : /<div(?:[^\>]*?)>[\s\S]*?(?:<span\s+class=%Q;mc_wysiwyg%Q;>[\s\S]*?\:\s*([0-9]+)<\/span>)?\s*(?:<span\s+class=%Q;gi_wysiwyg%Q;>[\s\S]*?\:\s*([0-9\,]+)<\/span>)?\s*<div>([\s\S]+?)<\/div>\s*<\/div>/,
+    "code" : /<div class=%Q;code_wysiwyg%Q;>\s*<span>(?:[\s\S]+?)(js|html|php|css|java|delphi|cs|cpp|ls)?\:<\/span>\s*<code>([\s\S]+?)<\/code>\s*<\/div>/,
+    "hide" : /<div class=%Q;hidden_wysiwyg%Q;>[\s\S]*?(?:<span\s+class=%Q;mc_wysiwyg%Q;>[\s\S]*?\:\s*([0-9]+)<\/span>)?\s*(?:<span\s+class=%Q;gi_wysiwyg%Q;>[\s\S]*?\:\s*([0-9\,]+)<\/span>)?\s*<div>([\s\S]+?)<\/div>\s*<span class=%Q;hdwsw%Q;><\/span>\s*<\/div>/,
     "img" : /<img([\s\S]+?)\/?>/,
     "list" : /<(?:(ul)(?:\s+type=%Q;(disc|circle|square)%Q;)?|(ol)(?:\s+type=%Q;([aAiI1])%Q;)?(?:\s+start=%Q;([0-9]+)%Q;)?)>([\s\S]*?)<\/(\1|\3)>/gi,
     "simple" : /<(b|i|u|s|p|su[bp]|strong|strike|em)>([\s\S]*?)<\/\1>/,
@@ -732,7 +749,7 @@ html_patterns = {
     "url=" : /<a href=%Q;%URL_PATTERN;%Q;>([\s\S]*?)<\/a>/,
     //"base" : new RegExp(regex_quote(baseurl)),
     "font" : /<font([\s\S]+?)>([\s\S]*?)<\/font>/,
-    "other" : /<div class=%Q;other_wysiwyg%Q;>[\s\S]*?(?:<span>([\s\S]*?)<\/span>)?\s*<div class=%Q;([\s\S]*?)%Q;>([\s\S]*?)<\/div><\/div>/,
+    "other" : /<div class=%Q;other_wysiwyg%Q;>[\s\S]*?(?:<span>([\s\S]*?)<\/span>)?\s*<div class=%Q;([\s\S]*?)%Q;>([\s\S]*?)<\/div><span class=%Q;\2wsw%Q;><\/span><\/div>/,
     "remfail" : /<([a-z]+?)(?:[\s\S]*?)>([\s\S]*?)<\/\1>/
 //"remempty" : /\[([a-z]+?)(?:[\s\=][\s\S]*?)?\]([\s\t\n\r]*)\[\/\1\]/
 };
@@ -956,7 +973,7 @@ function decode_hide(patt, text) {
         var gi = m[2];
         return "<div class=\"hidden_wysiwyg\">"+
         lang_bbcodes["hide"]+(mc?" <span class=\"mc_wysiwyg\">"+lang_bbcodes["mc"]+mc+"</span>":"") +
-        (gi?" <span class=\"gi_wysiwyg\">"+lang_bbcodes["gi"]+gi+"</span>":"")+"<div>"+txt+"</div></div>";
+        (gi?" <span class=\"gi_wysiwyg\">"+lang_bbcodes["gi"]+gi+"</span>":"")+"<div>"+txt+"</div><span class='hdwsw'></span></div>";
     }
     return text.replace(patt, cb);
 }
@@ -1012,22 +1029,6 @@ function encode_smilies(html) {
     return html;
 }
 
-
-/// Вродь всё работает! *happy*
-
-/**
-http://test.ru/test
-[left]test[/left][right]test[/right][center]test[/center][p]test[/p][sub]test[/sub][sup]test[/sup][size="12px"]test[/size]
-[color="634141"]test[/color][url="http://тест.пхп"]test[/url]
-[size="19px"][color="704e4e"]test[/color][/size]
- :)
-[spoiler="trololo"][img="test" middle]http://localhost/CTRev/themes/CTRev/engine_images/online.png[/img][/spoiler]
-[code="PHP"][spoiler="ok"]sss[/spoiler]<div>test</div>[/code]
-[quote="admin"]
-& what de fuck? lold
-[/quote]
- */
-
 /**
  * BBCode->HTML для остальных тегов
  * @param patt object паттерн
@@ -1044,7 +1045,7 @@ function decode_other(patt, text) {
             a = '(?:=%Q;(.*?)%Q;)?';
             tp = 2;
         }
-        var repl = "<div class='other_wysiwyg'>"+lang_bbcodes[c]+(a?(lang_bbcodes[c+"="]?lang_bbcodes[c+"="]:"")+" <span>$1</span>":"")+"<div class='"+c+"'>$"+tp+"</div></div>";
+        var repl = "<div class='other_wysiwyg'>"+lang_bbcodes[c]+(a?(lang_bbcodes[c+"="]?lang_bbcodes[c+"="]:"")+" <span>$1</span>":"")+"<div class='"+c+"'>$"+tp+"</div><span class='"+c+"wsw'></span></div>";
         patt = prepare_pattern(new RegExp('\\['+c+a+'\\]([\\s\\S]*?)\\[\\/'+c+'\\]'), true);
         if (multi_tagin[c]) {
             var ot;
