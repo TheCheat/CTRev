@@ -409,7 +409,7 @@ class input {
         $c = $name . time();
         $sel = "<select name='sel_" . $name . "' onchange='period_selector(this);'>";
         $selected = !is_null($current) ? false : null;
-        foreach ($this->periods as $time => $period) {
+        foreach (self::$periods as $time => $period) {
             if ((is_null($selected) || $current == $time) && !$selected) {
                 $current = $time;
                 $s = " selected='selected'";
