@@ -82,15 +82,6 @@ CREATE TABLE IF NOT EXISTS `bots` (
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `captcha` (
-  `key` varchar(10) NOT NULL,
-  `session_id` varchar(32) NOT NULL,
-  `user_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `created` int(12) unsigned NOT NULL DEFAULT '0',
-  KEY `session_id` (`session_id`),
-  KEY `user_id` (`user_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
 CREATE TABLE IF NOT EXISTS `categories` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `parent_id` int(10) unsigned NOT NULL DEFAULT '0',

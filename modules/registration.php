@@ -167,9 +167,6 @@ class registration {
      */
     protected function step_by_step($step, $data) {
         $error = array();
-        /* @var $captcha captcha */
-        $captcha = n("captcha");
-        $captcha->clear("old");
         if ($data ['to_check'] && is_numeric($step)) {
             $this->check_steps($error, $step, $data);
             if (!$error)
@@ -244,7 +241,6 @@ class registration {
                     "to_userid" => $id), "invites", ( 'WHERE invite_id=' . db::o()->esc($invite) . ' LIMIT 1'));
             elseif (!config::o()->v('confirm_email') && !config::o()->v('confirm_admin'))
                 users::o()->write_cookies($username, $password);
-            $captcha->clear("user");
             die('OK!');
         }
         tpl::o()->display("register/main_step.tpl");

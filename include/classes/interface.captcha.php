@@ -28,13 +28,6 @@ interface captcha_interface {
      * @return null
      */
     public function check(&$error, $var = "captcha_code");
-
-    /**
-     * Функция очистки старых капч
-     * @param string $only удаление только(old - старые, user пользователя)
-     * @return null
-     */
-    public function clear($only = "");
 }
 
 ?>
