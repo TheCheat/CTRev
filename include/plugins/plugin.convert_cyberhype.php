@@ -114,9 +114,9 @@ class plugin_convert_cyberhype {
         $id = $u['id'];
         $salt = users::o()->generate_salt(32);
         $password = users::o()->generate_pwd_hash($password, $salt);
-        db::o()->update(array('salt' => $salt,
+        db::o()->p($id)->update(array('salt' => $salt,
             'password' => $password,
-            'converted' => '0'), 'users', 'WHERE id = ' . $id . ' LIMIT 1');
+            'converted' => '0'), 'users', 'WHERE id = ? LIMIT 1');
         throw new PReturn($password);
     }
 

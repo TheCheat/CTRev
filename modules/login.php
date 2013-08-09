@@ -43,7 +43,8 @@ class login {
                 if ($key = $_GET['key']) {
                     $email = $_GET ["email"];
                     $this->recover_save($key, $email);
-                } else
+                }
+                else
                     tpl::o()->display('login/recover.tpl');
                 break;
             default :
@@ -96,7 +97,66 @@ class login_ajax {
                 $this->login($login, $password, $short_sess);
                 break;
         }
-        die("OK!");
+        ok();
+    }
+
+    /**
+     * Проверка попыток входа
+     * @return int кол-во попыток входа
+     * @throws EngineException
+     */
+    protected function login_tries() {
+        $max_enter = (int) config::o()->v('max_trylogin') - 1;
+        $interval = (int) config::o()->v('logintime_interval');
+        $sid = session_id();
+        $login_trying = 0;
+        if ($max_enter >= 0) {
+            $res = db::o()->p($sid, users::o()->get_ip())->query('SELECT trying_time, login_trying 
+                FROM sessions WHERE sid=? OR ip=?
+                ORDER BY login_trying DESC LIMIT 1');
+            $res = db::o()->fetch_assoc($res);
+            $login_trying = $res ["login_trying"];
+            $time = $res["trying_time"];
+            if ($login_trying < longval($_COOKIE ["login_trying"]))
+                $login_trying = (int) $_COOKIE ["login_trying"];
+            if ($time < longval($_COOKIE ["login_time"]))
+                $time = (int) $_COOKIE ["login_time"];
+            if ($login_trying >= $max_enter && $time + $interval > time())
+                throw new EngineException("login_more_than_maybe", array(
+            $login_trying + 1,
+            $max_enter + 1));
+        }
+        return $login_trying;
+    }
+
+    /**
+     * Запись кол-ва попыток входа
+     * @param string $error ошибка входа
+     * @param int $login_trying кол-во попыток входа
+     * @throws EngineException
+     */
+    protected function login_tries_record($error, $login_trying) {
+        $max_enter = (int) config::o()->v('max_trylogin') - 1;
+        $sid = session_id();
+        if ($error) {
+            if ($max_enter >= 0) {
+                $error .= ("&nbsp; " . sprintf(lang::o()->v('login_trying_of'), $login_trying + 1, $max_enter + 1));
+                db::o()->p($sid, users::o()->get_ip())->update(array(
+                    "login_trying" => ++$login_trying,
+                    "trying_time" => time()), "sessions", 'WHERE sid=? OR ip=? ORDER BY login_trying DESC LIMIT 1');
+                users::o()->setcookie("login_trying", $login_trying);
+                users::o()->setcookie("login_time", time());
+            }
+            throw new EngineException($error);
+        } else {
+            if ($max_enter >= 0) {
+                db::o()->p($sid, users::o()->get_ip())->update(array(
+                    "login_trying" => 0,
+                    "trying_time" => 0), "sessions", 'WHERE sid=? OR ip=? ORDER BY login_trying DESC LIMIT 1');
+                users::o()->setcookie("login_trying", 0);
+                users::o()->setcookie("login_time", 0);
+            }
+        }
     }
 
     /**
@@ -108,47 +168,12 @@ class login_ajax {
      * @throws Excpetion
      */
     protected function login($login, $password, $short_session = false) {
-        $max_enter = (int) config::o()->v('max_trylogin') - 1;
-        $interval = (int) config::o()->v('logintime_interval');
         //if (users::o()->v())
         //	return;
-        $sid = session_id();
-        if ($max_enter >= 0) {
-            $res = db::o()->query('SELECT trying_time, login_trying FROM sessions WHERE sid=' . db::o()->esc($sid) . ' OR ip=' . users::o()->get_ip() . '
-                ORDER BY login_trying DESC LIMIT 1');
-            $res = db::o()->fetch_assoc($res);
-            $login_trying = $res ["login_trying"];
-            $time = $res["trying_time"];
-            if ($login_trying < longval($_COOKIE ["login_trying"]))
-                $login_trying = (int) $_COOKIE ["login_trying"];
-            if ($time < longval($_COOKIE ["login_time"]))
-                $time = (int) $_COOKIE ["login_time"];
-            if ($login_trying >= $max_enter && $time + $interval > time())
-                throw new EngineException("login_more_than_maybe", array(
-                    $login_trying + 1,
-                    $max_enter + 1));
-        }
+        $login_trying = $this->login_tries();
         $short_session = (bool) $short_session;
         $passhash = users::o()->check_data($login, $password, $error, $id);
-        if ($error) {
-            if ($max_enter >= 0) {
-                $error .= ("&nbsp; " . sprintf(lang::o()->v('login_trying_of'), $login_trying + 1, $max_enter + 1));
-                db::o()->update(array(
-                    "login_trying" => ++$login_trying,
-                    "trying_time" => time()), "sessions", 'WHERE sid=' . db::o()->esc($sid) . ' OR ip=' . users::o()->get_ip() . ' ORDER BY login_trying DESC LIMIT 1');
-                users::o()->setcookie("login_trying", $login_trying);
-                users::o()->setcookie("login_time", time());
-            }
-            throw new EngineException($error);
-        } else {
-            if ($max_enter >= 0) {
-                db::o()->update(array(
-                    "login_trying" => 0,
-                    "trying_time" => 0), "sessions", 'WHERE sid=' . db::o()->esc($sid) . ' OR ip=' . users::o()->get_ip() . ' ORDER BY login_trying DESC LIMIT 1');
-                users::o()->setcookie("login_trying", 0);
-                users::o()->setcookie("login_time", 0);
-            }
-        }
+        $this->login_tries_record($error, $login_trying);
         users::o()->write_cookies($login, $passhash, $short_session);
     }
 
@@ -161,12 +186,13 @@ class login_ajax {
     protected function recover($login, $email) {
         if (users::o()->v())
             return;
-        $where = 'username_lower=' . db::o()->esc(mb_strtolower($login)) . ' AND email=' . db::o()->esc($email);
-        $count = db::o()->count_rows("users", $where);
+        $params = array(mb_strtolower($login), $email);
+        $where = 'username_lower=? AND email=?';
+        $count = db::o()->p($params)->count_rows("users", $where);
         if (!$count)
             throw new EngineException("recover_user_not_exists");
         $key = users::o()->generate_salt();
-        $ok = db::o()->update(array(
+        $ok = db::o()->p($params)->update(array(
             "confirm_key" => $key,
             "new_email" => ""), "users", 'WHERE ' . $where);
         $link = furl::o()->construct('login', array(
@@ -200,7 +226,7 @@ class login_ajax {
             "password" => $password,
             "salt" => $salt);
         plugins::o()->pass_data(array("update" => &$update), true)->run_hook('login_recover_save');
-        $count = db::o()->update($update, "users", ('WHERE confirm_key=' . db::o()->esc($key) . ' AND email=' . db::o()->esc($email)));
+        $count = db::o()->p($key, $email)->update($update, "users", 'WHERE confirm_key=? AND email=?');
         if (!$count)
             throw new EngineException("recover_user_not_exists");
     }

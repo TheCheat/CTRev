@@ -26,14 +26,14 @@ class registration {
      * @return null
      */
     public function init() {
-        if (users::o()->v())
-            furl::o()->location('');
         $step = $_REQUEST ['step'];
         if (!$step && $_GET['act'])
             $step = $_GET['act'];
         if ($ckey = $_GET['ckey'])
             $step = 'confirm';
         lang::o()->get('registration');
+        if (users::o()->v() && $step != 'captcha')
+            furl::o()->location('');
         switch ($step) {
             case 'captcha':
                 $this->captcha();
@@ -92,9 +92,9 @@ class registration {
             $update ['new_email'] = "";
         }
         $update ['confirm_key'] = "";
-        db::o()->update($update, 'users', 'WHERE id=' . users::o()->v('id') . " LIMIT 1");
+        db::o()->p(users::o()->v('id'))->update($update, 'users', 'WHERE id=? LIMIT 1');
         furl::o()->location('', 5);
-        message("successfull_confirmed_email", null, "success", false);
+        n("message")->stype("success")->info("successfull_confirmed_email");
     }
 
     /**
@@ -108,53 +108,67 @@ class registration {
     protected function check_steps(&$error, $step, $data, &$referer_id = null) {
         if ($step == "last")
             $step = 9001; // Максимально-возможная стадия ;)
-        $cols = array('login' => 'username',
-            'password',
-            'passagain',
-            'email',
-            'gender',
-            'website',
-            'invite',
-            'birthday_year');
-        extract(rex($data, $cols));
-        if (!$login || !$password || !$passagain || !$email)
-            $error [] = lang::o()->v('register_all_areas_must_be');
-        if (db::o()->count_rows("users", ( 'username_lower=' . db::o()->esc(mb_strtolower($login)))))
-            $error [] = lang::o()->v('register_user_exists');
-        if (db::o()->count_rows("users", ( 'email=' . db::o()->esc($email))))
-            $error [] = lang::o()->v('register_email_exists');
-        if (!users::o()->check_login($login))
-            $error [] = lang::o()->v('register_len_login');
-        if (!users::o()->check_password($password))
-            $error [] = lang::o()->v('register_len_pass');
-        if ($passagain != $password)
-            $error [] = lang::o()->v('register_false_passagain');
-        $wbe = true;
-        if (!users::o()->check_email($email, $wbe)) {
-            $error [] = lang::o()->v('register_false_email');
-            if ($wbe)
-                $error [] = $wbe;
-        }
-        n("captcha")->check($error);
-        if ($step >= 2) {
-            $birthday = display::o()->make_time("birthday", "ymd");
-            if (!$birthday || $birthday_year < 1930 || ($gender != "f" && $gender != "m"))
+        try {
+            plugins::o()->pass_data(array('data' => &$data,
+                'error' => &$error,
+                'step' => &$step,
+                'referer_id' => &$referer_id), true)->run_hook('registration_check_begin');
+
+            $cols = array('login' => 'username',
+                'password',
+                'passagain',
+                'email',
+                'gender',
+                'invite',
+                'birthday_year');
+            extract(rex($data, $cols));
+
+            if (!$login || !$password || !$passagain || !$email)
                 $error [] = lang::o()->v('register_all_areas_must_be');
-        }
-        if ($step >= 3) {
-            if ($website)
-                if (!preg_match('/' . display::url_pattern . '/siu', $website))
-                    $error [] = lang::o()->v('register_not_valid_website');
-        }
-        if ($step >= 4) {
-            if (config::o()->v('allowed_invite')) {
-                $referer_id = db::o()->fetch_assoc(db::o()->query('SELECT
-                user_id FROM invites WHERE invite_id=' . db::o()->esc($invite) . '
-                AND to_userid=0 LIMIT 1'));
-                $referer_id = $referer_id ["user_id"];
-                if (longval($referer_id) == 0 && ($invite || !config::o()->v('allowed_register')))
-                    $error [] = lang::o()->v('register_invalid_invite_code');
+            if (db::o()->p(mb_strtolower($login))->count_rows("users", 'username_lower=?'))
+                $error [] = lang::o()->v('register_user_exists');
+            if (db::o()->p($email)->count_rows("users", 'email=?'))
+                $error [] = lang::o()->v('register_email_exists');
+            if (!users::o()->check_login($login))
+                $error [] = lang::o()->v('register_len_login');
+            if (!users::o()->check_password($password))
+                $error [] = lang::o()->v('register_len_pass');
+            if ($passagain != $password)
+                $error [] = lang::o()->v('register_false_passagain');
+            $wbe = true;
+            if (!users::o()->check_email($email, $wbe)) {
+                $error [] = lang::o()->v('register_false_email');
+                if ($wbe)
+                    $error [] = $wbe;
             }
+            n("captcha")->check($error);
+
+            plugins::o()->run_hook('registration_check_steps');
+
+            if ($step >= 2) {
+                $birthday = display::o()->make_time("birthday", "ymd");
+                if (!$birthday || $birthday_year < 1930 || ($gender != "f" && $gender != "m"))
+                    $error [] = lang::o()->v('register_all_areas_must_be');
+            }
+            /*
+              if ($step >= 3) {
+              if ($website)
+              if (!preg_match('/' . display::url_pattern . '/siu', $website))
+              $error [] = lang::o()->v('register_not_valid_website');
+              }
+             */
+            if ($step >= 4) {
+                if (config::o()->v('allowed_invite')) {
+                    $referer_id = db::o()->fetch_assoc(db::o()->p($invite)->query('SELECT
+                user_id FROM invites WHERE invite_id=?
+                AND to_userid=0 LIMIT 1'));
+                    $referer_id = $referer_id ["user_id"];
+                    if (longval($referer_id) == 0 && ($invite || !config::o()->v('allowed_register')))
+                        $error [] = lang::o()->v('register_invalid_invite_code');
+                }
+            }
+        } catch (PReturn $e) {
+            return $e->r();
         }
     }
 
@@ -167,10 +181,18 @@ class registration {
      */
     protected function step_by_step($step, $data) {
         $error = array();
+        /* @var $uf display_userfields */
+        $uf = n("display_userfields")->change_type('register'); // для input_userfields и метода save
         if ($data ['to_check'] && is_numeric($step)) {
             $this->check_steps($error, $step, $data);
+            if ($step >= 3)
+                try {
+                    $uf->save($data);
+                } catch (EngineException $e) {
+                    $error[] = $e->getEMessage();
+                }
             if (!$error)
-                $error = "OK!";
+                ok();
             else
                 $error = implode("<br>", $error);
             throw new EngineException($error);
@@ -217,31 +239,28 @@ class registration {
             $update ["user_email"] = (bool) $user_email;
             $update ["dst"] = (bool) $use_dst;
             $update ["timezone"] = (int) $timezone;
-            $cols = array("website",
-                "icq",
-                "skype",
-                "country",
-                "town",
-                "name_surname" => 'name');
+            $cols = array("name_surname" => 'name');
             $settings = rex($data, $cols);
-            $settings["country"] = (int) $settings["country"];
             $settings["show_age"] = (bool) $data ['show_age'];
+            $settings = array_merge($settings, $uf->save($data));
 
             try {
                 plugins::o()->pass_data(array('update' => &$update,
                     'settings' => &$settings), true)->run_hook('register_user');
+
+                $update['settings'] = users::o()->make_settings($settings);
+                $id = db::o()->insert($update, "users");
+
+                plugins::o()->pass_data(array('id' => $id))->run_hook('register_user_finish');
             } catch (PReturn $e) {
                 return $e->r();
             }
-
-            $update['settings'] = users::o()->make_settings($settings);
-            $id = db::o()->insert($update, "users");
             if ($invite)
-                db::o()->update(array(
-                    "to_userid" => $id), "invites", ( 'WHERE invite_id=' . db::o()->esc($invite) . ' LIMIT 1'));
+                db::o()->p($invite)->update(array(
+                    "to_userid" => $id), "invites", 'WHERE invite_id=? LIMIT 1');
             elseif (!config::o()->v('confirm_email') && !config::o()->v('confirm_admin'))
                 users::o()->write_cookies($username, $password);
-            die('OK!');
+            ok();
         }
         tpl::o()->display("register/main_step.tpl");
     }

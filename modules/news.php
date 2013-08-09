@@ -33,10 +33,11 @@ class news {
             case "add":
             case "edit":
                 if (!$id) {
-                    $this->title = lang::o()->v('news_adding');
+                    $this->title = lang::o()->v('news_add');
                     users::o()->check_perms('news');
-                } else
-                    $this->title = lang::o()->v('news_editing');
+                }
+                else
+                    $this->title = lang::o()->v('news_edit');
                 if (!$_POST['confirm'])
                     $this->add($id);
                 else
@@ -54,14 +55,15 @@ class news {
     protected function add($id) {
         $id = (int) $id;
         if ($id) {
-            $row = db::o()->query('SELECT * FROM news WHERE id=' . longval($id) . ' LIMIT 1');
+            $row = db::o()->p($id)->query('SELECT * FROM news WHERE id=? LIMIT 1');
             $row = db::o()->fetch_assoc($row);
             if ($row) {
                 if (users::o()->v('id') == $row ['poster_id'])
                     users::o()->check_perms('edit_news');
                 else
                     users::o()->check_perms('edit_news', '2');
-            } else
+            }
+            else
                 throw new EngineException('news_are_not_exists');
             tpl::o()->assign('row', $row);
         }
@@ -75,42 +77,44 @@ class news {
      * @return null
      * @throws EngineException
      */
-    protected function save($data, $id) {
+    public function save($data, $id) {
         check_formkey();
         $id = (int) $id;
         if ($id) {
-            list($pid, $title) = db::o()->fetch_row(db::o()->query('SELECT poster_id, title FROM news
-                WHERE id=' . $id . ' LIMIT 1'));
+            list($pid, $title) = db::o()->fetch_row(db::o()->p($id)->query('SELECT poster_id, title FROM news
+                WHERE id=? LIMIT 1'));
             if ($pid) {
                 if (users::o()->v('id') == $pid)
                     users::o()->check_perms('edit_news');
                 else
                     users::o()->check_perms('edit_news', '2');
-            } else
+            }
+            else
                 throw new EngineException('news_are_not_exists');
         }
         $update = array('title' =>
             $data['title'],
             'content' => $data['content']);
-        
+
         try {
             plugins::o()->pass_data(array('update' => &$update,
                 'id' => $id), true)->run_hook('news_save');
         } catch (PReturn $e) {
             return $e->r();
         }
-        
+
         if (!$id) {
             $update['poster_id'] = users::o()->v('id');
             $update['posted_time'] = time();
             db::o()->insert($update, 'news');
             if (config::o()->v('news_max') && config::o()->v('news_autodelete')) {
-                $c = db::o()->count_rows('news') - config::o()->v('news_max');
+                $m = (int) config::o()->v('news_max');
+                $c = db::o()->count_rows('news') - $m;
                 if ($c > 0)
                     db::o()->delete('news', 'ORDER BY posted_time LIMIT ' . $c);
             }
         } else {
-            db::o()->update($update, 'news', 'WHERE id=' . $id . ' LIMIT 1');
+            db::o()->p($id)->update($update, 'news', 'WHERE id=? LIMIT 1');
             log_add("edited_news", "user", array($title, $id));
         }
         cache::o()->remove('news');
@@ -158,16 +162,17 @@ class news_ajax {
     public function delete($id) {
         $id = (int) $id;
         check_formkey();
-        list($pid, $title) = db::o()->fetch_row(db::o()->query('SELECT poster_id, title FROM news
-                WHERE id=' . $id . ' LIMIT 1'));
+        list($pid, $title) = db::o()->fetch_row(db::o()->p($id)->query('SELECT poster_id, title FROM news
+                WHERE id=? LIMIT 1'));
         if ($pid) {
             if (users::o()->v('id') == $pid)
                 users::o()->check_perms('del_news');
             else
                 users::o()->check_perms('del_news', '2');
-        } else
+        }
+        else
             throw new EngineException('news_are_not_exists');
-        db::o()->delete('news', 'WHERE id=' . $id . ' LIMIT 1');
+        db::o()->p($id)->delete('news', 'WHERE id=? LIMIT 1');
         cache::o()->remove('news');
         log_add("deleted_news", "user", array($title));
     }

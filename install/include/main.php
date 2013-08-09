@@ -14,6 +14,11 @@ if (!defined('INSITE'))
     die("Remote access denied!");
 
 class main {
+    /**
+     * Необходимый объём загружаемых файлов(в МБ.)
+     */
+
+    const need_filesize = 5;
 
     /**
      * Проверка CHMOD для
@@ -24,15 +29,22 @@ class main {
         'include/plugins/replaced',
         'upload/avatars',
         'upload/torrents',
+        'upload/sitemap.xml',
         'include/system/aliases.php',
         'include/dbconn.php',
         'install/lock');
 
     /**
-     * Необходимый объём загружаемых файлов(в МБ.)
+     * Допустимые СУБД
+     * @var array $allowed_dbms
      */
+    protected $allowed_dbms = array('mysql');
 
-    const need_filesize = 5;
+    /**
+     * Данные данного запроса
+     * @var array $query
+     */
+    protected $query = array();
 
     /**
      * Инициализация AJAX части инсталляции
@@ -45,7 +57,7 @@ class main {
         }
         if ($_GET['check']) {
             $this->check_steps($_POST);
-            die('OK!');
+            ok();
         } else {
             $f = "show_" . INSTALL_PAGE;
             $this->$f();
@@ -61,13 +73,23 @@ class main {
     }
 
     /**
+     * Получение данных таблицы и замена на имя с префиксом
+     * @param array $matches данные парсинга
+     * @return string замена
+     */
+    protected function get_tname($matches) {
+        $this->query = array($matches[1][0], $matches[2]);
+        return $matches[1] . ' `' . db::table($matches[2]) . '`';
+    }
+
+    /**
      * Выполнение одного запроса из дампа
      * @param int $offset позиция, где заканчивается последний запрос
      * @return null 
      */
     protected function run_query($offset = 0) {
         db::o()->connect();
-        db::o()->no_error();
+        db::o()->no_error(false);
         $offset = (int) $offset;
         // файл не должен содержать комментариев
         $matches = array();
@@ -93,12 +115,14 @@ class main {
         $query = preg_replace('/^--.*$/m', '', $query);
         $query = trim($query);
         if ($query) {
-            db::o()->query($query);
-            preg_match('/((?:CREATE|ALTER)\s+TABLE(?:\s+IF\s+NOT\s+EXISTS)?|UPDATE|(?:REPLACE|INSERT)(?:\s+IGNORE)?(?:\s+INTO)?)\s+`?(\w+)`?/is', $query, $matches);
-            $qtype = strtolower($matches[1][0]);
+
+            $pattern = '/^((?:CREATE|ALTER)\s+TABLE(?:\s+IF\s+(?:NOT\s+)?EXISTS)?|UPDATE|(?:REPLACE|INSERT)(?:\s+IGNORE)?(?:\s+INTO)?)\s+`?(\w+)`?/i';
+            $query = preg_replace_callback($pattern, array($this, "get_tname"), $query);
+            db::o()->no_parse()->query($query);
+            $qtype = strtolower($this->query[0]);
             $qtype = 'install_import_query_type' . $qtype;
             if (lang::o()->visset($qtype)) {
-                $table = strtolower($matches[2]);
+                $table = strtolower($this->query[1]);
                 if (db::o()->errno())
                     $status = sprintf(lang::o()->v('install_import_query_error'), db::o()->errno());
                 else
@@ -232,22 +256,34 @@ class main {
      * @return null 
      */
     protected function show_database() {
+        include 'include/classes/class.input.php';
         $f = 'include/dbconn.php';
         if (file_exists($f))
             include_once ROOT . $f;
+        if (defined('dbuser'))
+            list($dbtype, $dbhost, $dbuser, $dbpass, $dbname, $dbprefix, $charset) = array(
+                dbtype, dbhost, dbuser, dbpass, dbname, dbprefix, charset);
         if (!$dbhost)
             $dbhost = 'localhost:3306';
+        if (!$dbtype)
+            $dbtype = 'mysql';
         if (!$dbuser)
             $dbuser = 'root';
         if (!$dbname)
             $dbname = 'ctrev';
         if (!$charset)
             $charset = 'utf8';
+        if (!$dbprefix)
+            $dbprefix = 'ctrev_';
+        tpl::o()->assign('dbtype', $dbtype);
         tpl::o()->assign('dbhost', $dbhost);
         tpl::o()->assign('dbuser', $dbuser);
         tpl::o()->assign('dbpass', $dbpass);
         tpl::o()->assign('dbname', $dbname);
+        tpl::o()->assign('dbprefix', $dbprefix);
         tpl::o()->assign('charset', $charset);
+        tpl::o()->assign('input', input::o());
+        tpl::o()->assign('allowed_dbms', $this->allowed_dbms);
         tpl::o()->display('database');
     }
 
@@ -296,24 +332,36 @@ class main {
      */
     protected function write_db($data) {
         extract(rex($data, array('dbhost',
-                    'dbuser',
-                    'dbpass',
-                    'dbname',
-                    'charset')));
+            'dbuser',
+            'dbpass',
+            'dbname',
+            'dbtype',
+            'dbprefix',
+            'charset')));
         $f = 'include/dbconn.php';
         if (!$dbuser && file_exists(ROOT . $f))
             return true;
+        if (!in_array($dbtype, $this->allowed_dbms))
+            $dbtype = 'mysql';
         if (!$dbhost)
             $dbhost = 'localhost';
         if (!$charset)
             $charset = 'utf8';
         $contents = '<?php
-$dbhost = ' . var_export($dbhost, true) . ';
-$dbuser = ' . var_export($dbuser, true) . ';
-$dbpass = ' . var_export($dbpass, true) . ';
-$dbname = ' . var_export($dbname, true) . ';
-$charset = ' . var_export($charset, true) . ';
+define("dbtype", ' . var_export($dbtype, true) . ');
+define("dbhost", ' . var_export($dbhost, true) . ');
+define("dbuser", ' . var_export($dbuser, true) . ');
+define("dbpass", ' . var_export($dbpass, true) . ');
+define("dbname", ' . var_export($dbname, true) . ');
+define("dbprefix", ' . var_export($dbprefix, true) . ');
+define("charset", ' . var_export($charset, true) . ');
 ?>';
+        define("dbtype", $dbtype);
+        define("dbhost", $dbhost);
+        define("dbuser", $dbuser);
+        define("dbpass", $dbpass);
+        define("dbname", $dbname);
+        define("charset", $charset);
         return file::o()->write_file($contents, $f);
     }
 
@@ -327,7 +375,7 @@ $charset = ' . var_export($charset, true) . ';
         $c = preg_match_all('/(?:^|\n)CREATE\s+TABLE(?:\s+IF\s+NOT\s+EXISTS)?\s+`?(\w+)`?/s', $dump, $matches);
         for ($i = 0; $i < $c; $i++) {
             $table = $matches[1][$i];
-            $r = db::o()->query('SHOW TABLES LIKE ' . db::o()->esc($table));
+            $r = db::o()->p(db::table($table))->query('SHOW TABLES LIKE ?');
             if (!db::o()->num_rows($r))
                 $error[] = sprintf(lang::o()->v('install_error_table_non_exists'), $table);
         }
@@ -342,9 +390,9 @@ $charset = ' . var_export($charset, true) . ';
     protected function create_admin($data, &$error) {
         $group = 6; // группа админа
         extract(rex($data, array('username',
-                    'password',
-                    'passagain',
-                    'email')));
+            'password',
+            'passagain',
+            'email')));
         include_once ROOT . 'include/classes/class.users.php';
         if ($password != $passagain)
             $error[] = lang::o()->v('install_error_passwords_not_match');

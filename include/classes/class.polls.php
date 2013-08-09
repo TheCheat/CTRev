@@ -34,21 +34,21 @@ class polls extends pluginable_object {
      * Тип опросов
      * @var string $type
      */
-    protected $type = 'torrents';
+    protected $type = 'content';
 
     /**
      * Допустимые типы
      * @var array $allowed_types
      */
     protected $allowed_types = array(
-        'torrents');
+        'content');
 
     /**
      * Конструктор класса
      * @return null 
      */
     protected function plugin_construct() {
-        $this->state = (bool) config::o()->v('polls_on');
+        $this->state = (bool) config::o()->mstate('polls_manage');
         $this->access_var('allowed_types', PVAR_ADD);
         $this->access_var('styles', PVAR_ADD);
 
@@ -62,7 +62,7 @@ class polls extends pluginable_object {
          */
         tpl::o()->register_function("add_polls", array(
             $this,
-            "add_form"));
+            "add"));
         /**
          * @note Отображение опроса(display_polls)
          * params:
@@ -111,18 +111,19 @@ class polls extends pluginable_object {
         $row ['answers'] = @unserialize($row ['answers']);
         $counts = array();
         $usernames = array();
+
         if (!config::o()->v('cache_pollvotes') || !($arr = cache::o()->read('polls/v-id' . $row['id']))) {
             $sum = 0;
             $ssum = 0;
             if ($row ['show_voted'] && users::o()->perm('votersview'))
-                $cres = db::o()->query('SELECT pv.answers_id, u.username, u.group
+                $cres = db::o()->p($row ["id"])->query('SELECT pv.answers_id, u.username, u.group
                     FROM poll_votes AS pv
                     LEFT JOIN users AS u ON u.id=pv.user_id
-                    WHERE pv.question_id =' . $row ["id"]);
+                    WHERE pv.question_id = ?');
             else
-                $cres = db::o()->query('SELECT answers_id
+                $cres = db::o()->p($row ["id"])->query('SELECT answers_id
                     FROM poll_votes
-                    WHERE question_id =' . $row ["id"]);
+                    WHERE question_id = ?');
             while ($currow = db::o()->fetch_assoc($cres)) {
                 if ($currow ['username'])
                     $username = smarty_group_color_link($currow ['username'], $currow ['group']);
@@ -141,6 +142,7 @@ class polls extends pluginable_object {
             cache::o()->write($arr);
         } elseif (config::o()->v('cache_pollvotes'))
             list($counts, $usernames, $sum, $ssum) = $arr;
+
         $row ['voted_answers'] = @unserialize($row ['voted_answers']);
         $row ['answers_counts'] = $counts;
         $row ['usernames'] = $usernames;
@@ -159,32 +161,36 @@ class polls extends pluginable_object {
      * @throws EngineException
      */
     public function display($toid = 0, $poll_id = 0, $votes = false, $short = false) {
-        if (!$this->state) {
-            //disabled();
+        if (!$this->state)
             return;
-        }
         lang::o()->get('polls');
         if (is_array($toid)) {
             if ($toid ['type'])
-                $this->type = $toid ['type'];
+                $this->change_type($toid ['type']);
             $poll_id = $toid ['poll_id'];
             $short = $toid ['short'];
             $votes = $toid ['votes'];
             $toid = $toid ['toid'];
         }
         $type = $this->type;
-        if (!$type)
-            $type = "torrents";
         $toid = (int) $toid;
         $poll_id = (int) $poll_id;
         $user_id = (int) users::o()->v('id');
         $user_ip = users::o()->get_ip();
-        $where = ($poll_id || ($toid && $type)) ? ($poll_id ? 'p.id =' . $poll_id : 'p.toid =' . $toid . '
-            AND p.type =' . db::o()->esc($type)) : 'p.toid =0';
+        db::o()->p($user_id ? $user_id : $user_ip);
+        if ($poll_id) {
+            db::o()->p($poll_id);
+            $where = 'p.id = ?';
+        } elseif ($toid && $type) {
+            db::o()->p($toid, $type);
+            $where = 'p.toid = ? AND p.type = ?';
+        }
+        else
+            $where = 'p.toid = 0';
         $limit = ($poll_id || ($toid && $type) || $short) ? 1 : null;
         $res = db::o()->query('SELECT p.*, pv.answers_id AS voted_answers FROM polls AS p
             LEFT JOIN poll_votes AS pv ON pv.question_id=p.id
-            AND ' . ($user_id ? 'pv.user_id =' . $user_id : 'pv.user_id = 0 AND pv.user_ip =' . $user_ip) . '
+            AND ' . ($user_id ? 'pv.user_id = ?' : 'pv.user_id = 0 AND pv.user_ip = ?') . '
             WHERE ' . $where . '
             ' . ($limit ? 'LIMIT ' . $limit : ""));
         $count = db::o()->num_rows($res);
@@ -193,11 +199,12 @@ class polls extends pluginable_object {
         if (!$count && !$toid && !$short) {
             $var = lang::o()->v('polls_no_exists') . (users::o()->perm('polls', 3) ? ' ' . sprintf(lang::o()->v('polls_want_add'), furl::o()->construct("polls", array(
                                         'act' => 'add'))) : '');
-            message($var, null, 'info', false);
+            n("message")->info($var);
             return;
         }
         if (!$count)
             return;
+
         tpl::o()->assign("votes_styles", $this->styles);
         tpl::o()->assign("styles_count", count($this->styles));
         tpl::o()->assign("show_voting", $votes);
@@ -225,12 +232,12 @@ class polls extends pluginable_object {
      * @param bool $full полностью загружать страницу с опросом?
      * @return null
      */
-    public function add_form($toid = 0, $poll_id = 0, $full = false) {
+    public function add($toid = 0, $poll_id = 0, $full = false) {
         if (!$this->state)
             return;
         if (is_array($toid)) {
             if ($toid ['type'])
-                $this->type = $toid ['type'];
+                $this->change_type($toid ['type']);
             $poll_id = $toid ['poll_id'];
             $full = $toid ['full'];
             $toid = $toid ['toid'];
@@ -238,35 +245,45 @@ class polls extends pluginable_object {
         $type = $this->type;
         $toid = (int) $toid;
         $poll_id = (int) $poll_id;
-        if (!$type)
-            $type = "torrents";
         $row ['answers'] = array(
             '',
             '');
         if (!$poll_id && (!$toid || !$type)) {
             users::o()->check_perms('polls', 3);
         } else {
-            $row = db::o()->query('SELECT * FROM polls WHERE ' . (
-                    $poll_id ? 'id =' . $poll_id : 'toid =' . $toid . ' AND type =' .
-                            db::o()->esc($type)) . " LIMIT 1");
-            $row = db::o()->fetch_assoc($row);
-            if (!$row) {
-                $row ['answers'] = array(
-                    '',
-                    '');
-                users::o()->check_perms('polls', 2);
-            } else {
-                $row ['answers'] = @unserialize($row ['answers']);
-                if ($row ['poster_id'] == users::o()->v('id'))
-                    users::o()->check_perms('edit_polls');
-                else
-                    users::o()->check_perms('edit_polls', 2);
+            try {
+                if ($toid && $type)
+                    users::o()->perm_exception();
+                if ($poll_id) {
+                    db::o()->p($poll_id);
+                    $where = 'id = ?';
+                } else {
+                    db::o()->p($toid, $type);
+                    $where = 'toid = ? AND type = ?';
+                }
+                $row = db::o()->query('SELECT * FROM polls WHERE ' . $where . " LIMIT 1");
+                $row = db::o()->fetch_assoc($row);
+                if (!$row) {
+                    $row ['answers'] = array(
+                        '',
+                        '');
+                    users::o()->check_perms('polls', 2);
+                } else {
+                    $row ['answers'] = @unserialize($row ['answers']);
+                    if ($row ['poster_id'] == users::o()->v('id'))
+                        users::o()->check_perms('edit_polls');
+                    else
+                        users::o()->check_perms('edit_polls', 2);
+                }
+            } catch (EngineException $e) {
+                n("message")->stype('error')->info($e->getEMessage());
+                return;
             }
         }
         lang::o()->get('polls');
         tpl::o()->assign('poll_row', $row);
         tpl::o()->assign('fully_page', $full);
-        tpl::o()->display('polls/add_form.tpl');
+        tpl::o()->display('polls/add.tpl');
     }
 
     /**
@@ -293,15 +310,21 @@ class polls extends pluginable_object {
         $poll_ends = (int) $poll_ends;
         $toid = (int) $toid;
         $poll_id = (int) $poll_id;
-        if (!$type)
-            $type = "torrents";
         if (!$poll_id && (!$toid || !$type)) {
             users::o()->check_perms('polls', 3);
         } else {
+            if ($toid && $type)
+                users::o()->perm_exception();
+
+            if ($poll_id) {
+                db::o()->p($poll_id);
+                $where = 'id = ?';
+            } else {
+                db::o()->p($toid, $type);
+                $where = 'toid = ? AND type = ?';
+            }
             $row = db::o()->query('SELECT id, poster_id, answers, question FROM polls
-                WHERE ' . ($poll_id ? 'id =' .
-                            $poll_id : 'toid =' .
-                            $toid . ' AND type=' . db::o()->esc($type)) . " LIMIT 1");
+                WHERE ' . $where . " LIMIT 1");
             $row = db::o()->fetch_assoc($row);
             if (!$row)
                 users::o()->check_perms('polls', 2);
@@ -328,6 +351,13 @@ class polls extends pluginable_object {
             'change_votes' => $change_votes,
             'poll_ends' => $poll_ends,
             'max_votes' => $max_votes);
+
+        try {
+            plugins::o()->pass_data(array('update' => &$update), true)->run_hook('polls_save');
+        } catch (PReturn $e) {
+            return $e->r();
+        }
+
         if (!$poll_id) {
             $update['toid'] = $toid;
             $update['type'] = $type;
@@ -335,9 +365,9 @@ class polls extends pluginable_object {
             $update['poster_id'] = users::o()->v('id');
             $id = db::o()->insert($update, 'polls');
         } else {
-            $id = db::o()->update($update, 'polls', ('WHERE id =' . $poll_id . " LIMIT 1"));
+            $id = db::o()->p($poll_id)->update($update, 'polls', 'WHERE id = ? LIMIT 1');
             if ($row ['answers'] != $answers)
-                db::o()->delete('poll_votes', ('WHERE question_id =' . $poll_id));
+                db::o()->p($poll_id)->delete('poll_votes', 'WHERE question_id = ?');
             if ($row ['answers'] != $answers || $row ['question'] != $question)
                 log_add("edited_poll", "user", array($row ['question'], $id));
             $this->uncache($poll_id);
@@ -356,7 +386,7 @@ class polls extends pluginable_object {
             return;
         lang::o()->get('polls');
         $poll_id = (int) $poll_id;
-        $poster = db::o()->query('SELECT poster_id, question FROM polls WHERE id =' . $poll_id . " LIMIT 1");
+        $poster = db::o()->p($poll_id)->query('SELECT poster_id, question FROM polls WHERE id = ? LIMIT 1');
         $poster = db::o()->fetch_assoc($poster);
         if (!$poster)
             throw new EngineException("polls_not_exists");
@@ -364,8 +394,8 @@ class polls extends pluginable_object {
             users::o()->check_perms('del_polls');
         else
             users::o()->check_perms('del_polls', 2);
-        db::o()->delete('polls', ('WHERE id =' . $poll_id . ' LIMIT 1'));
-        db::o()->delete('poll_votes', ('WHERE question_id =' . $poll_id));
+        db::o()->p($poll_id)->delete('polls', 'WHERE id = ? LIMIT 1');
+        db::o()->p($poll_id)->delete('poll_votes', 'WHERE question_id = ?');
         log_add("deleted_poll", "user", array($poster ['question']));
         $this->uncache($poll_id);
         return true;
@@ -403,12 +433,12 @@ class polls extends pluginable_object {
         $user_id = (int) users::o()->v('id');
         $user_ip = users::o()->get_ip();
         $day = 60 * 60 * 24;
-        $row = db::o()->query('SELECT p.change_votes, p.max_votes, p.posted_time, p.poll_ends,
+        $row = db::o()->p($user_id ? $user_id : $user_ip, $poll_id)->query('SELECT p.change_votes, 
+            p.max_votes, p.posted_time, p.poll_ends,
             pv.question_id, pv.user_ip, pv.user_id FROM polls AS p
             LEFT JOIN poll_votes AS pv ON pv.question_id=p.id AND ' .
-                ($user_id ? 'pv.user_id =' . $user_id : 'pv.user_id=0 AND pv.user_ip =' . $user_ip) . '
-            WHERE p.id =' . $poll_id . '
-            LIMIT 1');
+                ($user_id ? 'pv.user_id = ?' : 'pv.user_id=0 AND pv.user_ip = ?') . '
+            WHERE p.id = ? LIMIT 1');
         $row = db::o()->fetch_assoc($row);
         if (!$row)
             throw new EngineException;
@@ -426,10 +456,9 @@ class polls extends pluginable_object {
                 'question_id' => $poll_id,
                 'user_ip' => $user_ip), 'poll_votes');
         else
-            db::o()->update(array(
-                'answers_id' => serialize($answers)), 'poll_votes', 'WHERE user_id = ' . $row["user_id"] . '
-                    AND user_ip = ' . $row["user_ip"] . '
-                    AND question_id=' . $row ['question_id'] . " LIMIT 1");
+            db::o()->p($row["user_id"], $row["user_ip"], $row ['question_id'])->update(array(
+                'answers_id' => serialize($answers)), 'poll_votes', 'WHERE user_id = ?
+                    AND user_ip = ? AND question_id=? LIMIT 1');
         $this->uncache($poll_id, true);
         return true;
     }

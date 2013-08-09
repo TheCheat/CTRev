@@ -1,0 +1,8 @@
+/* Админка ЗАВИСИТ от этих CSS */
+
+@import "bbcodes.css";
+
+/* Честно, не помню зачем это надо, но пускай будет */
+@import "uploadify.css";
+
+@import "usercp.css";

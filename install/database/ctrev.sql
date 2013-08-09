@@ -24,14 +24,30 @@ CREATE TABLE IF NOT EXISTS `admin_modules` (
 
 CREATE TABLE IF NOT EXISTS `allowed_ft` (
   `name` varchar(200) NOT NULL,
+  `image` varchar(200) NOT NULL DEFAULT '',
   `types` text NOT NULL,
-  `max_filesize` int(10) unsigned NOT NULL DEFAULT '0',
+  `max_filesize` bigint(20) unsigned NOT NULL DEFAULT '0',
   `max_width` int(10) unsigned NOT NULL DEFAULT '0',
   `max_height` int(10) unsigned NOT NULL DEFAULT '0',
   `MIMES` text NOT NULL,
   `makes_preview` enum('1','0') NOT NULL DEFAULT '0',
-  UNIQUE KEY `name` (`name`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Не нуждается в админке, ибо не нужно. Всегда Ваш, К.О.';
+  `allowed` enum('1','0') NOT NULL DEFAULT '1',
+  PRIMARY KEY (`name`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `attachments` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `filename` varchar(200) NOT NULL,
+  `preview` varchar(200) NOT NULL,
+  `size` bigint(20) NOT NULL,
+  `time` bigint(16) NOT NULL,
+  `ftype` varchar(200) NOT NULL,
+  `toid` int(10) NOT NULL DEFAULT '0',
+  `type` enum('content') NOT NULL DEFAULT 'content',
+  `user` int(10) NOT NULL,
+  `downloaded` int(10) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `bans` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -45,7 +61,7 @@ CREATE TABLE IF NOT EXISTS `bans` (
   `email` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `first_last` (`ip_f`,`ip_t`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `blocks` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -67,11 +83,11 @@ CREATE TABLE IF NOT EXISTS `bookmarks` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(10) unsigned NOT NULL DEFAULT '0',
   `toid` int(10) unsigned NOT NULL,
-  `type` enum('torrents') NOT NULL DEFAULT 'torrents',
+  `type` enum('content') NOT NULL DEFAULT 'content',
   `added` int(12) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `res_id` (`toid`,`type`,`user_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `bots` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -80,7 +96,7 @@ CREATE TABLE IF NOT EXISTS `bots` (
   `lastip` int(12) unsigned NOT NULL DEFAULT '0',
   `agent` varchar(100) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `categories` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -89,11 +105,11 @@ CREATE TABLE IF NOT EXISTS `categories` (
   `descr` text,
   `transl_name` varchar(200) NOT NULL,
   `post_allow` enum('1','0') NOT NULL DEFAULT '1',
-  `type` enum('torrents') NOT NULL DEFAULT 'torrents',
+  `type` enum('content') NOT NULL DEFAULT 'content',
   `pattern` int(11) unsigned NOT NULL DEFAULT '0',
   `sort` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `transl_name` (`transl_name`),
+  UNIQUE KEY `transl_name` (`transl_name`,`type`),
   KEY `parent_id` (`parent_id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
@@ -118,25 +134,102 @@ CREATE TABLE IF NOT EXISTS `chat_deleted` (
 CREATE TABLE IF NOT EXISTS `comments` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `poster_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `subject` varchar(200) NOT NULL DEFAULT 'NO SUBJECT',
   `text` text NOT NULL,
   `posted_time` int(12) unsigned NOT NULL DEFAULT '0',
   `toid` int(10) unsigned NOT NULL,
-  `type` enum('torrents','users') NOT NULL DEFAULT 'torrents',
+  `type` enum('content','users') NOT NULL DEFAULT 'content',
   `edited_time` int(12) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `toid` (`toid`,`type`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `config` (
   `name` varchar(200) NOT NULL,
   `value` text NOT NULL,
-  `type` enum('int','string','text','date','folder','radio','select','checkbox','other') NOT NULL DEFAULT 'text',
+  `type` enum('int','string','text','date','folder','radio','select','checkbox','other') NOT NULL DEFAULT 'string',
   `allowed` text,
   `cat` varchar(50) NOT NULL DEFAULT 'other',
   `sort` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`name`),
   KEY `cat` (`cat`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `content` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `title` varchar(255) NOT NULL,
+  `content` text NOT NULL,
+  `tags` varchar(500) DEFAULT NULL,
+  `category_id` text NOT NULL,
+  `posted_time` int(12) unsigned NOT NULL DEFAULT '0',
+  `comm_count` int(10) unsigned NOT NULL DEFAULT '0',
+  `poster_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `rate_count` int(10) unsigned NOT NULL DEFAULT '0',
+  `rnum_count` int(10) unsigned NOT NULL DEFAULT '0',
+  `sticky` enum('1','0') NOT NULL DEFAULT '0',
+  `on_top` enum('1','0') DEFAULT '0',
+  `edit_reason` varchar(250) NOT NULL DEFAULT '',
+  `last_edit` int(12) unsigned NOT NULL DEFAULT '0',
+  `editor_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `edit_count` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`title`),
+  KEY `owner` (`poster_id`),
+  KEY `tags` (`tags`(333)),
+  KEY `on_top` (`on_top`),
+  KEY `sticky` (`sticky`),
+  KEY `posted_time` (`posted_time`),
+  FULLTEXT KEY `title` (`title`),
+  FULLTEXT KEY `title_content` (`title`,`content`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `content_downloaded` (
+  `tid` int(10) unsigned NOT NULL,
+  `uid` int(10) unsigned NOT NULL,
+  `finished` enum('1','0') NOT NULL DEFAULT '0',
+  PRIMARY KEY (`tid`,`uid`),
+  KEY `finished` (`finished`),
+  KEY `tid` (`tid`,`finished`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `content_peers` (
+  `peer_id` varchar(20) NOT NULL,
+  `tid` int(10) unsigned NOT NULL DEFAULT '0',
+  `ip` int(10) unsigned NOT NULL DEFAULT '0',
+  `port` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `uploaded` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `seeder` enum('1','0') NOT NULL DEFAULT '0',
+  `uid` int(10) unsigned NOT NULL DEFAULT '0',
+  `time` int(12) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`tid`,`uid`),
+  UNIQUE KEY `peer_id` (`peer_id`,`tid`),
+  KEY `seeder` (`tid`,`seeder`),
+  KEY `torrent` (`tid`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `content_readed` (
+  `content_id` int(12) unsigned NOT NULL,
+  `user_id` int(12) unsigned NOT NULL,
+  UNIQUE KEY `torrents_id` (`content_id`,`user_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `content_torrents` (
+  `cid` int(10) NOT NULL,
+  `info_hash` varbinary(40) NOT NULL,
+  `filelist` text NOT NULL,
+  `size` bigint(20) NOT NULL,
+  `announce_stat` text,
+  `announce_list` text,
+  `last_active` int(12) NOT NULL DEFAULT '0',
+  `downloaded` int(10) NOT NULL DEFAULT '0',
+  `leechers` int(10) NOT NULL DEFAULT '0',
+  `seeders` int(10) NOT NULL DEFAULT '0',
+  `screenshots` text NOT NULL,
+  `price` decimal(5,2) NOT NULL DEFAULT '10.00',
+  `banned` enum('2','1','0') NOT NULL DEFAULT '0',
+  `status` varchar(50) NOT NULL DEFAULT '0',
+  `statusby` int(10) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`cid`),
+  UNIQUE KEY `info_hash` (`info_hash`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `countries` (
@@ -147,13 +240,15 @@ CREATE TABLE IF NOT EXISTS `countries` (
   UNIQUE KEY `name` (`name`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `downloaded` (
-  `tid` int(10) unsigned NOT NULL,
-  `uid` int(10) unsigned NOT NULL,
-  `finished` enum('1','0') NOT NULL DEFAULT '0',
-  PRIMARY KEY (`tid`,`uid`),
-  KEY `finished` (`finished`),
-  KEY `tid` (`tid`,`finished`)
+CREATE TABLE IF NOT EXISTS `feedback` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `type` enum('main') NOT NULL DEFAULT 'main',
+  `ip` int(12) NOT NULL,
+  `uid` int(10) NOT NULL,
+  `time` int(12) NOT NULL,
+  `subject` varchar(250) NOT NULL,
+  `content` text NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `groups` (
@@ -169,7 +264,7 @@ CREATE TABLE IF NOT EXISTS `groups` (
   `color` varchar(20) NOT NULL DEFAULT '',
   `perms` text,
   `sort` tinyint(3) NOT NULL DEFAULT '0',
-  `torrents_count` int(5) unsigned NOT NULL DEFAULT '0',
+  `content_count` int(5) unsigned NOT NULL DEFAULT '0',
   `karma_count` int(5) unsigned NOT NULL DEFAULT '0',
   `bonus_count` int(5) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
@@ -213,7 +308,7 @@ CREATE TABLE IF NOT EXISTS `logs` (
 CREATE TABLE IF NOT EXISTS `mailer` (
   `user` int(10) unsigned NOT NULL,
   `toid` int(10) unsigned NOT NULL,
-  `type` enum('torrents','category') NOT NULL DEFAULT 'torrents',
+  `type` enum('content','category') NOT NULL DEFAULT 'content',
   `interval` int(12) unsigned NOT NULL DEFAULT '0',
   `last_check` int(12) unsigned NOT NULL DEFAULT '0',
   `is_new` enum('1','0') NOT NULL DEFAULT '1',
@@ -231,7 +326,7 @@ CREATE TABLE IF NOT EXISTS `news` (
   `title` varchar(250) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `added` (`posted_time`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `patterns` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -241,24 +336,9 @@ CREATE TABLE IF NOT EXISTS `patterns` (
   UNIQUE KEY `name` (`name`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `peers` (
-  `peer_id` varchar(20) NOT NULL,
-  `tid` int(10) unsigned NOT NULL DEFAULT '0',
-  `ip` int(10) unsigned NOT NULL DEFAULT '0',
-  `port` smallint(5) unsigned NOT NULL DEFAULT '0',
-  `uploaded` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `seeder` enum('1','0') NOT NULL DEFAULT '0',
-  `uid` int(10) unsigned NOT NULL DEFAULT '0',
-  `time` int(12) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`tid`,`uid`),
-  UNIQUE KEY `peer_id` (`peer_id`,`tid`),
-  KEY `seeder` (`tid`,`seeder`),
-  KEY `torrent` (`tid`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
 CREATE TABLE IF NOT EXISTS `plugins` (
   `file` varchar(30) NOT NULL,
-  `settings` text NULL,
+  `settings` text,
   PRIMARY KEY (`file`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
@@ -270,7 +350,7 @@ CREATE TABLE IF NOT EXISTS `pmessages` (
   `time` int(12) unsigned NOT NULL DEFAULT '0',
   `receiver` int(10) unsigned NOT NULL DEFAULT '0',
   `unread` enum('1','0') NOT NULL DEFAULT '1',
-  `deleted` enum( '0', '1', '2' ) NOT NULL DEFAULT '0' COMMENT '0-none,1-sender,2-reciever',
+  `deleted` enum('0','1','2') NOT NULL DEFAULT '0' COMMENT '0-none,1-sender,2-reciever',
   PRIMARY KEY (`id`),
   KEY `time` (`time`),
   KEY `sender` (`sender`,`deleted`),
@@ -281,7 +361,7 @@ CREATE TABLE IF NOT EXISTS `polls` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `question` varchar(200) NOT NULL,
   `toid` int(10) unsigned NOT NULL DEFAULT '0',
-  `type` enum('torrents') NOT NULL DEFAULT 'torrents',
+  `type` enum('content') NOT NULL DEFAULT 'content',
   `answers` text NOT NULL,
   `show_voted` enum('1','0') NOT NULL DEFAULT '1',
   `change_votes` enum('1','0') NOT NULL DEFAULT '1',
@@ -304,20 +384,14 @@ CREATE TABLE IF NOT EXISTS `ratings` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `toid` int(10) unsigned NOT NULL,
   `stoid` int(10) unsigned NOT NULL DEFAULT '0',
-  `type` enum('torrents','users') NOT NULL DEFAULT 'torrents',
-  `stype` enum('torrents') NOT NULL DEFAULT 'torrents',
+  `type` enum('content','users') NOT NULL DEFAULT 'content',
+  `stype` enum('content') NOT NULL DEFAULT 'content',
   `user` int(12) unsigned NOT NULL DEFAULT '0',
   `value` tinyint(1) NOT NULL DEFAULT '0',
   `ip` enum('1','0') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `torus` (`toid`,`type`,`user`,`ip`,`stoid`,`stype`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-CREATE TABLE IF NOT EXISTS `read_torrents` (
-  `torrent_id` int(12) unsigned NOT NULL,
-  `user_id` int(12) unsigned NOT NULL,
-  UNIQUE KEY `torrents_id` (`torrent_id`,`user_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `sessions` (
   `sid` varchar(32) NOT NULL DEFAULT '',
@@ -349,60 +423,17 @@ CREATE TABLE IF NOT EXISTS `static` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
   `url` varchar(150) NOT NULL,
   `title` varchar(250) NOT NULL,
-  `bbcode` enum('1','0') NOT NULL DEFAULT '0',
+  `type` enum('bbcode','html','tpl') NOT NULL DEFAULT 'html',
   `content` text NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `url` (`url`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `stats` (
   `name` varchar(200) NOT NULL,
   `value` text NOT NULL,
   UNIQUE KEY `name` (`name`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-CREATE TABLE IF NOT EXISTS `torrents` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `info_hash` varbinary(40) NOT NULL,
-  `title` varchar(255) NOT NULL,
-  `content` text NOT NULL,
-  `filelist` text NOT NULL,
-  `tags` varchar(500) DEFAULT NULL,
-  `category_id` text NOT NULL,
-  `size` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `announce_stat` text,
-  `announce_list` text,
-  `posted_time` int(12) unsigned NOT NULL DEFAULT '0',
-  `last_active` int(12) unsigned NOT NULL DEFAULT '0',
-  `comm_count` int(10) unsigned NOT NULL DEFAULT '0',
-  `downloaded` int(10) unsigned NOT NULL DEFAULT '0',
-  `leechers` int(10) unsigned NOT NULL DEFAULT '0',
-  `seeders` int(10) unsigned NOT NULL DEFAULT '0',
-  `banned` enum('2','1','0') NOT NULL DEFAULT '0' COMMENT '2 - в т.ч. запрет на редактирование',
-  `status` varchar(50) NOT NULL DEFAULT '0',
-  `status_by` int(10) unsigned NOT NULL DEFAULT '0',
-  `poster_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `rate_count` int(10) unsigned NOT NULL DEFAULT '0',
-  `rnum_count` int(10) unsigned NOT NULL DEFAULT '0',
-  `price` decimal(5,2) unsigned DEFAULT '10.00',
-  `sticky` enum('1','0') NOT NULL DEFAULT '0',
-  `on_top` enum('1','0') DEFAULT '0',
-  `screenshots` text NOT NULL,
-  `edit_reason` varchar(250) NOT NULL DEFAULT '',
-  `last_edit` int(12) unsigned NOT NULL DEFAULT '0',
-  `editor_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `edit_count` int(10) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `info_hash` (`info_hash`),
-  UNIQUE KEY `name` (`title`),
-  KEY `owner` (`poster_id`),
-  KEY `tags` (`tags`(333)),
-  KEY `on_top` (`on_top`),
-  KEY `sticky` (`sticky`),
-  KEY `posted_time` (`posted_time`),
-  FULLTEXT KEY `title` (`title`),
-  FULLTEXT KEY `title_content` (`title`,`content`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `users` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -433,7 +464,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `passkey` varchar(32) NOT NULL DEFAULT '',
   `refered_by` int(10) unsigned NOT NULL DEFAULT '0',
   `karma_count` int(10) NOT NULL DEFAULT '0',
-  `torrents_count` int(10) unsigned NOT NULL DEFAULT '0',
+  `content_count` int(10) unsigned NOT NULL DEFAULT '0',
   `comm_count` int(10) unsigned NOT NULL DEFAULT '0',
   `hidden` enum('1','0') NOT NULL DEFAULT '0',
   `warnings_count` int(10) unsigned NOT NULL DEFAULT '0',
@@ -445,6 +476,19 @@ CREATE TABLE IF NOT EXISTS `users` (
   KEY `last_access` (`last_visited`),
   KEY `user` (`id`,`confirmed`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `users_fields` (
+  `field` varchar(200) NOT NULL,
+  `name` varchar(200) NOT NULL,
+  `descr` text NOT NULL,
+  `type` enum('int','string','text','date','folder','radio','select','checkbox','other') NOT NULL DEFAULT 'string',
+  `allowed` text NOT NULL,
+  `sort` int(10) NOT NULL DEFAULT '0',
+  `show_register` enum('1','0') NOT NULL DEFAULT '0',
+  `show_profile` enum('1','0') NOT NULL DEFAULT '0',
+  `necessary` enum('1','0') NOT NULL DEFAULT '0',
+  PRIMARY KEY (`field`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `warnings` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -463,7 +507,7 @@ CREATE TABLE IF NOT EXISTS `zebra` (
   `type` enum('f','b') NOT NULL DEFAULT 'f',
   PRIMARY KEY (`id`),
   UNIQUE KEY `userfriend` (`user_id`,`to_userid`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
 INSERT INTO `admin_cats` (`id`, `item`, `name`) VALUES
 (1, 1, 'short_actions'),
@@ -497,7 +541,6 @@ INSERT INTO `admin_modules` (`id`, `cat`, `name`, `link`) VALUES
 (6, 2, 'configuration_users', 'module=config&type=users'),
 (7, 2, 'configuration_mail', 'module=config&type=mail'),
 (8, 2, 'configuration_all', 'module=config'),
-(9, 3, 'mass_mail', 'module=massmail'),
 (10, 4, 'groups_list', 'module=groups'),
 (11, 4, 'users_search', 'module=users&act=search'),
 (12, 4, 'users', 'module=users'),
@@ -522,7 +565,7 @@ INSERT INTO `admin_modules` (`id`, `cat`, `name`, `link`) VALUES
 (31, 11, 'configuration_users', 'module=config&type=users'),
 (32, 11, 'configuration_mail', 'module=config&type=mail'),
 (33, 11, 'configuration_cache', 'module=config&type=cache'),
-(34, 11, 'configuration_torrents', 'module=config&type=torrents'),
+(34, 11, 'configuration_content', 'module=config&type=content'),
 (35, 11, 'configuration_all', 'module=config'),
 (36, 12, 'logs_all', 'module=logs'),
 (37, 12, 'logs_system', 'module=logs&type=system'),
@@ -531,12 +574,27 @@ INSERT INTO `admin_modules` (`id`, `cat`, `name`, `link`) VALUES
 (40, 12, 'logs_other', 'module=logs&type=other'),
 (41, 12, 'logs_clear', 'module=logs&act=clear'),
 (42, 13, 'plugins', 'module=plugins'),
-(43, 13, 'plugins_add', 'module=plugins&act=add');
+(43, 13, 'plugins_add', 'module=plugins&act=add'),
+(44, 3, 'feedback', 'module=feedback'),
+(45, 6, 'allowed_ft', 'module=allowedft'),
+(46, 4, 'userfields', 'module=userfields');
 
-INSERT INTO `allowed_ft` (`name`, `types`, `max_filesize`, `max_width`, `max_height`, `MIMES`, `makes_preview`) VALUES
-('images', 'jpg;jpeg;png;gif', 2097152, 0, 0, 'image/jpeg;image/png;image/gif', '1'),
-('avatars', 'jpg;jpeg;png;gif', 65536, 100, 100, 'image/jpeg;image/png;image/gif', '0'),
-('torrents', 'torrent', 2097152, 0, 0, 'application/x-bittorrent', '0');
+INSERT INTO `allowed_ft` (`name`, `image`, `types`, `max_filesize`, `max_width`, `max_height`, `MIMES`, `makes_preview`, `allowed`) VALUES
+('images', 'image.png', 'jpg;jpeg;png;gif', 2097152, 0, 0, 'image/jpeg;image/png;image/gif', '1', '1'),
+('avatars', '', 'jpg;jpeg;png;gif', 65536, 100, 100, 'image/jpeg;image/png;image/gif', '0', '0'),
+('torrents', '', 'torrent', 2097152, 0, 0, 'application/x-bittorrent', '0', '0'),
+('text', 'txt.png', 'txt', 2097152, 0, 0, 'text/plain', '', '1');
+
+INSERT INTO `blocks` (`id`, `title`, `file`, `pos`, `type`, `tpl`, `module`, `settings`, `enabled`, `group_allowed`) VALUES
+(3, 'Ссылки', 'links', 0, 'left', '0', '', 'a:1:{s:5:"links";a:3:{s:28:"CTRev: A bit of (R)evolution";s:25:"http://ctrev.cyber-tm.ru/";s:25:"Project Cyberhype Tracker";s:23:"http://old.cyber-tm.ru/";s:42:"Официальный сайт Cyber-Team";s:19:"http://cyber-tm.ru/";}}', '1', ''),
+(7, 'Новости', 'news', 0, 'top', '0', 'index', 'a:0:{}', '1', ''),
+(5, 'Нижний блок', 'downm', 0, 'bottom', 'downer_block', '', 'N;', '1', ''),
+(8, 'Чат', 'chat', 1, 'top', '0', 'index', 'a:0:{}', '1', ''),
+(2, 'Календарь', 'calendar', 1, 'left', '', '', 'N;', '1', ''),
+(9, 'Торренты', 'torrents', 2, 'top', 'torrents_block', 'index', 'a:3:{s:4:"cats";a:7:{s:6:"Всё";s:4:"1-29";s:8:"Софт";s:7:"1|10-12";s:8:"Игры";s:7:"2|13-16";s:12:"Музыка";s:7:"3|17-19";s:12:"Фильмы";s:7:"5|23-26";s:2:"TV";s:7:"8|27-29";s:12:"Прочее";s:1:"9";}s:5:"limit";s:2:"10";s:14:"max_title_symb";s:3:"100";}', '1', ''),
+(4, 'Опросы', 'polls', 2, 'left', '', '', 'N;', '1', ''),
+(1, 'Контент', 'content', 3, 'top', 'all_blocks', 'index', 'a:0:{}', '0', ''),
+(6, 'Тест параметров', 'simple_block', 3, 'left', '0', 'index', 'a:9:{s:4:"par1";s:13:"stringsqweqwe";s:5:"par1t";s:44:"Blah-Blah-Blah, Mr. Freeman, Blah-Blah-Blah.";s:4:"par2";s:4:"1213";s:4:"par3";s:1:"3";s:5:"par35";s:1:"1";s:4:"par4";a:4:{i:0;s:12:"stringsqweqw";i:1;s:6:"qweqwe";i:2;s:7:"weqwdas";i:3;s:6:"qweqwe";}s:4:"par5";a:2:{i:0;s:6:"121312";i:1;s:5:"21231";}s:4:"par6";a:3:{s:8:"strweqwe";s:5:"tests";s:10:"asdaweqeqw";s:4:"test";s:8:"qweqweqw";s:7:"testers";}s:4:"par7";a:3:{i:3;s:6:"tests1";i:1231;s:8:"testers1";i:12312;s:6:"tests1";}}', '0', '6');
 
 INSERT INTO `bots` (`id`, `name`, `firstip`, `lastip`, `agent`) VALUES
 (1, 'Yandex', 1297618432, 1297618943, 'Yandex[bot]'),
@@ -564,47 +622,36 @@ INSERT INTO `bots` (`id`, `name`, `firstip`, `lastip`, `agent`) VALUES
 (23, 'Liveinternet', 1490340352, 1490340415, 'Liveinternet[bot]'),
 (24, 'Webalta', 1297866752, 1297867007, 'Webalta[bot]');
 
-INSERT INTO `blocks` (`id`, `title`, `file`, `pos`, `type`, `tpl`, `module`, `settings`, `enabled`, `group_allowed`) VALUES
-(3, 'Ссылки', 'links', 0, 'left', '0', '', 'a:1:{s:5:"links";a:3:{s:28:"CTRev: A bit of (R)evolution";s:25:"http://ctrev.cyber-tm.ru/";s:25:"Project Cyberhype Tracker";s:23:"http://old.cyber-tm.ru/";s:42:"Официальный сайт Cyber-Team";s:19:"http://cyber-tm.ru/";}}', '1', ''),
-(7, 'Новости', 'news', 0, 'top', '0', 'index', 'a:0:{}', '1', ''),
-(5, 'Нижний блок', 'downm', 0, 'bottom', 'downer_block', '', 'N;', '1', ''),
-(8, 'Чат', 'chat', 1, 'top', '0', 'index', 'a:0:{}', '1', ''),
-(2, 'Календарь', 'calendar', 1, 'left', '', '', 'N;', '1', ''),
-(9, 'Торренты', 'torrents_simple', 2, 'top', 'torrents_block', 'index', 'a:3:{s:4:"cats";a:7:{s:6:"Всё";s:4:"1-29";s:8:"Софт";s:7:"1|10-12";s:8:"Игры";s:7:"2|13-16";s:12:"Музыка";s:7:"3|17-19";s:12:"Фильмы";s:7:"5|23-26";s:2:"TV";s:7:"8|27-29";s:12:"Прочее";s:1:"9";}s:5:"limit";s:2:"10";s:14:"max_title_symb";s:3:"100";}', '1', ''),
-(4, 'Опросы', 'polls', 2, 'left', '', '', 'N;', '1', ''),
-(1, 'Торренты', 'torrents', 3, 'top', 'all_blocks', 'index', 'a:0:{}', '0', ''),
-(6, 'Тест параметров', 'simple_block', 3, 'left', '0', 'index', 'a:9:{s:4:"par1";s:13:"stringsqweqwe";s:5:"par1t";s:44:"Blah-Blah-Blah, Mr. Freeman, Blah-Blah-Blah.";s:4:"par2";s:4:"1213";s:4:"par3";s:1:"3";s:5:"par35";s:1:"1";s:4:"par4";a:4:{i:0;s:12:"stringsqweqw";i:1;s:6:"qweqwe";i:2;s:7:"weqwdas";i:3;s:6:"qweqwe";}s:4:"par5";a:2:{i:0;s:6:"121312";i:1;s:5:"21231";}s:4:"par6";a:3:{s:8:"strweqwe";s:5:"tests";s:10:"asdaweqeqw";s:4:"test";s:8:"qweqweqw";s:7:"testers";}s:4:"par7";a:3:{i:3;s:6:"tests1";i:1231;s:8:"testers1";i:12312;s:6:"tests1";}}', '', '6');
-
 INSERT INTO `categories` (`id`, `parent_id`, `name`, `descr`, `transl_name`, `post_allow`, `type`, `pattern`, `sort`) VALUES
-(1, 0, 'Приложения', '', 'applications', '1', 'torrents', 6, 0),
-(2, 0, 'Игры', '', 'games', '1', 'torrents', 3, 0),
-(3, 0, 'Музыка', NULL, 'music', '1', 'torrents', 5, 0),
-(4, 0, 'Аниме', NULL, 'aime', '1', 'torrents', 2, 0),
-(5, 0, 'Фильмы', '', 'films', '1', 'torrents', 2, 0),
-(6, 0, 'Книги', NULL, 'books', '1', 'torrents', 1, 0),
-(7, 0, 'Мультфильмы', NULL, 'cartoons', '1', 'torrents', 2, 0),
-(8, 0, 'TV', NULL, 'tv', '1', 'torrents', 4, 0),
-(9, 0, 'Прочее', NULL, 'other', '1', 'torrents', 0, 0),
-(10, 1, 'PC', NULL, 'pc-apps', '1', 'torrents', 0, 0),
-(11, 1, 'PDA', NULL, 'pda-apps', '1', 'torrents', 0, 0),
-(12, 1, 'WEB', NULL, 'web-apps', '1', 'torrents', 0, 0),
-(13, 2, 'PC', NULL, 'pc-games', '1', 'torrents', 0, 0),
-(14, 2, 'PS', NULL, 'ps-games', '1', 'torrents', 0, 0),
-(15, 2, 'PSP', NULL, 'psp-games', '1', 'torrents', 0, 0),
-(16, 2, 'XBOX 360', NULL, 'xbox360-games', '1', 'torrents', 0, 0),
-(17, 3, 'Зарубежная', NULL, 'foreign-music', '1', 'torrents', 0, 0),
-(18, 3, 'Русская', NULL, 'russian-music', '1', 'torrents', 0, 0),
-(19, 3, 'Клипы', NULL, 'clips-music', '1', 'torrents', 0, 0),
-(20, 4, 'AMV', NULL, 'amv-anime', '1', 'torrents', 0, 0),
-(21, 4, 'Манга', NULL, 'manga-anime', '1', 'torrents', 0, 0),
-(22, 4, 'HD Аниме', NULL, 'hd-anime', '1', 'torrents', 0, 0),
-(23, 5, 'Отечественные', NULL, 'russian-films', '1', 'torrents', 0, 0),
-(24, 5, 'Индийские', NULL, 'idian-films', '1', 'torrents', 0, 0),
-(25, 5, 'Зарубежные', NULL, 'foreign-films', '1', 'torrents', 0, 0),
-(26, 5, 'Документальные', NULL, 'documentary-films', '1', 'torrents', 0, 0),
-(27, 8, 'Концерты', NULL, 'concert-tv', '1', 'torrents', 0, 0),
-(28, 8, 'Сериалы', NULL, 'series-tv', '1', 'torrents', 0, 0),
-(29, 8, 'Шоу', NULL, 'show-tv', '1', 'torrents', 0, 0);
+(1, 0, 'Приложения', '', 'applications', '1', 'content', 6, 0),
+(2, 0, 'Игры', '', 'games', '1', 'content', 3, 0),
+(3, 0, 'Музыка', NULL, 'music', '1', 'content', 5, 0),
+(4, 0, 'Аниме', NULL, 'aime', '1', 'content', 2, 0),
+(5, 0, 'Фильмы', '', 'films', '1', 'content', 2, 0),
+(6, 0, 'Книги', NULL, 'books', '1', 'content', 1, 0),
+(7, 0, 'Мультфильмы', NULL, 'cartoons', '1', 'content', 2, 0),
+(8, 0, 'TV', NULL, 'tv', '1', 'content', 4, 0),
+(9, 0, 'Прочее', NULL, 'other', '1', 'content', 0, 0),
+(10, 1, 'PC', NULL, 'pc-apps', '1', 'content', 0, 0),
+(11, 1, 'PDA', NULL, 'pda-apps', '1', 'content', 0, 0),
+(12, 1, 'WEB', NULL, 'web-apps', '1', 'content', 0, 0),
+(13, 2, 'PC', NULL, 'pc-games', '1', 'content', 0, 0),
+(14, 2, 'PS', NULL, 'ps-games', '1', 'content', 0, 0),
+(15, 2, 'PSP', NULL, 'psp-games', '1', 'content', 0, 0),
+(16, 2, 'XBOX 360', NULL, 'xbox360-games', '1', 'content', 0, 0),
+(17, 3, 'Зарубежная', NULL, 'foreign-music', '1', 'content', 0, 0),
+(18, 3, 'Русская', NULL, 'russian-music', '1', 'content', 0, 0),
+(19, 3, 'Клипы', NULL, 'clips-music', '1', 'content', 0, 0),
+(20, 4, 'AMV', NULL, 'amv-anime', '1', 'content', 0, 0),
+(21, 4, 'Манга', NULL, 'manga-anime', '1', 'content', 0, 0),
+(22, 4, 'HD Аниме', NULL, 'hd-anime', '1', 'content', 0, 0),
+(23, 5, 'Отечественные', NULL, 'russian-films', '1', 'content', 0, 0),
+(24, 5, 'Индийские', NULL, 'idian-films', '1', 'content', 0, 0),
+(25, 5, 'Зарубежные', NULL, 'foreign-films', '1', 'content', 0, 0),
+(26, 5, 'Документальные', NULL, 'documentary-films', '1', 'content', 0, 0),
+(27, 8, 'Концерты', NULL, 'concert-tv', '1', 'content', 0, 0),
+(28, 8, 'Сериалы', NULL, 'series-tv', '1', 'content', 0, 0),
+(29, 8, 'Шоу', NULL, 'show-tv', '1', 'content', 0, 0);
 
 INSERT INTO `config` (`name`, `value`, `type`, `allowed`, `cat`, `sort`) VALUES
 ('annadress', '', 'text', '', 'announce', 1),
@@ -626,7 +673,7 @@ INSERT INTO `config` (`name`, `value`, `type`, `allowed`, `cat`, `sort`) VALUES
 ('del_oldtorrents', '365', 'int', '', 'cleanup', 3),
 ('del_inactive', '1750', 'int', '', 'cleanup', 4),
 ('clear_warn_period', '90', 'int', '', 'cleanup', 5),
-('clean_rt_interval', '7', 'int', '', 'cleanup', 6),
+('clean_rc_interval', '7', 'int', '', 'cleanup', 6),
 ('clean_peers_interval', '1', 'int', '', 'cleanup', 7),
 ('chat_autoclear', '24', 'int', '', 'cleanup', 8),
 ('comm_perpage', '15', 'int', '', 'comments', 1),
@@ -635,17 +682,31 @@ INSERT INTO `config` (`name`, `value`, `type`, `allowed`, `cat`, `sort`) VALUES
 ('dc_prevent', '1', 'radio', '1;0', 'comments', 4),
 ('dc_maxtime', '600', 'int', '', 'comments', 5),
 ('dc_text', '[b]Добавлено спустя %time_after%[/b]', 'text', '', 'comments', 6),
+('torrents_on', '1', 'radio', '1;0', 'content', 1),
+('additional_announces', 'http://retracker.local/announce', 'text', '', 'content', 2),
+('allowed_screenshots', '3', 'select', '3;2;1', 'content', 3),
+('max_screenshots', '5', 'int', '', 'content', 4),
+('max_torrent_price', '50', 'int', '', 'content', 5),
+('max_sc_symb', '500', 'int', '', 'content', 6),
+('max_rss_items', '20', 'int', '', 'content', 7),
+('content_perpage', '5', 'int', '', 'content', 8),
+('table_content_perpage', '30', 'int', '', 'content', 9),
+('watermark_text', 'Watermark', 'string', '', 'content', 10),
+('watermark_pos', 'rb', 'string', '', 'content', 11),
 ('check_rimage', '0', 'radio', '1;0', 'files', 1),
 ('makes_preview', '1', 'radio', '1;0', 'files', 2),
-('preview_width', '200', 'int', '', 'files', 3),
-('preview_height', '300', 'int', '', 'files', 4),
-('preview_postfix', '_preview', 'string', '', 'files', 5),
-('avatars_folder', 'upload/avatars', 'string', '', 'files', 6),
-('torrents_folder', 'upload/torrents', 'string', '', 'files', 7),
-('screenshots_folder', 'upload/torrents/images', 'string', '', 'files', 8),
-('smilies_folder', 'upload/pic/smilies', 'text', '', 'files', 9),
-('zodiac_folder', 'upload/pic/zodiac', 'string', '', 'files', 10),
-('countries_folder', 'upload/pic/flag', 'string', '', 'files', 11),
+('preview_postfix', '_preview', 'string', '', 'files', 3),
+('avatars_folder', 'upload/avatars', 'string', '', 'files', 4),
+('torrents_folder', 'upload/torrents', 'string', '', 'files', 5),
+('screenshots_folder', 'upload/torrents/images', 'string', '', 'files', 6),
+('smilies_folder', 'upload/pic/smilies', 'string', '', 'files', 7),
+('zodiac_folder', 'upload/pic/zodiac', 'string', '', 'files', 8),
+('countries_folder', 'upload/pic/flag', 'string', '', 'files', 9),
+('attachments_folder', 'upload/files', 'string', '', 'files', 10),
+('attachpreview_folder', 'upload/files/preview', 'string', '', 'files', 11),
+('preview_width', '100', 'int', '', 'files', 12),
+('preview_height', '100', 'int', '', 'files', 13),
+('ftypes_folder', 'upload/ftypes', 'string', '', 'files', 14),
 ('smtp_method', 'default', 'select', 'default;external', 'mail', 1),
 ('smtp_host', '', 'string', '', 'mail', 2),
 ('smtp_port', '25', 'int', '', 'mail', 3),
@@ -661,32 +722,28 @@ INSERT INTO `config` (`name`, `value`, `type`, `allowed`, `cat`, `sort`) VALUES
 ('news_autodelete', '1', 'radio', '1;0', 'news', 2),
 ('site_title', 'CTRev: A bit of (R)evolution', 'string', '', 'other', 1),
 ('baseurl', '/CTRev', 'string', '', 'other', 2),
-('contact_email', 'cybertmdev@gmail.com', 'string', '', 'other', 3),
+('contact_email', 'admin@localhost', 'string', '', 'other', 3),
 ('site_online', '1', 'radio', '1;0', 'other', 4),
 ('use_blocks', '1', 'radio', '1;0', 'other', 5),
 ('plugins_on', '1', 'radio', '1;0', 'other', 6),
-('comments_on', '1', 'radio', '1;0', 'other', 7),
-('rating_on', '1', 'radio', '1;0', 'other', 8),
-('polls_on', '1', 'radio', '1;0', 'other', 9),
-('mailer_on', '1', 'radio', '1;0', 'other', 10),
-('site_autoon', '0', 'date', 'ymdhis', 'other', 11),
-('siteoffline_reason', 'Технические работы.', 'text', '', 'other', 12),
-('default_lang', 'ru', 'folder', 'languages', 'other', 13),
-('default_style', 'CTRev', 'folder', 'themes', 'other', 14),
-('table_perpage', '30', 'int', '', 'other', 15),
-('show_process', '1', 'radio', '1;0', 'other', 16),
-('check_mx_email', '0', 'radio', '0;1', 'other', 17),
-('chat_maxmess', '50', 'int', '', 'other', 18),
-('chat_clearlogs', '100', 'int', '', 'other', 19),
-('secret_key', 'int getRandomNumber() {\r\nreturn 4; // Guaranteed to be random. Choosen by fair dice roll.\r\n}', 'text', '', 'other', 20),
+('disabled_modules', 'attach_manage', 'other', '', 'other', 7),
+('mailer_on', '1', 'radio', '1;0', 'other', 8),
+('site_autoon', '0', 'date', 'ymdhis', 'other', 9),
+('siteoffline_reason', 'Технические работы.', 'text', '', 'other', 10),
+('default_lang', 'ru', 'folder', 'languages', 'other', 11),
+('default_style', 'CTRev', 'folder', 'themes', 'other', 12),
+('table_perpage', '30', 'int', '', 'other', 13),
+('show_process', '1', 'radio', '1;0', 'other', 14),
+('check_mx_email', '0', 'radio', '0;1', 'other', 15),
+('chat_maxmess', '50', 'int', '', 'other', 16),
+('chat_clearlogs', '100', 'int', '', 'other', 17),
+('secret_key', 'M6-AJFSPPRRRDTS', 'text', '', 'other', 18),
 ('max_pmessages', '50', 'int', '', 'pm', 1),
 ('min_message_symb', '5', 'int', '', 'pm', 2),
 ('max_message_symb', '300', 'int', '', 'pm', 3),
 ('allowed_register', '1', 'radio', '1;0', 'register', 1),
 ('allowed_invite', '1', 'radio', '1;0', 'register', 2),
 ('use_captcha', '1', 'radio', '1;0', 'register', 3),
-('private_key', '', 'string', '', 'register', 4),
-('public_key', '6Ld5rQYAAAAAAGEv5do0SOc6lfIGReVMank7yZ18', 'string', '', 'register', 5),
 ('confirm_email', '0', 'radio', '1;0', 'register', 6),
 ('confirm_admin', '0', 'radio', '1;0', 'register', 7),
 ('bonus_per_invited', '100', 'int', '', 'register', 8),
@@ -697,16 +754,6 @@ INSERT INTO `config` (`name`, `value`, `type`, `allowed`, `cat`, `sort`) VALUES
 ('use_bots', '1', 'radio', '1;0', 'seo', 2),
 ('my_meta', '', 'text', '', 'seo', 3),
 ('max_meta_descr_symb', '500', 'int', '', 'seo', 4),
-('additional_announces', 'http://retracker.local/announce', 'text', '', 'torrents', 1),
-('allowed_screenshots', '3', 'select', '3;2;1', 'torrents', 2),
-('max_screenshots', '10', 'int', '', 'torrents', 3),
-('max_torrent_price', '50', 'int', '', 'torrents', 4),
-('max_sc_symb', '500', 'int', '', 'torrents', 5),
-('max_rss_items', '20', 'int', '', 'torrents', 6),
-('torrents_perpage', '5', 'int', '', 'torrents', 7),
-('table_torrents_perpage', '30', 'int', '', 'torrents', 8),
-('watermark_text', 'Watermark', 'string', '', 'torrents', 9),
-('watermark_pos', 'rb', 'string', '', 'torrents', 10),
 ('ip_binding', '1', 'radio', '1;0', 'users', 1),
 ('allowed_avatar', '3', 'select', '3;2;1', 'users', 2),
 ('max_trylogin', '5', 'int', '', 'users', 3),
@@ -716,7 +763,7 @@ INSERT INTO `config` (`name`, `value`, `type`, `allowed`, `cat`, `sort`) VALUES
 ('warn2ban', '5', 'int', '', 'users', 7),
 ('warn2ban_days', '7', 'int', '', 'users', 8),
 ('last_profile_comments', '15', 'int', '', 'users', 9),
-('last_profile_torrents', '15', 'int', '', 'users', 10),
+('last_profile_content', '15', 'int', '', 'users', 10),
 ('bonus_by_default', '300', 'int', '', 'users', 11);
 
 INSERT INTO `countries` (`id`, `name`, `image`) VALUES
@@ -822,9 +869,9 @@ INSERT INTO `countries` (`id`, `name`, `image`) VALUES
 (30, 'Ямайка', 'jamaica.gif'),
 (17, 'Япония', 'japan.gif');
 
-INSERT INTO `groups` (`id`, `default`, `acp_modules`, `pm_count`, `notdeleted`, `system`, `guest`, `bot`, `name`, `color`, `perms`, `sort`, `torrents_count`, `karma_count`, `bonus_count`) VALUES
-(1, '0', '', 50, '1', '0', '1', '0', 'group_guest', '#707070', '33:0;32:0;7:0;6:0;17:0;4:0;3:0;2:1;24:0;25:0;23:0;21:0;15:0;10:0;9:0', 0, 0, 0, 0),
-(7, '1', NULL, 50, '1', '0', '0', '0', 'group_user', '#000000', '', 1, 0, 0, 0),
+INSERT INTO `groups` (`id`, `default`, `acp_modules`, `pm_count`, `notdeleted`, `system`, `guest`, `bot`, `name`, `color`, `perms`, `sort`, `content_count`, `karma_count`, `bonus_count`) VALUES
+(1, '0', '', 50, '1', '0', '1', '0', 'group_guest', '#707070', '33:0;32:0;7:0;6:0;17:0;4:0;3:0;2:1;24:0;25:0;23:0;21:0;15:0;10:0;9:0;36:0;37:0', 0, 0, 0, 0),
+(7, '1', '', 50, '1', '0', '0', '0', 'group_user', '#000000', '', 1, 0, 0, 0),
 (2, '0', NULL, 50, '0', '0', '0', '0', 'group_uploader', '#6600ff', '27:1', 2, 10, 0, 0),
 (3, '0', NULL, 50, '0', '0', '0', '0', 'group_silver', '#5c5c5c', '27:1;26:1', 3, 0, 0, 0),
 (4, '0', NULL, 50, '0', '0', '0', '0', 'group_gold', '#ffcc00', '27:1;26:2', 4, 0, 0, 0),
@@ -846,12 +893,12 @@ INSERT INTO `groups_perm` (`id`, `perm`, `dvalue`, `allowed`, `cat`) VALUES
 (1, 'acp', 0, '2', 'other'),
 (18, 'masspm', 0, '1', 'other'),
 (17, 'pm', 1, '1', 'other'),
-(27, 'ct_price', 0, '1', 'torrents'),
-(4, 'del_torrents', 1, '2', 'torrents'),
-(3, 'edit_torrents', 1, '2', 'torrents'),
-(26, 'free', 0, '2', 'torrents'),
-(20, 'msticky_torrents', 0, '1', 'torrents'),
-(2, 'torrents', 2, '2', 'torrents'),
+(27, 'ct_price', 0, '1', 'content'),
+(4, 'del_content', 1, '2', 'content'),
+(3, 'edit_content', 1, '2', 'content'),
+(26, 'free', 0, '2', 'content'),
+(20, 'msticky_content', 0, '1', 'content'),
+(2, 'content', 2, '2', 'content'),
 (24, 'bebanned', 1, '1', 'users'),
 (25, 'bedeleted', 1, '1', 'users'),
 (23, 'behidden', 1, '1', 'users'),
@@ -865,15 +912,17 @@ INSERT INTO `groups_perm` (`id`, `perm`, `dvalue`, `allowed`, `cat`) VALUES
 (9, 'edit_polls', 1, '2', 'voting'),
 (8, 'polls', 1, '3', 'voting'),
 (13, 'vote', 1, '1', 'voting'),
-(14, 'votersview', 1, '1', 'voting');
+(14, 'votersview', 1, '1', 'voting'),
+(36, 'attach', 1, '1', 'content'),
+(37, 'download_attach', 1, '1', 'content');
 
 INSERT INTO `patterns` (`id`, `name`, `pattern`) VALUES
 (1, 'Общий', 'a:4:{i:0;a:5:{s:4:"name";s:17:"*Название";s:5:"rname";s:4:"name";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:79:"{form.title}{this.$value}\r\n{form.content}[b]Название: [/b]{this.$value}";}i:1;a:5:{s:4:"name";s:42:"*Оригинальное название";s:5:"rname";s:5:"rname";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:107:"{form.title} / {this.$value}\r\n{form.content}[b]Оригинальное название: [/b]{this.$value}";}i:2;a:6:{s:4:"name";s:7:"*Год";s:5:"rname";s:4:"year";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:72:"{form.title} ({this.$value})\r\n{form.content}[b]Год: [/b]{this.$value}";s:4:"size";i:5;}i:3;a:5:{s:4:"name";s:17:"*Описание";s:5:"rname";s:5:"descr";s:4:"type";s:8:"textarea";s:5:"descr";s:37:"Тест. Вместе с <b>HTML</b>";s:8:"formdata";s:54:"{form.content}[b]Описание: [/b]\r\n{this.$value}";}}'),
-(2, 'Фильмы', 'a:15:{i:0;a:5:{s:4:"name";s:17:"*Название";s:5:"rname";s:4:"name";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:79:"{form.title}{this.$value}\r\n{form.content}[b]Название: [/b]{this.$value}";}i:1;a:5:{s:4:"name";s:42:"*Оригинальное название";s:5:"rname";s:5:"rname";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:107:"{form.title} / {this.$value}\r\n{form.content}[b]Оригинальное название: [/b]{this.$value}";}i:2;a:5:{s:4:"name";s:7:"*Год";s:5:"rname";s:4:"year";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:72:"{form.title} ({this.$value})\r\n{form.content}[b]Год: [/b]{this.$value}";}i:3;a:5:{s:4:"name";s:18:"*Режиссер ";s:5:"rname";s:8:"director";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:67:"{this.$value}\r\n{form.content}[b]Режиссер: [/b]{this.$value}";}i:4;a:5:{s:4:"name";s:14:"*В ролях";s:5:"rname";s:4:"Cast";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:64:"{this.$value}\r\n{form.content}[b]В ролях: [/b]{this.$value}";}i:5;a:5:{s:4:"name";s:16:"*О фильме";s:5:"rname";s:5:"descr";s:4:"type";s:8:"textarea";s:5:"descr";s:0:"";s:8:"formdata";s:53:"{form.content}[b]О фильме: [/b]\r\n{this.$value}";}i:6;a:5:{s:4:"name";s:13:"*Страна";s:5:"rname";s:7:"country";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:63:"{this.$value}\r\n{form.content}[b]Страна: [/b]{this.$value}";}i:7;a:5:{s:4:"name";s:13:"*Студия";s:5:"rname";s:6:"studio";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:63:"{this.$value}\r\n{form.content}[b]Студия: [/b]{this.$value}";}i:8;a:5:{s:4:"name";s:35:"*Продолжительность";s:5:"rname";s:4:"time";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:85:"{this.$value}\r\n{form.content}[b]Продолжительность: [/b]{this.$value}";}i:9;a:5:{s:4:"name";s:14:"Перевод";s:5:"rname";s:9:"translate";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:65:"{this.$value}\r\n{form.content}[b]Перевод: [/b]{this.$value}";}i:10;a:5:{s:4:"name";s:16:"Субтитры";s:5:"rname";s:9:"subtitles";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:67:"{this.$value}\r\n{form.content}[b]Субтитры: [/b]{this.$value}";}i:11;a:5:{s:4:"name";s:10:"Кодек";s:5:"rname";s:5:"codec";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:61:"{this.$value}\r\n{form.content}[b]Кодек: [/b]{this.$value}";}i:12;a:6:{s:4:"name";s:16:"Качество";s:5:"rname";s:7:"quality";s:4:"type";s:6:"select";s:6:"values";s:331:"CAMRip;\r\nTelesync(TS);\r\nTelecine (TC);\r\nSuper Telesync(SuperTS, Super-TS);\r\nDVD-Rip (DVDRip);\r\nDVD-Screener;\r\nSCREENER (SCR);\r\nTV-Rip (TVRip);\r\nPDTV-Rip (PDTVRip);\r\nSAT-Rip (SATRip);\r\nDVB-Rip (DVBRip, DVB-T Rip);\r\nIPTV-Rip (IPTVRip);\r\nDVD5 (DVD-5);\r\nDVD9 (DVD-9);\r\nHDTV-Rip (HDTVRip);\r\nBD-Rip;\r\nHD-DVD-Rip;\r\nLaserdisc-RIP;\r\nVHS-Rip";s:5:"descr";s:0:"";s:8:"formdata";s:79:"{form.title}{this.$value}\r\n{form.content}[b]Качество: [/b]{this.$value}";}i:13;a:5:{s:4:"name";s:10:"Видео";s:5:"rname";s:5:"video";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:61:"{this.$value}\r\n{form.content}[b]Видео: [/b]{this.$value}";}i:14;a:5:{s:4:"name";s:8:"Звук";s:5:"rname";s:5:"audio";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:59:"{this.$value}\r\n{form.content}[b]Звук: [/b]{this.$value}";}}'),
-(3, 'Игры', 'a:16:{i:0;a:5:{s:4:"name";s:17:"*Название";s:5:"rname";s:4:"name";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:79:"{form.title}{this.$value}\r\n{form.content}[b]Название: [/b]{this.$value}";}i:1;a:5:{s:4:"name";s:42:"*Оригинальное название";s:5:"rname";s:5:"rname";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:105:"{form.title}/{this.$value}\r\n{form.content}[b]Оригинальное название: [/b]{this.$value}";}i:2;a:5:{s:4:"name";s:22:"*Год выпуска";s:5:"rname";s:4:"year";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:86:"{form.title}({this.$value})\r\n{form.content}[b]Год выпуска: [/b]{this.$value}";}i:3;a:5:{s:4:"name";s:9:"*Жанр";s:5:"rname";s:5:"genre";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:72:"{form.title} {this.$value}\r\n{form.content}[b]Жанр: [/b]{this.$value}";}i:4;a:5:{s:4:"name";s:23:"*Разработчик";s:5:"rname";s:9:"developer";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:73:"{this.$value}\r\n{form.content}[b]Разработчик: [/b]{this.$value}";}i:5;a:5:{s:4:"name";s:17:"*Издатель";s:5:"rname";s:9:"publisher";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:67:"{this.$value}\r\n{form.content}[b]Издатель: [/b]{this.$value}";}i:6;a:5:{s:4:"name";s:24:"*Язык озвучки";s:5:"rname";s:4:"lang";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:74:"{this.$value}\r\n{form.content}[b]Язык озвучки: [/b]{this.$value}";}i:7;a:5:{s:4:"name";s:30:"*Язык интерфейса";s:5:"rname";s:5:"langi";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:80:"{this.$value}\r\n{form.content}[b]Язык интерфейса: [/b]{this.$value}";}i:8;a:5:{s:4:"name";s:40:"*Операционная система";s:5:"rname";s:2:"oc";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:90:"{this.$value}\r\n{form.content}[b]Операционная система: [/b]{this.$value}";}i:9;a:5:{s:4:"name";s:19:"*Процессор";s:5:"rname";s:4:"proc";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:69:"{this.$value}\r\n{form.content}[b]Процессор: [/b]{this.$value}";}i:10;a:5:{s:4:"name";s:36:"*Оперативная память";s:5:"rname";s:3:"ram";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:86:"{this.$value}\r\n{form.content}[b]Оперативная память: [/b]{this.$value}";}i:11;a:5:{s:4:"name";s:21:"*Видеокарта";s:5:"rname";s:6:"videoc";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:71:"{this.$value}\r\n{form.content}[b]Видеокарта: [/b]{this.$value}";}i:12;a:5:{s:4:"name";s:28:"*Звуковая карта";s:5:"rname";s:6:"audioc";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:78:"{this.$value}\r\n{form.content}[b]Звуковая карта: [/b]{this.$value}";}i:13;a:5:{s:4:"name";s:17:"*Описание";s:5:"rname";s:5:"descr";s:4:"type";s:8:"textarea";s:5:"descr";s:0:"";s:8:"formdata";s:67:"{this.$value}\r\n{form.content}[b]Описание: [/b]{this.$value}";}i:14;a:5:{s:4:"name";s:22:"Особенности";s:5:"rname";s:6:"descr1";s:4:"type";s:8:"textarea";s:5:"descr";s:0:"";s:8:"formdata";s:73:"{this.$value}\r\n{form.content}[b]Особенности: [/b]{this.$value}";}i:15;a:5:{s:4:"name";s:18:"Установка";s:5:"rname";s:7:"install";s:4:"type";s:8:"textarea";s:5:"descr";s:0:"";s:8:"formdata";s:69:"{this.$value}\r\n{form.content}[b]Установка: [/b]{this.$value}";}}'),
-(4, 'TV', 'a:15:{i:0;a:5:{s:4:"name";s:17:"*Название";s:5:"rname";s:4:"name";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:79:"{form.title}{this.$value}\r\n{form.content}[b]Название: [/b]{this.$value}";}i:1;a:5:{s:4:"name";s:42:"*Оригинальное название";s:5:"rname";s:5:"rname";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:107:"{form.title} / {this.$value}\r\n{form.content}[b]Оригинальное название: [/b]{this.$value}";}i:2;a:5:{s:4:"name";s:7:"*Год";s:5:"rname";s:4:"year";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:72:"{form.title} ({this.$value})\r\n{form.content}[b]Год: [/b]{this.$value}";}i:3;a:5:{s:4:"name";s:18:"*Режиссер ";s:5:"rname";s:8:"director";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:67:"{this.$value}\r\n{form.content}[b]Режиссер: [/b]{this.$value}";}i:4;a:5:{s:4:"name";s:14:"*В ролях";s:5:"rname";s:4:"Cast";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:64:"{this.$value}\r\n{form.content}[b]В ролях: [/b]{this.$value}";}i:5;a:5:{s:4:"name";s:15:"О фильме";s:5:"rname";s:5:"descr";s:4:"type";s:8:"textarea";s:5:"descr";s:28:"Если это сериал";s:8:"formdata";s:53:"{form.content}[b]О фильме: [/b]\r\n{this.$value}";}i:6;a:5:{s:4:"name";s:9:"О шоу";s:5:"rname";s:7:"country";s:4:"type";s:5:"input";s:5:"descr";s:22:"Если это шоу";s:8:"formdata";s:60:"{this.$value}\r\n{form.content}[b]О шоу: [/b]{this.$value}";}i:7;a:5:{s:4:"name";s:13:"*Студия";s:5:"rname";s:6:"studio";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:63:"{this.$value}\r\n{form.content}[b]Студия: [/b]{this.$value}";}i:8;a:5:{s:4:"name";s:35:"*Продолжительность";s:5:"rname";s:4:"time";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:85:"{this.$value}\r\n{form.content}[b]Продолжительность: [/b]{this.$value}";}i:9;a:5:{s:4:"name";s:14:"Перевод";s:5:"rname";s:9:"translate";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:65:"{this.$value}\r\n{form.content}[b]Перевод: [/b]{this.$value}";}i:10;a:5:{s:4:"name";s:16:"Субтитры";s:5:"rname";s:9:"subtitles";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:67:"{this.$value}\r\n{form.content}[b]Субтитры: [/b]{this.$value}";}i:11;a:5:{s:4:"name";s:10:"Кодек";s:5:"rname";s:5:"codec";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:61:"{this.$value}\r\n{form.content}[b]Кодек: [/b]{this.$value}";}i:12;a:6:{s:4:"name";s:16:"Качество";s:5:"rname";s:7:"quality";s:4:"type";s:6:"select";s:6:"values";s:331:"CAMRip;\r\nTelesync(TS);\r\nTelecine (TC);\r\nSuper Telesync(SuperTS, Super-TS);\r\nDVD-Rip (DVDRip);\r\nDVD-Screener;\r\nSCREENER (SCR);\r\nTV-Rip (TVRip);\r\nPDTV-Rip (PDTVRip);\r\nSAT-Rip (SATRip);\r\nDVB-Rip (DVBRip, DVB-T Rip);\r\nIPTV-Rip (IPTVRip);\r\nDVD5 (DVD-5);\r\nDVD9 (DVD-9);\r\nHDTV-Rip (HDTVRip);\r\nBD-Rip;\r\nHD-DVD-Rip;\r\nLaserdisc-RIP;\r\nVHS-Rip";s:5:"descr";s:0:"";s:8:"formdata";s:79:"{form.title}{this.$value}\r\n{form.content}[b]Качество: [/b]{this.$value}";}i:13;a:5:{s:4:"name";s:10:"Видео";s:5:"rname";s:5:"video";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:61:"{this.$value}\r\n{form.content}[b]Видео: [/b]{this.$value}";}i:14;a:5:{s:4:"name";s:8:"Звук";s:5:"rname";s:5:"audio";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:59:"{this.$value}\r\n{form.content}[b]Звук: [/b]{this.$value}";}}'),
-(5, 'Музыка', 'a:8:{i:0;a:5:{s:4:"name";s:17:"*Название";s:5:"rname";s:4:"name";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:79:"{form.title}{this.$value}\r\n{form.content}[b]Название: [/b]{this.$value}";}i:1;a:5:{s:4:"name";s:23:"*Исполнитель";s:5:"rname";s:5:"rname";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:88:"{form.title} / {this.$value}\r\n{form.content}[b]Исполнитель: [/b]{this.$value}";}i:2;a:6:{s:4:"name";s:7:"*Год";s:5:"rname";s:4:"year";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:72:"{form.title} ({this.$value})\r\n{form.content}[b]Год: [/b]{this.$value}";s:4:"size";i:5;}i:3;a:5:{s:4:"name";s:9:"*Жанр";s:5:"rname";s:5:"genre";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:58:"{form.title}{form.content}[b]Жанр: [/b]\r\n{this.$value}";}i:4;a:5:{s:4:"name";s:35:"*Продолжительность";s:5:"rname";s:4:"time";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:72:"{form.content}[b]Продолжительность: [/b]\r\n{this.$value}";}i:5;a:5:{s:4:"name";s:24:"*Формат/Кодек";s:5:"rname";s:5:"codec";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:61:"{form.content}[b]Формат/Кодек: [/b]\r\n{this.$value}";}i:6;a:5:{s:4:"name";s:26:"*Битрейт аудио";s:5:"rname";s:5:"audio";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:63:"{form.content}[b]Битрейт аудио: [/b]\r\n{this.$value}";}i:7;a:5:{s:4:"name";s:17:"Трек-лист";s:5:"rname";s:4:"trec";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:55:"{form.content}[b]Трек-лист: [/b]\r\n{this.$value}";}}'),
-(6, 'Программы', 'a:11:{i:0;a:5:{s:4:"name";s:17:"*Название";s:5:"rname";s:4:"name";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:79:"{form.title}{this.$value}\r\n{form.content}[b]Название: [/b]{this.$value}";}i:1;a:5:{s:4:"name";s:22:"*Тип издания";s:5:"rname";s:3:"lic";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:84:"{form.title}{this.$value}\r\n{form.content}[b]Тип издания: [/b]{this.$value}";}i:2;a:5:{s:4:"name";s:21:"*Назначение";s:5:"rname";s:11:"appointment";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:71:"{this.$value}\r\n{form.content}[b]Назначение: [/b]{this.$value}";}i:3;a:5:{s:4:"name";s:23:"*Разработчик";s:5:"rname";s:9:"developer";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:73:"{this.$value}\r\n{form.content}[b]Разработчик: [/b]{this.$value}";}i:4;a:5:{s:4:"name";s:7:"*Год";s:5:"rname";s:4:"year";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:69:"{form.title}{this.$value}\r\n{form.content}[b]Год: [/b]{this.$value}";}i:5;a:5:{s:4:"name";s:19:"*Платформа";s:5:"rname";s:2:"oc";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:81:"{form.title}{this.$value}\r\n{form.content}[b]Платформа: [/b]{this.$value}";}i:6;a:5:{s:4:"name";s:13:"*Версия";s:5:"rname";s:7:"version";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:75:"{form.title}{this.$value}\r\n{form.content}[b]Версия: [/b]{this.$value}";}i:7;a:5:{s:4:"name";s:30:"*Язык интерфейса";s:5:"rname";s:4:"lang";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:92:"{form.title}{this.$value}\r\n{form.content}[b]Язык интерфейса: [/b]{this.$value}";}i:8;a:5:{s:4:"name";s:17:"*Таблетка";s:5:"rname";s:6:"tablet";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:67:"{this.$value}\r\n{form.content}[b]Таблетка: [/b]{this.$value}";}i:9;a:5:{s:4:"name";s:17:"*Описание";s:5:"rname";s:5:"descr";s:4:"type";s:8:"textarea";s:5:"descr";s:0:"";s:8:"formdata";s:67:"{this.$value}\r\n{form.content}[b]Описание: [/b]{this.$value}";}i:10;a:5:{s:4:"name";s:40:"*Основные возможности";s:5:"rname";s:6:"descr1";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:90:"{this.$value}\r\n{form.content}[b]Основные возможности: [/b]{this.$value}";}}');
+(2, 'Фильмы', 'a:15:{i:0;a:5:{s:4:"name";s:17:"*Название";s:5:"rname";s:4:"name";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:79:"{form.title}{this.$value}\r\n{form.content}[b]Название: [/b]{this.$value}";}i:1;a:5:{s:4:"name";s:42:"*Оригинальное название";s:5:"rname";s:5:"rname";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:107:"{form.title} / {this.$value}\r\n{form.content}[b]Оригинальное название: [/b]{this.$value}";}i:2;a:5:{s:4:"name";s:7:"*Год";s:5:"rname";s:4:"year";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:72:"{form.title} ({this.$value})\r\n{form.content}[b]Год: [/b]{this.$value}";}i:3;a:5:{s:4:"name";s:18:"*Режиссер ";s:5:"rname";s:8:"director";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:52:"{form.content}[b]Режиссер: [/b]{this.$value}";}i:4;a:5:{s:4:"name";s:14:"*В ролях";s:5:"rname";s:4:"cast";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:49:"{form.content}[b]В ролях: [/b]{this.$value}";}i:5;a:5:{s:4:"name";s:13:"*Страна";s:5:"rname";s:7:"country";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:48:"{form.content}[b]Страна: [/b]{this.$value}";}i:6;a:5:{s:4:"name";s:13:"*Студия";s:5:"rname";s:6:"studio";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:48:"{form.content}[b]Студия: [/b]{this.$value}";}i:7;a:5:{s:4:"name";s:35:"*Продолжительность";s:5:"rname";s:4:"time";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:70:"{form.content}[b]Продолжительность: [/b]{this.$value}";}i:8;a:6:{s:4:"name";s:15:"*Перевод";s:5:"rname";s:11:"translation";s:4:"type";s:6:"select";s:6:"values";s:255:"Оригинал;\r\nЛюбительский(одноголосый);\r\nЛюбительский(многоголосый);\r\nПрофессиональный(одноголосый);\r\nПрофессиональный(многоголосый);\r\nДубляж";s:5:"descr";s:0:"";s:8:"formdata";s:50:"{form.content}[b]Перевод: [/b]{this.$value}";}i:9;a:5:{s:4:"name";s:17:"*Субтитры";s:5:"rname";s:9:"subtitles";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:52:"{form.content}[b]Субтитры: [/b]{this.$value}";}i:10;a:6:{s:4:"name";s:17:"*Качество";s:5:"rname";s:7:"quality";s:4:"type";s:6:"select";s:6:"values";s:346:"CAMRip;\r\nTelesync(TS);\r\nTelecine (TC);\r\nSuper Telesync(SuperTS, Super-TS);\r\nDVD-Rip (DVDRip);\r\nDVD-Screener;\r\nSCREENER (SCR);\r\nTV-Rip (TVRip);\r\nPDTV-Rip (PDTVRip);\r\nSAT-Rip (SATRip);\r\nDVB-Rip (DVBRip, DVB-T Rip);\r\nIPTV-Rip (IPTVRip);\r\nDVD5 (DVD-5);\r\nDVD9 (DVD-9);\r\nHDTV-Rip (HDTVRip);\r\nBD-Rip;\r\nHD-DVD-Rip;\r\nLaserdisc-RIP;\r\nVHS-Rip;\r\nДругое";s:5:"descr";s:0:"";s:8:"formdata";s:52:"{form.content}[b]Качество: [/b]{this.$value}";}i:11;a:6:{s:4:"name";s:10:"Кодек";s:5:"rname";s:5:"codec";s:4:"type";s:6:"select";s:6:"values";s:68:"DivX;XviD;VPx;MPEG1;MPEG2;ASF;x.264;WMV;H. 264/AVC;VC-1;Другой";s:5:"descr";s:0:"";s:8:"formdata";s:46:"{form.content}[b]Кодек: [/b]{this.$value}";}i:12;a:5:{s:4:"name";s:10:"Видео";s:5:"rname";s:5:"video";s:4:"type";s:5:"input";s:5:"descr";s:41:"<b>Пример:</b> 560x304, 985 кб/с";s:8:"formdata";s:46:"{form.content}[b]Видео: [/b]{this.$value}";}i:13;a:5:{s:4:"name";s:8:"Звук";s:5:"rname";s:5:"audio";s:4:"type";s:5:"input";s:5:"descr";s:37:"<b>Пример:</b> MP3, 192 кб/с";s:8:"formdata";s:44:"{form.content}[b]Звук: [/b]{this.$value}";}i:14;a:5:{s:4:"name";s:16:"*О фильме";s:5:"rname";s:5:"descr";s:4:"type";s:8:"textarea";s:5:"descr";s:0:"";s:8:"formdata";s:53:"{form.content}[b]О фильме: [/b]\r\n{this.$value}";}}'),
+(3, 'Игры', 'a:13:{i:0;a:5:{s:4:"name";s:17:"*Название";s:5:"rname";s:4:"name";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:79:"{form.title}{this.$value}\r\n{form.content}[b]Название: [/b]{this.$value}";}i:1;a:5:{s:4:"name";s:42:"*Оригинальное название";s:5:"rname";s:5:"rname";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:107:"{form.title} / {this.$value}\r\n{form.content}[b]Оригинальное название: [/b]{this.$value}";}i:2;a:5:{s:4:"name";s:9:"*Жанр";s:5:"rname";s:5:"genre";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:74:"{form.title} ({this.$value},\r\n{form.content}[b]Жанр: [/b]{this.$value}";}i:3;a:5:{s:4:"name";s:22:"*Год выпуска";s:5:"rname";s:4:"year";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:86:"{form.title} {this.$value})\r\n{form.content}[b]Год выпуска: [/b]{this.$value}";}i:4;a:5:{s:4:"name";s:23:"*Разработчик";s:5:"rname";s:9:"developer";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:57:"{form.content}[b]Разработчик:[/b]{this.$value}";}i:5;a:5:{s:4:"name";s:17:"*Издатель";s:5:"rname";s:9:"publisher";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:52:"{form.content}[b]Издатель: [/b]{this.$value}";}i:6;a:5:{s:4:"name";s:24:"*Язык озвучки";s:5:"rname";s:5:"langs";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:59:"{form.content}[b]Язык озвучки: [/b]{this.$value}";}i:7;a:5:{s:4:"name";s:30:"*Язык интерфейса";s:5:"rname";s:5:"langi";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:65:"{form.content}[b]Язык интерфейса: [/b]{this.$value}";}i:8;a:5:{s:4:"name";s:40:"*Операционная система";s:5:"rname";s:2:"os";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:75:"{form.content}[b]Операционная система: [/b]{this.$value}";}i:9;a:5:{s:4:"name";s:39:"*Cистемные требования";s:5:"rname";s:6:"sysreq";s:4:"type";s:8:"textarea";s:5:"descr";s:0:"";s:8:"formdata";s:75:"{form.content}[b]Системные требования: [/b]{this.$value}";}i:10;a:5:{s:4:"name";s:17:"*Описание";s:5:"rname";s:5:"descr";s:4:"type";s:8:"textarea";s:5:"descr";s:0:"";s:8:"formdata";s:54:"{form.content}[b]Описание: [/b]\r\n{this.$value}";}i:11;a:5:{s:4:"name";s:22:"Особенности";s:5:"rname";s:7:"special";s:4:"type";s:8:"textarea";s:5:"descr";s:0:"";s:8:"formdata";s:58:"{form.content}[b]Особенности: [/b]{this.$value}";}i:12;a:5:{s:4:"name";s:18:"Установка";s:5:"rname";s:7:"install";s:4:"type";s:8:"textarea";s:5:"descr";s:0:"";s:8:"formdata";s:54:"{form.content}[b]Установка: [/b]{this.$value}";}}'),
+(4, 'TV', 'a:14:{i:0;a:5:{s:4:"name";s:17:"*Название";s:5:"rname";s:4:"name";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:79:"{form.title}{this.$value}\r\n{form.content}[b]Название: [/b]{this.$value}";}i:1;a:5:{s:4:"name";s:42:"*Оригинальное название";s:5:"rname";s:5:"rname";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:107:"{form.title} / {this.$value}\r\n{form.content}[b]Оригинальное название: [/b]{this.$value}";}i:2;a:5:{s:4:"name";s:7:"*Год";s:5:"rname";s:4:"year";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:72:"{form.title} ({this.$value})\r\n{form.content}[b]Год: [/b]{this.$value}";}i:3;a:5:{s:4:"name";s:18:"*Режиссер ";s:5:"rname";s:8:"director";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:52:"{form.content}[b]Режиссер: [/b]{this.$value}";}i:4;a:5:{s:4:"name";s:14:"*В ролях";s:5:"rname";s:4:"cast";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:49:"{form.content}[b]В ролях: [/b]{this.$value}";}i:5;a:5:{s:4:"name";s:13:"*Студия";s:5:"rname";s:6:"studio";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:48:"{form.content}[b]Студия: [/b]{this.$value}";}i:6;a:5:{s:4:"name";s:35:"*Продолжительность";s:5:"rname";s:4:"time";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:70:"{form.content}[b]Продолжительность: [/b]{this.$value}";}i:7;a:6:{s:4:"name";s:15:"*Перевод";s:5:"rname";s:9:"translate";s:4:"type";s:6:"select";s:6:"values";s:255:"Оригинал;\r\nЛюбительский(одноголосый);\r\nЛюбительский(многоголосый);\r\nПрофессиональный(одноголосый);\r\nПрофессиональный(многоголосый);\r\nДубляж";s:5:"descr";s:0:"";s:8:"formdata";s:50:"{form.content}[b]Перевод: [/b]{this.$value}";}i:8;a:5:{s:4:"name";s:17:"*Субтитры";s:5:"rname";s:9:"subtitles";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:52:"{form.content}[b]Субтитры: [/b]{this.$value}";}i:9;a:6:{s:4:"name";s:17:"*Качество";s:5:"rname";s:7:"quality";s:4:"type";s:6:"select";s:6:"values";s:346:"CAMRip;\r\nTelesync(TS);\r\nTelecine (TC);\r\nSuper Telesync(SuperTS, Super-TS);\r\nDVD-Rip (DVDRip);\r\nDVD-Screener;\r\nSCREENER (SCR);\r\nTV-Rip (TVRip);\r\nPDTV-Rip (PDTVRip);\r\nSAT-Rip (SATRip);\r\nDVB-Rip (DVBRip, DVB-T Rip);\r\nIPTV-Rip (IPTVRip);\r\nDVD5 (DVD-5);\r\nDVD9 (DVD-9);\r\nHDTV-Rip (HDTVRip);\r\nBD-Rip;\r\nHD-DVD-Rip;\r\nLaserdisc-RIP;\r\nVHS-Rip;\r\nДругое";s:5:"descr";s:0:"";s:8:"formdata";s:52:"{form.content}[b]Качество: [/b]{this.$value}";}i:10;a:6:{s:4:"name";s:10:"Кодек";s:5:"rname";s:5:"codec";s:4:"type";s:6:"select";s:6:"values";s:68:"DivX;XviD;VPx;MPEG1;MPEG2;ASF;x.264;WMV;H. 264/AVC;VC-1;Другой";s:5:"descr";s:0:"";s:8:"formdata";s:46:"{form.content}[b]Кодек: [/b]{this.$value}";}i:11;a:5:{s:4:"name";s:10:"Видео";s:5:"rname";s:5:"video";s:4:"type";s:5:"input";s:5:"descr";s:41:"<b>Пример:</b> 560x304, 985 кб/с";s:8:"formdata";s:46:"{form.content}[b]Видео: [/b]{this.$value}";}i:12;a:5:{s:4:"name";s:8:"Звук";s:5:"rname";s:5:"audio";s:4:"type";s:5:"input";s:5:"descr";s:37:"<b>Пример:</b> MP3, 192 кб/с";s:8:"formdata";s:44:"{form.content}[b]Звук: [/b]{this.$value}";}i:13;a:5:{s:4:"name";s:17:"*Описание";s:5:"rname";s:5:"descr";s:4:"type";s:8:"textarea";s:5:"descr";s:0:"";s:8:"formdata";s:54:"{form.content}[b]Описание: [/b]\r\n{this.$value}";}}'),
+(5, 'Музыка', 'a:8:{i:0;a:5:{s:4:"name";s:9:"*Жанр";s:5:"rname";s:5:"genre";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:72:"{form.title}{this.$value}:\r\n{form.content}[b]Жанр: [/b]{this.$value}";}i:1;a:5:{s:4:"name";s:23:"*Исполнитель";s:5:"rname";s:5:"rname";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:86:"{form.title} {this.$value}\r\n{form.content}[b]Исполнитель: [/b]{this.$value}";}i:2;a:5:{s:4:"name";s:13:"*Альбом";s:5:"rname";s:5:"album";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:78:"{form.title} - {this.$value}\r\n{form.content}[b]Альбом: [/b]{this.$value}";}i:3;a:6:{s:4:"name";s:7:"*Год";s:5:"rname";s:4:"year";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:72:"{form.title} ({this.$value})\r\n{form.content}[b]Год: [/b]{this.$value}";s:4:"size";i:5;}i:4;a:5:{s:4:"name";s:35:"*Продолжительность";s:5:"rname";s:4:"time";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:71:"{form.content}[b]Продолжительность: [/bъ{this.$value}";}i:5;a:6:{s:4:"name";s:24:"*Формат/Кодек";s:5:"rname";s:5:"codec";s:4:"type";s:6:"select";s:6:"values";s:42:"MP3;AC3;WMA;OGG;MP2;FLAC;APER;Другой";s:5:"descr";s:0:"";s:8:"formdata";s:59:"{form.content}[b]Формат/Кодек: [/b]{this.$value}";}i:6;a:5:{s:4:"name";s:26:"*Битрейт аудио";s:5:"rname";s:5:"audio";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:61:"{form.content}[b]Битрейт аудио: [/b]{this.$value}";}i:7;a:5:{s:4:"name";s:17:"Трек-лист";s:5:"rname";s:9:"tracklist";s:4:"type";s:8:"textarea";s:5:"descr";s:0:"";s:8:"formdata";s:74:"{form.content}[b]Трек-лист: [/b]\r\n[spoiler]{this.$value}[/spoiler]";}}'),
+(6, 'Программы', 'a:10:{i:0;a:5:{s:4:"name";s:19:"*Платформа";s:5:"rname";s:2:"oc";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:82:"{form.title}{this.$value}:\r\n{form.content}[b]Платформа: [/b]{this.$value}";}i:1;a:5:{s:4:"name";s:17:"*Название";s:5:"rname";s:4:"name";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:80:"{form.title} {this.$value}\r\n{form.content}[b]Название: [/b]{this.$value}";}i:2;a:5:{s:4:"name";s:13:"*Версия";s:5:"rname";s:7:"version";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:66:"{form.title} v.{this.$value}\r\n{form.content}{nobr} v.{this.$value}";}i:3;a:5:{s:4:"name";s:7:"*Год";s:5:"rname";s:4:"year";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:72:"{form.title} ({this.$value})\r\n{form.content}[b]Год: [/b]{this.$value}";}i:4;a:5:{s:4:"name";s:17:"*Лицензия";s:5:"rname";s:7:"licence";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:57:"{form.content}[b]Тип издания: [/b]{this.$value}";}i:5;a:5:{s:4:"name";s:23:"*Разработчик";s:5:"rname";s:9:"developer";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:58:"{form.content}[b]Разработчик: [/b]{this.$value}";}i:6;a:5:{s:4:"name";s:30:"*Язык интерфейса";s:5:"rname";s:4:"lang";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:92:"{form.title}{this.$value}\r\n{form.content}[b]Язык интерфейса: [/b]{this.$value}";}i:7;a:5:{s:4:"name";s:17:"*Таблетка";s:5:"rname";s:6:"tablet";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:52:"{form.content}[b]Таблетка: [/b]{this.$value}";}i:8;a:5:{s:4:"name";s:17:"*Описание";s:5:"rname";s:5:"descr";s:4:"type";s:8:"textarea";s:5:"descr";s:0:"";s:8:"formdata";s:52:"{form.content}[b]Описание: [/b]{this.$value}";}i:9;a:5:{s:4:"name";s:39:"Основные возможности";s:5:"rname";s:8:"features";s:4:"type";s:8:"textarea";s:5:"descr";s:0:"";s:8:"formdata";s:75:"{form.content}[b]Основные возможности: [/b]{this.$value}";}}');
 
 INSERT INTO `smilies` (`id`, `code`, `image`, `name`, `show_bbeditor`, `sort`) VALUES
 (1, ':-)', 'smile1.gif', 'Smile', '1', 0),
@@ -900,8 +949,9 @@ INSERT INTO `smilies` (`id`, `code`, `image`, `name`, `show_bbeditor`, `sort`) V
 (23, ':sorry:', 'sorry.gif', 'Sorry', '1', 21),
 (24, ':hi:', 'hi.gif', 'Hi', '1', 22);
 
-INSERT INTO `stats` (`name`, `value`) VALUES
-('last_clean_rt', '1345397627'),
-('last_cleanup', '1345729210'),
-('max_online', '1'),
-('max_online_time', '1345397628');
+INSERT INTO `users_fields` (`field`, `name`, `descr`, `type`, `allowed`, `sort`, `show_register`, `show_profile`, `necessary`) VALUES
+('country', 'Страна', '', 'other', '', 0, '1', '1', '0'),
+('website', 'Веб-сайт', '', 'other', '', 1, '1', '1', '0'),
+('town', 'Город', '', 'string', '', 2, '1', '1', '0'),
+('icq', 'ICQ', '', 'int', '', 3, '1', '1', '0'),
+('skype', 'Skype', '', 'string', '', 4, '1', '1', '0');

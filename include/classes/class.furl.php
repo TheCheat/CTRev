@@ -48,7 +48,7 @@ final class furl extends pluginable_object {
             'key',
             'email',
             'ref'),
-        'torrents' => array(
+        'content' => array(
             'year',
             'month',
             'day',
@@ -75,7 +75,7 @@ final class furl extends pluginable_object {
      * @var array $postfixes
      */
     protected $postfixes = array(
-        'torrents' => array(
+        'content' => array(
             'cid' => '#comment_'),
         'users' => array(
             'cid' => '#comment_'));
@@ -90,7 +90,8 @@ final class furl extends pluginable_object {
         'users' => 'user',
         'pm' => 'messages',
         'static' => 'statics',
-        'download' => 'torrents');
+        'download' => 'content',
+        'attach' => 'attach_manage');
 
     /**
      * Проверка для метода location
@@ -100,10 +101,11 @@ final class furl extends pluginable_object {
 
     /**
      * Включить/Выключить запрет переадресации
+     * @param bool $state включить/выключить
      * @return furl $this
      */
-    public function deny_locations() {
-        $this->denied_locations = !$this->denied_locations;
+    public function deny_locations($state = true) {
+        $this->denied_locations = (bool) $state;
         return $this;
     }
 
@@ -153,6 +155,22 @@ final class furl extends pluginable_object {
                 return $value;
             case "id" :
                 return "id" . ($value == '$1' ? $value : longval($value)) . "-";
+            default :
+                return;
+                break;
+        }
+    }
+
+    /**
+     * Метод обработки параметров для ЧПУ вложений
+     * @param string $param имя параметра
+     * @param mixed $value значение параметра
+     * @return string часть ЧПУ
+     */
+    protected function attach_furl_rules($param, $value) {
+        switch ($param) {
+            case "id" :
+                return "id" . longval($value);
             default :
                 return;
                 break;
@@ -389,12 +407,12 @@ final class furl extends pluginable_object {
     }
 
     /**
-     * Метод обработки параметров для не-ЧПУ торрентов
+     * Метод обработки параметров для не-ЧПУ контента
      * @param string $param имя параметра
      * @param mixed $value значение параметра
      * @return string часть не-URL
      */
-    protected function torrents_nfurl_rules($param, $value) {
+    protected function content_nfurl_rules($param, $value) {
         switch ($param) {
             case "title":
                 $value = display::o()->translite($value, 100);
@@ -405,12 +423,12 @@ final class furl extends pluginable_object {
     }
 
     /**
-     * Метод обработки параметров для ЧПУ торрентов
+     * Метод обработки параметров для ЧПУ контента
      * @param string $param имя параметра
      * @param mixed $value значение параметра
      * @return string часть ЧПУ
      */
-    protected function torrents_furl_rules($param, $value) {
+    protected function content_furl_rules($param, $value) {
         switch ($param) {
             //case "attr" :
             //    return $value;
@@ -459,6 +477,22 @@ final class furl extends pluginable_object {
     }
 
     /**
+     * Получение имени модуля
+     * @param string $module входное имя
+     * @return string преобразованное имя
+     */
+    protected function module_name($module) {
+        switch ($module) {
+            case "content":
+                return config::o()->v('torrents_on') ? 'torrents' : 'articles';
+                break;
+            default:
+                return $module;
+                break;
+        }
+    }
+
+    /**
      * Функция создания Человекопонятного URL, исходя из заданных параметров, 
      * по предустановленным правилам
      * @param string $module имя модуля
@@ -499,12 +533,12 @@ final class furl extends pluginable_object {
         if (!is_array($params))
             $params = array();
         if ($params ["_filetype"])
-            $filetype = (strpos($params ["_filetype"], ".") === 0 ? $params ["_filetype"] : "." . $params ["_filetype"]);
+            $filetype = '.' . file::o()->get_filetype($params ["_filetype"]);
         else
             $filetype = ".html";
         $url = ($burl ? $baseurl : "");
         if (config::o()->v('furl')) {
-            $url .= $module . ($page ? '' : "/");
+            $url .= $this->module_name($module) . ($page ? '' : "/");
             $function = $module . '_furl_rules';
         } else {
             $url .= 'index.php?module=' . ($this->rmodules[$module] ? $this->rmodules[$module] : $module);

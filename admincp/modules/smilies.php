@@ -55,7 +55,7 @@ class smilies_man {
      * @return null
      */
     protected function files($folder = null) {
-        display::o()->filechooser(null, config::o()->v('smilies_folder'), $folder);
+        display::o()->filechooser(null, config::o()->v('smilies_folder'), $folder, null, true);
     }
 
     /**
@@ -65,7 +65,7 @@ class smilies_man {
      */
     protected function show($id = null) {
         $id = (int) $id;
-        $r = db::o()->query('SELECT * FROM smilies' . ($id ? ' WHERE id=' . $id . ' LIMIT 1' : ""));
+        $r = db::o()->p($id)->query('SELECT * FROM smilies' . ($id ? ' WHERE id=? LIMIT 1' : ""));
         tpl::o()->assign('res', db::o()->fetch2array($r));
         tpl::o()->display('admin/smilies/index.tpl');
     }
@@ -75,7 +75,7 @@ class smilies_man {
      * @param string $name имя смайла
      * @return array код и имя смайла
      */
-    protected function get_smilie_name($name) {
+    public function get_smilie_name($name) {
         preg_match('/(\w+)\.([a-z]+)$/si', $name, $matches);
         if (!$matches)
             return array('', '');
@@ -99,7 +99,7 @@ class smilies_man {
             $nr = array();
             foreach ($r as $k => $v) {
                 $k = ($f ? $f . '/' : '') . $v;
-                if (db::o()->count_rows('smilies', 'image = ' . db::o()->esc($k)))
+                if (db::o()->p($k)->count_rows('smilies', 'image = ?'))
                     continue;
                 $nr[$k] = $this->get_smilie_name($v);
             }
@@ -117,7 +117,7 @@ class smilies_man {
      * @return null
      * @throws EngineException 
      */
-    protected function save($data) {
+    public function save($data) {
         $admin_file = globals::g('admin_file');
         $cols = array(
             'id',
@@ -133,9 +133,9 @@ class smilies_man {
         $sb = (array) $sb;
         $c = count($name);
         if ($id && $c != 1)
-            throw new EngineException('smilies_data_not_entered');
+            throw new EngineException('smilies_empty_data');
         if (!$name || $c != count($code) || $c != count($image))
-            throw new EngineException('smilies_data_not_entered');
+            throw new EngineException('smilies_empty_data');
         foreach ($name as $i => $iname) {
             $icode = trim($code[$i]);
             $iname = trim($iname);
@@ -145,7 +145,7 @@ class smilies_man {
                 continue;
             if (!file_exists(ROOT . config::o()->v('smilies_folder') . '/' . $iimage) || !in_array(file::o()->get_filetype($iimage), $this->allowed_types))
                 continue;
-            if (db::o()->count_rows('smilies', 'code = ' . db::o()->esc($icode) . ($id ? ' AND id<>' . $id : '')))
+            if (db::o()->p($icode, $id)->count_rows('smilies', 'code = ?' . ($id ? ' AND id<>?' : '')))
                 continue;
             $update = array(
                 'code' => $icode,
@@ -155,7 +155,7 @@ class smilies_man {
             if (!$id)
                 db::o()->insert($update, 'smilies', true);
             else
-                db::o()->update($update, 'smilies', 'WHERE id=' . $id . ' LIMIT 1');
+                db::o()->p($id)->update($update, 'smilies', 'WHERE id=? LIMIT 1');
         }
         cache::o()->remove('smilies');
         if (!$id) {
@@ -193,23 +193,22 @@ class smilies_man_ajax {
                 break;
         }
         cache::o()->remove('smilies');
-        die("OK!");
+        ok();
     }
 
     /**
      * Редактирование смайла
      * @param int $id ID смайла
      * @return null
-     * @throws EngineException
      */
     protected function edit($id) {
         $id = (int) $id;
-        $r = db::o()->query('SELECT * FROM smilies WHERE id=' . $id . ' LIMIT 1');
+        $r = db::o()->p($id)->query('SELECT * FROM smilies WHERE id=? LIMIT 1');
         if (!db::o()->num_rows($r))
             throw new EngineException;
         tpl::o()->assign('row', db::o()->fetch_assoc($r));
         tpl::o()->display('admin/smilies/edit.tpl');
-        throw new EngineException;
+        deny_ok();
     }
 
     /**
@@ -217,8 +216,9 @@ class smilies_man_ajax {
      * @param int $id ID смайла
      * @return null
      */
-    protected function switch_state($id) {
-        db::o()->update(array('_cb_show_bbeditor' => 'IF(show_bbeditor="1","0","1")'), 'smilies', 'WHERE id=' . intval($id) . ' LIMIT 1');
+    public function switch_state($id) {
+        $id = (int) $id;
+        db::o()->p($id)->update(array('_cb_show_bbeditor' => 'IF(show_bbeditor="1","0","1")'), 'smilies', 'WHERE id=? LIMIT 1');
     }
 
     /**
@@ -226,9 +226,9 @@ class smilies_man_ajax {
      * @param int $id ID смайла
      * @return null
      */
-    protected function delete($id) {
+    public function delete($id) {
         $id = (int) $id;
-        db::o()->delete('smilies', 'WHERE id=' . $id . ' LIMIT 1');
+        db::o()->p($id)->delete('smilies', 'WHERE id=? LIMIT 1');
     }
 
     /**
@@ -236,11 +236,13 @@ class smilies_man_ajax {
      * @return null
      * @throws EngineException
      */
-    protected function save_order($sort) {
+    public function save_order($sort) {
         if (!$sort)
             throw new EngineException;
-        foreach ($sort as $s => $id)
-            db::o()->update(array('sort' => (int) $s), 'smilies', 'WHERE id=' . intval($id) . ' LIMIT 1');
+        foreach ($sort as $s => $id) {
+            $id = (int) $id;
+            db::o()->p($id)->update(array('sort' => (int) $s), 'smilies', 'WHERE id=? LIMIT 1');
+        }
         db::o()->query('ALTER TABLE `smilies` ORDER BY `sort`');
     }
 

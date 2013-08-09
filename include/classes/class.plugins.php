@@ -43,10 +43,22 @@ final class PReturn extends Exception {
 
 // Ограничиваем доступ к защищённым переменным, добавляем методы
 
-define('PVAR_READ', 0); // Чтение
-define('PVAR_ADD', 1); // Добавление ключа
-define('PVAR_MOD', 2); // Изменение переменной
-define('PVAR_DELETE', 4); // Удаление ключа
+/**
+ * Чтение
+ */
+define('PVAR_READ', 0);
+/**
+ * Добавление ключа
+ */
+define('PVAR_ADD', 1);
+/**
+ * Изменение переменной
+ */
+define('PVAR_MOD', 2);
+/**
+ * Удаление ключа
+ */
+define('PVAR_DELETE', 4);
 
 abstract class pluginable_object {
 
@@ -250,8 +262,8 @@ final class plugins_manager {
     public function __construct($plugins, &$plugin_name) {
         $this->cplugin = &$plugin_name;
         $this->p = $plugins;
-        $this->plugins = db::o()->query('SELECT file,settings FROM plugins', array('n' => 'plugins',
-            'k' => array('file' => 'settings')));
+        $this->plugins = db::o()->cname('plugins')->ckeys('file', 'settings')
+                ->query('SELECT file,settings FROM plugins');
         foreach ($this->plugins as $plugin => $settings) {
             $this->load($plugin);
             $this->settings($plugin, $settings);
@@ -365,7 +377,7 @@ final class plugins_manager {
             return false;
         if (!$this->uninstall($plugin))
             return false;
-        db::o()->delete("plugins", 'WHERE file=' . db::o()->esc($plugin));
+        db::o()->p($plugin)->delete("plugins", 'WHERE file=?');
         if (function_exists('clear_aliases'))
             clear_aliases();
         $this->uncache($plugin);
@@ -474,6 +486,12 @@ class plugins_modifier {
     private $comment = false;
 
     /**
+     * Вставка в шаблон
+     * @var int $insert
+     */
+    private $insert = 0;
+
+    /**
      * Callback функция для замены в шаблоне
      * @param array $matches массив спарсенных групп
      * @return string заменённая строка
@@ -499,6 +517,20 @@ class plugins_modifier {
     }
 
     /**
+     * Вставка в шаблон
+     * @param string $f файл шаблона(относительно дирректории, с расширением)
+     * @param string $what что вставлять?
+     * @param bool $begin в начало?
+     * @return bool|int 2, если все шаблоны успешно изменены, true, если стандартный шаблон
+     * успешно изменён
+     */
+    public function insert_template($f, $what, $begin = true) {
+        $this->insert = $begin ? 1 : 2;
+        $this->modify_template($f, $what);
+        $this->insert = 0;
+    }
+
+    /**
      * Модификация шаблона 
      * @param string $f файл шаблона(относительно дирректории, с расширением)
      * @param string $what что заменять? (рег. выражение без делимиттеров)
@@ -514,14 +546,14 @@ class plugins_modifier {
      * @see join_js()
      * @see join_css()
      */
-    public function modify_template($f, $what, $with, $regexp = false, $folder = null) {
+    public function modify_template($f, $what, $with = "", $regexp = false, $folder = null) {
         if (!$what)
             return false;
         $f = validpath($f);
         $ft = file::o()->get_filetype($f);
         if (!$f || ($ft != 'tpl' && $ft != 'xtpl'))
             return false;
-        if (!$regexp) {
+        if (!$regexp && !$this->insert) {
             $what = mpc($what);
             $what = preg_replace('/\s+/s', '\s+', $what); // не учитываем пробелы
             $regexp = true;
@@ -540,7 +572,11 @@ class plugins_modifier {
             }
             return !$cb ? false : $b == $c + $cb;
         }
-        if (!$this->comment)
+        if ($this->insert)
+            $what = "<!-- inserted by plugin at time " . time() . ". begin-->\n" .
+                    $what .
+                    "\n<!-- inserted by plugin. end-->"; // для обратной замены
+        elseif (!$this->comment)
             $with = "<!-- " . crc32($what) . " replaced by plugin at time " . time() . ". begin-->\n" .
                     $with .
                     "\n<!-- replaced by plugin. end-->"; // для обратной замены
@@ -548,12 +584,20 @@ class plugins_modifier {
         if (!file_exists(ROOT . $p))
             return true; // ибо может наследовать
         $ftpl = file_get_contents(ROOT . $p);
-        $this->tmp_with = $with;
-        $this->treplaced = array();
-        $ftpl = preg_replace_callback('/' . $what . '/siu', array($this, "replace_callback"), $ftpl);
         if (!$this->replaced[$p])
             $this->replaced[$p] = array();
-        $this->replaced[$p][] = $this->treplaced;
+        if (!$this->insert) {
+            $this->tmp_with = $with;
+            $this->treplaced = array();
+            $ftpl = preg_replace_callback('/' . $what . '/siu', array($this, "replace_callback"), $ftpl);
+            $this->replaced[$p][] = $this->treplaced;
+        } else {
+            if ($this->insert == 1)
+                $ftpl = $what . $ftpl;
+            else
+                $ftpl = $ftpl . $what;
+            $this->replaced[$p][] = array(array("", $what));
+        }
         return file::o()->write_file($ftpl, $p);
     }
 
@@ -561,20 +605,23 @@ class plugins_modifier {
      * Подключает CSS в заменяемую часть шаблона 
      * @param string $string замена
      * @param string $file имя файла(в папке css без расширения)
+     * @param bool $admin в АЦ?
      * @return string с CSS
      */
-    public function join_css($string, $file) {
-        return '<link rel="stylesheet" href="[*$theme_path*]css/' . $file . '.css" type="text/css">' . $string;
+    public function join_css($string, $file, $admin = false) {
+        return '<link rel="stylesheet" href="[*$' . ($admin ? 'a' : '') . 'theme_path*]css/' . $file . '.css" type="text/css">' . $string;
     }
 
     /**
      * Подключает JS в заменяемую часть шаблона 
      * @param string $string замена
      * @param string $file имя файла(в папке js без расширения)
+     * @param bool|int $theme в тему? 2 - в АЦ
      * @return string с JS
      */
-    public function join_js($string, $file) {
-        return $string . '<script type="text/javascript" src="[*$theme_path*]js/' . $file . '.js"></script>';
+    public function join_js($string, $file, $theme = false) {
+        $pre = $theme ? '[*$' . ($theme === 2 ? 'a' : '') . 'theme_path*]' : '';
+        return $string . '<script type="text/javascript" src="' . $pre . 'js/' . $file . '.js"></script>';
     }
 
     /**
@@ -981,7 +1028,8 @@ final class plugins extends plugins_modifier {
         } elseif ($is_block) {
             $p .= '/' . BLOCKS_PATH;
             $is_block = true;
-        }
+        } elseif (class_exists("config") && !config::o()->mstate($module_name))
+            return new empty_class();
         $f = ROOT . $p . "/" . $module_name . ".php";
         if (!file_exists($f))
             return null;

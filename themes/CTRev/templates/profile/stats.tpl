@@ -1,12 +1,14 @@
 <dl class="info_text">
-    <dt>[*'users_bonus_count'|lang*]</dt>
-    <dd>[*$row.bonus_count*]</dd>
-    <dt>[*'users_added_torrents'|lang*]<br>
-        <font size="1">
-            <a href="[*gen_link module='search' author=$row.username auto=true*]">[*'users_all_added_torrents'|lang*]</a>
-        </font>
+    [*if "torrents_on"|config*]
+        <dt>[*'users_bonus_count'|lang*]</dt>
+        <dd>[*$row.bonus_count*]</dd>
+    [*/if*]
+    <dt>[*'users_added_content'|lang*]<br>
+    <font size="1">
+    <a href="[*gen_link module='search' author=$row.username auto=true*]">[*'users_all_added_content'|lang*]</a>
+    </font>
     </dt>
-    <dd>[*$row.torrents_count*]<br>&nbsp;
+    <dd>[*$row.content_count*]<br>&nbsp;
     </dd>
     <dt>[*'users_added_comments'|lang*]</dt>
     <dd>[*$row.comm_count*]</dd>

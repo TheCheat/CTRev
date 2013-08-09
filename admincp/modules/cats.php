@@ -39,7 +39,7 @@ class cats_man {
         $act = $_GET['act'];
         $type = $_GET['type'];
         if (!$type || !$this->cats->change_type($type))
-            $type = 'torrents';
+            $type = 'content';
         tpl::o()->assign('oldadmin_file', $admin_file);
         $admin_file .= '&type=' . $type;
         globals::s('admin_file', $admin_file);
@@ -68,10 +68,10 @@ class cats_man {
      * @param int $cur ID данного шаблона
      * @return string HTML код селектора
      */
-    protected function pattern_selector($cur = null) {
+    public function pattern_selector($cur = null) {
         $r = db::o()->query('SELECT id,name FROM patterns');
         $arr = db::o()->fetch2array($r, null, array('id' => 'name'));
-        return input::o()->simple_selector('pattern', $arr, true, $cur, 1, true);
+        return input::o()->scurrent($cur)->snull()->skeyed()->simple_selector('pattern', $arr);
     }
 
     /**
@@ -106,7 +106,7 @@ class cats_man {
      */
     protected function show() {
         $types = $this->cats->get(null, 'z');
-        if (!count($types) > 1) {
+        if (count($types) > 1) {
             tpl::o()->assign('cat_types', $types);
             $selector = tpl::o()->fetch('admin/cats/types.tpl');
         }
@@ -146,7 +146,7 @@ class cats_man {
      * @return null
      * @throws EngineException 
      */
-    protected function save($type, $data) {
+    public function save($type, $data) {
         $admin_file = globals::g('admin_file');
         $cols = array(
             'parent_id',
@@ -170,7 +170,7 @@ class cats_man {
             $update['parent_id'] = (int) $update['parent_id'];
         $update['post_allow'] = (bool) $update['post_allow'];
         if ($id) {
-            db::o()->update($update, 'categories', 'WHERE id=' . $id . ' LIMIT 1');
+            db::o()->p($id)->update($update, 'categories', 'WHERE id=? LIMIT 1');
             log_add('changed_cat', 'admin', $id);
         } else {
             db::o()->insert($update, 'categories');
@@ -217,7 +217,7 @@ class cats_man_ajax {
                 break;
         }
         cache::o()->remove('categories');
-        die('OK!');
+        ok();
     }
 
     /**
@@ -226,14 +226,14 @@ class cats_man_ajax {
      * @return null
      * @throws EngineException
      */
-    protected function delete($id) {
+    public function delete($id) {
         $id = (int) $id;
         if (!$this->cats->get($id))
             throw new EngineException;
         $ids = array();
         $this->cats->get_children_ids($id, $ids);
         $ids [] = $id;
-        db::o()->delete('categories', 'WHERE id IN(' . implode(', ', $ids) . ')');
+        db::o()->p($ids)->delete('categories', 'WHERE id IN(@' . count($ids) . '?)');
         log_add('deleted_cat', 'admin', $id);
     }
 
@@ -242,15 +242,16 @@ class cats_man_ajax {
      * @return null
      * @throws EngineException
      */
-    protected function save_order($sort) {
+    public function save_order($sort) {
         if (!$sort)
             throw new EngineException;
         $i = 0;
         foreach ($sort as $id => $parent) {
+            $id = (int) $id;
             if (!$parent || !$this->cats->get($parent))
                 $parent = 0;
-            db::o()->update(array('sort' => $i,
-                'parent_id' => (int) $parent), 'categories', 'WHERE id=' . intval($id) . ' LIMIT 1');
+            db::o()->p($id)->update(array('sort' => $i,
+                'parent_id' => (int) $parent), 'categories', 'WHERE id=? LIMIT 1');
             $i++;
         }
         db::o()->query('ALTER TABLE `categories` ORDER BY `sort`');
@@ -261,8 +262,8 @@ class cats_man_ajax {
      * @param int $id ID категории
      * @return null
      */
-    protected function switch_state($id) {
-        db::o()->update(array('_cb_post_allow' => 'IF(post_allow="1","0","1")'), 'categories', 'WHERE id=' . intval($id) . ' LIMIT 1');
+    public function switch_state($id) {
+        db::o()->p($id)->update(array('_cb_post_allow' => 'IF(post_allow="1","0","1")'), 'categories', 'WHERE id=? LIMIT 1');
     }
 
 }

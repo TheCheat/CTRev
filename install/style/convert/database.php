@@ -2,6 +2,8 @@
     <dl class='info_text'>
         <dt><?= lang::o()->v('convert_database_name') ?></dt>
         <dd><input type="text" value='' name='db' size="30"></dd>
+        <dt><?= lang::o()->v('convert_database_prefix') ?></dt>
+        <dd><input type="text" value='' name='prefix' size="30"></dd>
         <dt><?= lang::o()->v('convert_database_cfile') ?></dt>
         <dd><?= $data['cfiles'] ?></dd>
         <dt><?= lang::o()->v('convert_database_peronce') ?></dt>

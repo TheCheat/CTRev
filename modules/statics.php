@@ -27,14 +27,14 @@ class statics {
      */
     public function init() {
         $url = $_GET['page'];
-        $r = db::o()->query('SELECT * FROM static WHERE url=' . db::o()->esc($url) . ' LIMIT 1');
+        $r = db::o()->p($url)->query('SELECT * FROM static WHERE url=? LIMIT 1');
         $row = db::o()->fetch_assoc($r);
         if (!$row)
             furl::o()->location('');
         $this->title = $row['title'];
-        $content = ($row['bbcode'] ? bbcodes::o()->format_text($row['content']) : $row['content']);
         tpl::o()->assign('title', $row['title']);
-        tpl::o()->assign('content', $content);
+        tpl::o()->assign('content', $row['content']);
+        tpl::o()->assign('type', $row['type']);
         tpl::o()->display('static.tpl');
     }
 

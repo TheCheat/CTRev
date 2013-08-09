@@ -90,7 +90,7 @@ class users_man_ajax {
         unset($_POST['mode']);
         unset($_POST['item']);
         $this->massact($mode, $items, $_POST);
-        die('OK!');
+        ok();
     }
 
     /**
@@ -100,7 +100,7 @@ class users_man_ajax {
      * @param array $data другие данные
      * @return null
      */
-    public function massact($mode, $items, $data) {
+    protected function massact($mode, $items, $data) {
         if (!$items || !is_array($items))
             throw new EngineException('nothing_selected');
         $error = array();
@@ -144,7 +144,7 @@ class users_man_ajax {
      */
     protected function delete_content($uid, $data, &$error = null) {
         $c = $data['content'];
-        $ct = $c['torrents'];
+        $ct = $c['content'];
         $cc = $c['comments'];
         $cp = $c['polls'];
         /* @var $polls polls */
@@ -154,32 +154,31 @@ class users_man_ajax {
         /* @var $etc etc */
         $etc = n("etc");
         if ($ct) {
-            $res = db::o()->query('SELECT id FROM torrents WHERE poster_id=' . $uid);
-            while (list($id) = db::o()->fetch_row($res)) {
-                $r = $etc->delete_torrent($id, $e);
-                if (!$r)
-                    $error[] = sprintf(lang::o()->v('useract_cant_delete_torrent'), $id, $e->getEMessage());
-            }
+            $res = db::o()->p($uid)->query('SELECT id FROM content WHERE poster_id=?');
+            while (list($id) = db::o()->fetch_row($res))
+                try {
+                    $etc->delete_content($id);
+                } catch (EngineException $e) {
+                    $error[] = sprintf(lang::o()->v('useract_cant_delete_content'), $id, $e->getEMessage());
+                }
         }
         if ($cc) {
-            $res = db::o()->query('SELECT id FROM comments WHERE poster_id=' . $uid);
-            while (list($id) = db::o()->fetch_row($res)) {
+            $res = db::o()->p($uid)->query('SELECT id FROM comments WHERE poster_id=?');
+            while (list($id) = db::o()->fetch_row($res))
                 try {
                     $comments->delete($id, true);
                 } catch (EngineException $e) {
                     $error[] = sprintf(lang::o()->v('useract_cant_delete_comment'), $id, $e->getEMessage());
                 }
-            }
         }
         if ($cp) {
-            $res = db::o()->query('SELECT id FROM polls WHERE poster_id=' . $uid);
-            while (list($id) = db::o()->fetch_row($res)) {
+            $res = db::o()->p($uid)->query('SELECT id FROM polls WHERE poster_id=?');
+            while (list($id) = db::o()->fetch_row($res))
                 try {
                     $polls->delete($id);
                 } catch (EngineException $e) {
                     $error[] = sprintf(lang::o()->v('useract_cant_delete_poll'), $id, $e->getEMessage());
                 }
-            }
         }
     }
 

@@ -34,7 +34,7 @@ class polls_manage {
         switch ($act) {
             case "add" :
             case "edit" :
-                $polls->add_form(0, $poll_id, true);
+                $polls->add(0, $poll_id, true);
                 $this->title = lang::o()->v('polls_title_add');
                 break;
             default :
@@ -47,7 +47,7 @@ class polls_manage {
 }
 
 class polls_manage_ajax {
-    
+
     /**
      * Объект опросов
      * @var polls $polls
@@ -77,6 +77,7 @@ class polls_manage_ajax {
             default :
                 break;
         }
+        ok();
     }
 
     /**
@@ -89,8 +90,8 @@ class polls_manage_ajax {
     protected function save($data, $poll_id) {
         check_formkey();
         $ret = $this->polls->save($data, 0, $poll_id);
-        die("OK!" . $ret);
-        die();
+        ok(true);
+        die($ret);
     }
 
     /**
@@ -100,8 +101,7 @@ class polls_manage_ajax {
      * @return null
      */
     protected function vote($poll_id, $answers) {
-        $ret = $this->polls->vote($poll_id, $answers);
-        die("OK!");
+        $this->polls->vote($poll_id, $answers);
     }
 
     /**
@@ -113,7 +113,6 @@ class polls_manage_ajax {
     protected function delete($poll_id) {
         check_formkey();
         $ret = $this->polls->delete($poll_id);
-        die("OK!");
     }
 
 }

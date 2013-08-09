@@ -52,13 +52,19 @@ class users_checker {
      * столбец_count
      * @var array $update_columns
      */
-    protected $update_columns = array("torrents", "karma", "bonus");
+    protected $update_columns = array("content", "karma", "bonus");
 
     /**
      * Целочисленные настройки пользователя
      * @var array $isettings
      */
     protected $isettings = array("icq", "country", "show_age");
+
+    /**
+     * "Права" пользователя, возвращающие значения(без префикса can_)
+     * @var array $retperms
+     */
+    protected $retperms = array("pm_count", "acp_modules");
 
     /**
      * Исключение вместо переадресации?
@@ -109,16 +115,11 @@ class users_checker {
 
     /**
      * Включить/Выключить режим администратора(проверка на права и formkey не действует)
-     * @param bool $check проверять, был ли установлен режим? (только включает)
-     * тогда возвращает true, иначе - false.
-     * @return bool|users $this
+     * @param bool $state включить/выключить
+     * @return users $this
      */
-    public function admin_mode($check = false) {
-        $am = $this->check_adminmode();
-        if (!$check || !$am)
-            $this->admin_mode = !$this->admin_mode;
-        if ($check)
-            return $am;
+    public function admin_mode($state = true) {
+        $this->admin_mode = (bool) $state;
         return $this;
     }
 
@@ -159,9 +160,11 @@ class users_checker {
             } else {
                 $sid = get_formkey(null, 'sid');
                 $_SESSION['sid'] = $sid; // Дабы не входить снова, если SID отсутствует
-                print("OK!" . $afile . $sid);
+                ok(true);
+                print($afile . $sid);
             }
-        } else
+        }
+        else
             tpl::o()->display('admin/login.tpl');
         die();
     }
@@ -204,18 +207,23 @@ class users_checker {
      */
     public function check_inadmin($module, $onlylink = false, $hardmode = false) {
         $baseurl = globals::g('baseurl');
+
         if ($hardmode)
             $onlylink = false;
         elseif (!$this->perms['can_acp'] || (!$_REQUEST['sid'] && !$onlylink))
             return false;
+
         $sid = get_formkey(null, "sid");
+
         if ($_SESSION['sid'] != $sid)
             $_SESSION['sid'] = '';
         if (!$_REQUEST['sid'] && $_SESSION['sid'])  // Дабы не входить снова, если SID отсутствует
             $sid = $_SESSION['sid']; // Но переадресация нужна
+
         $afile = $baseurl . "admincp.php?sid=";
         $eadmin_file = $afile . $sid;
         globals::s('eadmin_file', $eadmin_file);
+
         if (!$onlylink) {
             try {
                 check_formkey("sid");
@@ -223,10 +231,11 @@ class users_checker {
                 if ($hardmode && (!$_SESSION['sid'] || $_REQUEST['sid']))
                     $this->acp_login($afile);
                 furl::o()->location($eadmin_file);
-                die(); // Die Dead Enough
             }
         }
+
         $this->acp_modules();
+
         if ($module && $this->perms['can_acp'] == 1)
             if (!in_array($module, (array) $this->perms['acp_modules'])) {
                 if (!$onlylink)
@@ -234,6 +243,7 @@ class users_checker {
                 else
                     return false;
             }
+
         tpl::o()->assign("admin_sid", 'sid=' . $sid);
         tpl::o()->assign("eadmin_file", $eadmin_file);
         return true;
@@ -258,33 +268,55 @@ class users_checker {
     }
 
     /**
-     * Проверка правильноти E-mail
+     * Проверка забанен ли E-mail
+     * @param string $email E-mail для проверки
+     * @return string строка с ошибкой, если есть
+     */
+    protected function check_emailban($email) {
+        $with_bans = null;
+        $r = db::o()->p($email, time())->query('SELECT to_time, reason FROM bans WHERE ?' .
+                ' LIKE REPLACE(REPLACE(email, "%", "\\%"), "*", "%") AND email<>""
+                AND (to_time >= ? OR to_time=0) LIMIT 1');
+        if ($r = db::o()->fetch_assoc($r))
+            $with_bans = $this->bans_error($r, "email");
+        return $with_bans;
+    }
+
+    /**
+     * Проверка существования E-mail
+     * @param string $email E-mail для проверки
+     * @return bool статус проверки
+     */
+    protected function check_mxemail($email) {
+        $email_arr = explode('@', $email);
+        $host = $email_arr [1];
+        if (!checkdnsrr($host))
+            return false;
+        return true;
+    }
+
+    /**
+     * Проверка правильности E-mail
      * @param string $email E-mail для проверки
      * @param boolean|string $with_bans с банами? тогда данный аргумент примет значение строки с ошибкой
      * @return bool статус проверки, false - не соотв. рег. выражению или забаннен
      */
     public function check_email($email, &$with_bans = true) {
+
         if (!preg_match('/^([a-zA-Z0-9\_\-\.\%]+)\@([a-zA-Z0-9\_\-\.]+)\.([a-zA-Z]){2,4}$/siu', $email)) {
             $with_bans = null;
             return false;
-        } elseif (class_exists('config') && config::o()->v('check_mx_email')) {
-            $email_arr = explode('@', $email);
-            $host = $email_arr [1];
-            if (!checkdnsrr($host)) {
-                $with_bans = null;
-                return false;
-            }
+        } elseif (class_exists('config') && config::o()->v('check_mx_email') && !$this->check_mxemail($email)) {
+            $with_bans = null;
+            return false;
         }
+
         if ($with_bans) {
-            $r = db::o()->query('SELECT to_time, reason FROM bans WHERE ' . db::o()->esc($email) .
-                    ' LIKE REPLACE(REPLACE(email, "%", "\\%"), "*", "%") AND email<>""
-                AND (to_time >= ' . time() . ' OR to_time=0) LIMIT 1');
-            if ($r = db::o()->fetch_assoc($r)) {
-                $with_bans = $this->bans_error($r, "email");
+            $with_bans = $this->check_emailban($email);
+            if ($with_bans)
                 return false;
-            }
         }
-        $with_bans = null;
+
         return true;
     }
 
@@ -294,7 +326,7 @@ class users_checker {
      * @return bool статус проверки
      */
     public function check_login($login) {
-        return !(mb_strlen($login) < 2 || mb_strlen($login) > 25) && preg_match('/^[a-zA-Zа-яА-Я0-9\-\_ ]+$/siu', $login);
+        return !(mb_strlen($login) < 2 || mb_strlen($login) > 25) && preg_match('/^[a-zа-я0-9\-\_ ]+$/siu', $login);
     }
 
     /**
@@ -333,21 +365,23 @@ class users_checker {
             return;
         $default = $this->perms ['guest'] || $this->perms ['bot'] ? 2 : $this->perms['default'];
         $if = false;
-        if ($rule == 'polls')
-            $die = 1;
         if ($rule) {
             $rule = $this->perms ['can_' . $rule];
             $if = ((int) $rule) < ((int) $value);
         }
         $if = $if || $default > $def;
         if ($if && $this->perm_exception) {
-            throw new EngineException;
+            throw new EngineException('not_enought_rights');
             if ($this->perm_exception !== 2)
                 $this->perm_exception(0);
         }
+
         if ($if) {
-            furl::o()->location(furl::o()->construct("login", array(
-                        "ref" => $_SERVER ['REQUEST_URI'])));
+            if (globals::g("ajax"))
+                print(lang::o()->v('not_enought_rights'));
+            else
+                furl::o()->location(furl::o()->construct("login", array(
+                            "ref" => $_SERVER ['REQUEST_URI'])));
             die();
         }
     }
@@ -361,13 +395,11 @@ class users_checker {
     public function perm($rule, $value = null) {
         $nocan = false;
         $ret = false;
-        switch ($rule) {
-            case "pm_count":
-            case "acp_modules":
-                $ret = true;
-            case "system":
-                $nocan = true;
-                break;
+        if ($rule == "system")
+            $nocan = true;
+        elseif (in_array($rule, $this->retperms)) {
+            $ret = true;
+            $nocan = true;
         }
         if ($this->check_adminmode() && !$ret)
             return true;
@@ -376,6 +408,7 @@ class users_checker {
             $value = 1;
         if (!$ret)
             return $this->perms[$rule] >= $value;
+
         return $this->perms[$rule];
     }
 
@@ -416,9 +449,10 @@ class users_checker {
         if (mb_strlen($row ['salt']) != 32) {
             $salt = $this->generate_salt(32);
             $password = $this->generate_pwd_hash($password, $salt);
-            db::o()->update(array('salt' => $salt,
-                'password' => $password), 'users', 'WHERE id = ' . $row ['id'] . ' LIMIT 1');
-        } else
+            db::o()->p($row ['id'])->update(array('salt' => $salt,
+                'password' => $password), 'users', 'WHERE id = ? LIMIT 1');
+        }
+        else
             $password = $row ['password'];
         return $password;
     }
@@ -458,11 +492,18 @@ class users_getter extends users_checker {
     protected $theme = "";
 
     /**
+     * Цвет темы
+     * @var string $theme_color 
+     */
+    protected $theme_color = "";
+
+    /**
      * Поиск группы
      * @param string $column искомый столбец
      * @return int ID группы
      */
     public function find_group($column) {
+
         switch ($column) {
             case 'default':
                 if ($this->def_group)
@@ -473,6 +514,7 @@ class users_getter extends users_checker {
                     return $this->guest_group;
                 break;
         }
+
         foreach ($this->groups as $id => $group)
             if ($group[$column]) {
                 switch ($column) {
@@ -543,11 +585,12 @@ class users_getter extends users_checker {
     }
 
     /**
-     * Получение темы пользователя
-     * @return string имя темы
+     * Получение темы/цвета темы пользователя
+     * @param bool $color цвет темы?
+     * @return string имя темы/цвета темы
      */
-    public function get_theme() {
-        return $this->theme;
+    public function get_theme($color = false) {
+        return $color ? $this->theme_color : $this->theme;
     }
 
 }
@@ -647,8 +690,8 @@ class users_modifier extends users_getter {
 
     /**
      * Декодирование настроек пользователя
-     * @param array $uservars параметры пользователя
-     * @param string $what декодируемый столбец
+     * @param array $uservars параметры пользователя или массив настроек
+     * @param string $what декодируемый столбец или ничего
      * @return array декодированные параметры пользователя
      */
     public function decode_settings($uservars = null, $what = "settings") {
@@ -656,8 +699,12 @@ class users_modifier extends users_getter {
             $this->vars = $this->decode_settings($this->vars, $what);
             return $this->vars;
         }
-        $t = explode("\n", $uservars[$what]);
-        unset($uservars[$what]);
+        $uv = $uservars;
+        if ($what) {
+            $uv = $uservars[$what];
+            unset($uservars[$what]);
+        }
+        $t = explode("\n", $uv);
         $c = count($t);
         $a = array();
         for ($i = 0; $i < $c; $i++) {
@@ -668,6 +715,8 @@ class users_modifier extends users_getter {
                 continue;
             $a[$area] = str_replace('\n', "\n", mb_substr($tc, $ap + 1));
         }
+        if (!$what)
+            return $a;
         if (!is_array($a) || !$a)
             return $uservars;
         return array_merge($uservars, $a);
@@ -728,7 +777,8 @@ class users extends users_modifier {
                 $this->groups[$id] = $group;
             }
             cache::o()->write(array($this->groups, $this->pid));
-        } else
+        }
+        else
             list($this->groups, $this->pid) = $a;
         $this->def_group = $this->find_group('default');
     }
@@ -741,9 +791,9 @@ class users extends users_modifier {
         if (!config::o()->v('use_bots'))
             return false;
         $ip = $this->get_ip();
-        $agent = db::o()->esc($_SERVER ['HTTP_USER_AGENT']);
-        $r = db::o()->query("SELECT id, name FROM bots WHERE firstip<=" . $ip . " AND lastip>=" . $ip . "
-                OR " . $agent . " LIKE CONCAT('%', agent, '%') LIMIT 1");
+        $agent = $_SERVER ['HTTP_USER_AGENT'];
+        $r = db::o()->p($ip, $ip, $agent)->query("SELECT id, name FROM bots WHERE firstip<=? AND lastip>=?
+                OR ? LIKE CONCAT('%', agent, '%') LIMIT 1");
         list($id, $name) = db::o()->fetch_row($r);
         if ($name) {
             $this->vars ['username'] = self::bot_prefix . $name;
@@ -761,26 +811,65 @@ class users extends users_modifier {
     }
 
     /**
-     * Инициализация юзера
+     * Инициализация банов IP
      * @return null
      */
-    public function init() {
-
+    protected function init_ipbans() {
+        $ip = $this->get_ip();
         $ban_allowed = defined("ALLOW_WITH_BAN"); // отключить баны?
+        if (config::o()->v('use_ipbans') && !$ban_allowed) {
+            $res = db::o()->p($ip, $ip)->query("SELECT * FROM bans WHERE ? >= ip_f AND ? <= ip_t");
+            if ($row = db::o()->fetch_assoc($res))
+                n("message")->error($this->bans_error($row));
+        }
+    }
+
+    /**
+     * Начало инициализации пользователя
+     * @return null
+     */
+    protected function init_begin() {
         display::o()->site_autoon();
         $this->lang = validfolder($_COOKIE ["lang"], LANGUAGES_PATH) ? $_COOKIE ["lang"] : config::o()->v('default_lang');
         $this->theme = validfolder($_COOKIE ["theme"]) ? $_COOKIE ["theme"] : config::o()->v('default_style');
         init_spaths();
+        $this->theme_color = tpl::o()->set_color($_COOKIE ["theme_color"]);
         lang::o()->change_folder($this->lang);
-        $ip = $this->get_ip();
-
-        if (config::o()->v('use_ipbans') && !$ban_allowed) {
-            $res = db::o()->query("SELECT * FROM bans WHERE " . $ip . " >= ip_f AND " . $ip . " <= ip_t");
-            if ($row = db::o()->fetch_assoc($res))
-                error($this->bans_error($row));
-        }
-
+        $this->init_ipbans();
         $this->get_groups();
+        try {
+            plugins::o()->run_hook('user_init_begin');
+        } catch (PReturn $e) {
+            return $e->r();
+        }
+    }
+
+    /**
+     * Инициализация пользовательских банов
+     * @param array $row массив данных пользователя
+     * @param int $group группа пользователя
+     * @throws EngineException
+     */
+    protected function init_userbans($row, &$group) {
+        $ban_allowed = defined("ALLOW_WITH_BAN"); // отключить баны?
+        if ($group == users_getter::banned_group && $this->groups [$row ['old_group']] ['can_bebanned']) {
+            if (!$ban_allowed)
+                n("message")->error($this->bans_error($row, "user"));
+            throw new EngineException;
+        } elseif ($group == users_getter::banned_group) {
+            $group = $row ['old_group'];
+            /* @var $etc etc */
+            $etc = n("etc");
+            $etc->unban_user($row['id']);
+        }
+    }
+
+    /**
+     * Инициализация юзера
+     * @return null
+     */
+    public function init() {
+        $this->init_begin();
 
         // Для заливки аватары
         if (defined('ALLOW_REQUEST_COOKIES')) {
@@ -801,42 +890,37 @@ class users extends users_modifier {
                 return;
             if (!$login || !$password)
                 throw new EngineException;
+
             if (mb_strlen($password) != 32) {
                 $this->clear_cookies();
-                error('invalid_cookie');
+                n("message")->error('invalid_cookie');
             }
-            $res = db::o()->query("SELECT u.*, b.reason FROM users AS u
+
+            $res = db::o()->p(mb_strtolower($login))->query("SELECT u.*, b.reason FROM users AS u
                 LEFT JOIN bans AS b ON b.uid=u.id
-                WHERE u.username_lower = " . db::o()->esc(mb_strtolower($login)) . "
+                WHERE u.username_lower = ?
                 AND u.confirmed = '3' GROUP BY u.id");
             $row = db::o()->fetch_assoc($res);
             $group = &$row ['group'];
-            if ($group == users_getter::banned_group && $this->groups [$row ['old_group']] ['can_bebanned']) {
-                if (!$ban_allowed)
-                    error($this->bans_error($row, "user"));
-                throw new EngineException;
-            } elseif ($group == users_getter::banned_group) {
-                $group = $row ['old_group'];
-                /* @var $etc etc */
-                $etc = n("etc");
-                $etc->unban_user($row['id']);
-            }
 
             if (!$row || $password != $this->passhash_real($row ["password"], $short_sess))
                 throw new EngineException;
-            $row ['ip'] = $ip;
-            if (!$this->groups [$group])
-                error('group_doesnt_exists');
+            $this->init_userbans($row, $group);
 
-            plugins::o()->pass_data(array('row' => &$row))->run_hook('users_init_end');
+            $row ['ip'] = $this->get_ip();
+            if (!$this->groups [$group])
+                n("message")->error('group_doesnt_exists');
 
             $this->perms = $this->groups [$group];
             $this->vars = $row;
+
+            plugins::o()->pass_data(array('user' => &$this->vars, 'perms' => &$this->perms))->run_hook('users_init_end');
+
             $this->alter_perms();
         } catch (EngineException $e) {
             $guest = $this->find_group('guest');
             if (!$guest)
-                error('no_guest_group');
+                n("message")->error('no_guest_group');
             $this->perms = $this->groups [$guest];
         } catch (PReturn $e) {
             return $e->r();
@@ -848,8 +932,10 @@ class users extends users_modifier {
      * @return null
      */
     public function write_session() {
+
         if (!cache::o()->query_delay('usessions', config::o()->v('delay_userupdates')))
             return;
+
         $ip = $this->get_ip();
         $url = $_SERVER['REQUEST_URI'];
         $ctime = time();
@@ -888,8 +974,10 @@ class users extends users_modifier {
         }
 
         if ($this->vars)
-            db::o()->update($users_updateset, "users", "WHERE id=" . $uid . ' LIMIT 1');
-        db::o()->update($updateset, "sessions", "WHERE sid=" . db::o()->esc($sid) . " LIMIT 1");
+            db::o()->p($uid)->update($users_updateset, "users", "WHERE id=? LIMIT 1");
+
+        db::o()->p($sid)->update($updateset, "sessions", "WHERE sid=? LIMIT 1");
+
         if (db::o()->affected_rows() < 1)
             db::o()->insert($updateset, "sessions");
     }
@@ -958,7 +1046,7 @@ class users extends users_modifier {
 
         $cols = $this->update_columns;
         $c = count($cols);
-        $w = "";
+        $w = array();
         foreach ($this->groups as $id => $group) {
             $t = false;
             for ($i = 0; $i < $c; $i++) {
@@ -970,14 +1058,16 @@ class users extends users_modifier {
                 }
             }
             if ($t)
-                $w .= ( $w ? ", " : "") . $id;
+                $w[] = $id;
         }
         if (!$w)
             return;
-        $w .= ( $w ? ", " : "") . $this->find_group('default');
+        $w[] = $this->find_group('default');
+
         for ($i = 0; $i < $c; $i++)
             if ($a[$i])
                 sort($a[$i]);
+
         foreach ($this->groups as $id => $group) {
             $where = "";
             for ($i = 0; $i < $c; $i++) {
@@ -986,14 +1076,18 @@ class users extends users_modifier {
                 $e = $cols[$i] . "_count";
                 $v = $group[$e];
                 if (($j = array_search($v, $a[$i])) !== false) {
-                    $where .= ( $where ? " AND " : "") . "`" . $e . "`>=" . $v;
-                    if ($a[$i][++$j])
-                        $where .= " AND `" . $e . "`<" . $a[$i][$j];
+                    db::o()->p($v);
+                    $where .= ( $where ? " AND " : "") . "`" . $e . "`>=?";
+                    if ($a[$i][++$j]) {
+                        db::o()->p($a[$i][$j]);
+                        $where .= " AND `" . $e . "`<?";
+                    }
                 }
             }
             if (!$where)
                 continue;
-            db::o()->update(array("group" => $id), "users", "WHERE " . $where . " AND `group` IN (" . $w . ')');
+            db::o()->p($w)->update(array(
+                "group" => $id), "users", "WHERE " . $where . " AND `group` IN (@" . count($w) . '?)');
         }
     }
 

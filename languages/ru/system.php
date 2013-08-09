@@ -8,6 +8,7 @@ $languages = array(
     "module_not_exists" => "Данный модуль не сущеcтвует!",
     "cannot_write_cache" => "Не могу сохранить кеш страницы ",
     "db_error" => "Ошибка MySQL",
+    "db_parse_not_enough_params" => 'Недостаточно параметров для парсинга!',
     "db_chronology" => "Бэктрейс: ",
     "you_can_contact_admin" => "Вы можете уведомить об ошибке администратора по E-mail: ",
     'unauthorized_ip' => 'Ваш IP запрещён администрацией сайта!',

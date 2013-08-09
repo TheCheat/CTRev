@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    [*foreach from=$content item="row"*]
+        <url>
+            <loc>[*gen_link module='content' title=$row.title id=$row.id*]</loc>
+            <lastmod>[*date format="RSS" time=$row.posted_time*]</lastmod>
+            <changefreq>monthly</changefreq>
+            <priority>[*if $row.sticky*]1[*else*][*/if*]</priority>
+        </url>
+    [*/foreach*]
+</urlset>

@@ -111,10 +111,10 @@ class plugin_simple {
     public function init($plugins) {
         // Полный мануал смотрите на http://ctrev.cyber-tm.ru
         $plugins->add_hook('torrents_show_begin', array($this, 'torrents_show_begin'));
-        $plugins->extend_class('torrents', 'my_torrents');
+        $plugins->extend_class('content', 'my_torrents');
         $plugins->preload('cleanup', 'modify_var', array('methods', 'empty'));
         $plugins->preload('cleanup', 'add_method', array('clear_empty', array($this, 'clear_empty')));
-        $plugins->modify_init('torrents', array($this, 'torrents_init'));
+        $plugins->modify_init('content', array($this, 'torrents_init'));
     }
 
     /**

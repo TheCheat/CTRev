@@ -65,5 +65,20 @@ select.countries_select {
 
 span.karma {
     position: relative;
-    top: 2px;
+}
+
+span.karma span {
+    position: relative;
+    font-weight: bold;
+}
+
+span.karma img.minus, span.karma img.plus {
+    position:relative;
+    margin-bottom: -4px;
+    top: 3px;
+    cursor: pointer;
+}
+
+span.karma img.plus {
+    top:-2px;
 }

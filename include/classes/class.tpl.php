@@ -14,9 +14,14 @@ if (!defined('INSITE'))
     die("Remote access denied!");
 
 final class tpl extends Smarty {
+    /**
+     * Префикс для шаблона из АЦ
+     */
+
+    const admin_prefix = "admin/";
 
     /**
-     * Массив показанных шаблонов
+     * Массив загруженных шаблонов
      * @var array $displayed
      */
     private $displayed = array();
@@ -41,7 +46,10 @@ final class tpl extends Smarty {
 
     /**
      * Инициализация конфига
-     * @return string родительский шаблон
+     * @param string $name имя шаблона, если указано - возвращается список всех
+     * переменных
+     * @param string $var необходимая переменная
+     * @return string|array родительский шаблон или список всех переменных
      */
     public function init_cfg($name = null, $var = 'style_parent') {
         $f = 'main.conf';
@@ -61,6 +69,35 @@ final class tpl extends Smarty {
             $this->conf_inited = true;
         }
         return $this->get_config_vars($var);
+    }
+
+    /**
+     * Установка цвета темы
+     * @param string $color имя цвета
+     * @return string установленный цвет
+     */
+    public function set_color($color) {
+        $vars = $this->init_cfg(null, null);
+        $def = strtolower($vars['default_name']);
+        $defc = strtolower($vars['color_default']);
+        $color = strtolower($color);
+        $allowed = strtolower($vars['allowed_colors']);
+        if ($color == strtolower($def))
+            $color_path = "";
+        else {
+            if (!checkpos($allowed, $color, "|"))
+                if (checkpos($allowed, $defc, "|"))
+                    $color = $defc;
+                else
+                    return $this->set_color($def);
+            if (!validword($color))
+                $color_path = "";
+            else
+                $color_path = COLORS_PATH . "/" . $color . "/";
+        }
+        $this->assign('color_path', $color_path);
+        globals::s('color_path', $color_path);
+        return $color;
     }
 
     /**
@@ -84,8 +121,13 @@ final class tpl extends Smarty {
      */
     private function get_parent($resource_name) {
         $parent = $this->init_cfg();
+        if (!$parent)
+            return;
         while (!$this->template_exists($resource_name)) {
+            $op = $parent;
             $parent = $this->init_cfg($parent);
+            if ($parent == $op)
+                break;
             $this->set_theme($parent, false);
             $this->template_dir = $this->get_path();
         }
@@ -139,7 +181,16 @@ final class tpl extends Smarty {
         $this->check_tmp();
         $this->is_window($resource_name);
         $this->tmp = $this->template_dir;
-        $this->get_parent($resource_name);
+        if (strpos($resource_name, self::admin_prefix) === 0) {
+            $this->admin = true;
+            $this->set_theme(ADMIN_THEME, false);
+            $this->template_dir = $this->get_path();
+            if (!in_array($resource_name, $this->displayed))
+                $this->displayed [] = $resource_name;
+            $resource_name = mb_substr($resource_name, mb_strlen(self::admin_prefix));
+        }
+        else
+            $this->get_parent($resource_name);
     }
 
     /**
@@ -149,14 +200,12 @@ final class tpl extends Smarty {
      */
     private function postfetch($resource_name) {
         $this->check_tmp();
-        if (!in_array($resource_name, $this->displayed))
-            $this->displayed [] = $resource_name;
     }
 
     /**
-     * Показанн ли шаблон?
+     * Загружен ли шаблон?
      * @param string $resource_name имя шаблона
-     * @return bool так показан или нет?
+     * @return bool так загружен или нет?
      */
     public function displayed($resource_name) {
         return (in_array($resource_name, $this->displayed));
@@ -174,6 +223,7 @@ final class tpl extends Smarty {
             $this->template_dir = $this->get_path();
             $this->compile_dir = $this->get_path(1);
             $this->config_dir = $this->get_path(2);
+            $this->conf_inited = false;
         }
     }
 
@@ -237,7 +287,7 @@ final class tpl extends Smarty {
             self::$o = new self();
         return self::$o;
     }
-    
+
 }
 
 ?>

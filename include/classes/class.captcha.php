@@ -14,6 +14,11 @@ if (!defined('INSITE'))
     die('Remote access denied!');
 
 final class captcha implements captcha_interface {
+    /**
+     * Максимальное кол-во капч одновременно
+     */
+
+    const capacity = 3;
 
     /**
      * Массив возможных бэкграундов
@@ -29,7 +34,10 @@ final class captcha implements captcha_interface {
     public function init() {
         $background = 'include/backgrounds/' . $this->bckgrnds [rand(0, count($this->bckgrnds) - 1)];
         $code = mb_strtoupper(users::o()->generate_salt(6));
-        $_SESSION['captcha_key'] = $code;
+        if (!$_SESSION['captcha_key'])
+            $_SESSION['captcha_key'] = array();
+        array_unshift($_SESSION['captcha_key'], $code);
+        unset($_SESSION['captcha_key'][self::capacity]);
         /* @var $uploader uploader */
         $uploader = n("uploader");
         $uploader->watermark($background, $code, 'auto', false, '', 'cc', true, false);
@@ -47,8 +55,8 @@ final class captcha implements captcha_interface {
             $error [] = lang::o()->v('captcha_false_captcha');
             return;
         }
-        $code = $_SESSION['captcha_key'];
-        if ($code == mb_strtoupper($posted_code)) {
+        $code = (array) $_SESSION['captcha_key'];
+        if (in_array(mb_strtoupper($posted_code), $code)) {
             return true;
         } else {
             $error [] = lang::o()->v('captcha_false_captcha');

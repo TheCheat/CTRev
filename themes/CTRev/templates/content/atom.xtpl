@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <title><![CDATA[[*'site_title'|config*][*if $cat_rows[0]*][*$smarty.config.title_separator*][*$cat_rows[0]*][*/if*]]]>
+    </title>
+    <link href="[*gen_link module='content' cat=$cat_rows[2] act='atom'*]" rel="self" type="application/rss+xml" />
+    <updated>[*date format="ATOM"*]</updated>
+    <author>
+        <email>[*'contact_email'|config*]</email>
+        <name>(Administrator)</name>
+    </author>
+    <id>urn:uuid:149d3b40-c2fc-11df-876c-0002a5d5c51b</id>
+    [*foreach from=$rows item=row*]
+    <entry>
+        <title>[*$row.title*]</title>
+        <link href="[*gen_link module='content' title=$row.title id=$row.id*]" />
+        <id><![CDATA[tag:[*atom_tag time=$row.posted_time title=$row.title id=$row.id*]]]>
+        </id>
+        <updated>[*date format="ATOM" time=$row.posted_time*]</updated>
+        [*assign var='configmss' value='max_sc_symb'|config*]
+        [*assign var='content' value=$row.content|cut:$configmss*]
+        <summary><![CDATA[
+[*if "torrents_on"|config*]
+    [*$row.screenshots|show_image:true:true*]<br>
+[*/if*]
+[*$content|ft:"ATOM"*]
+]]>
+        </summary>
+        <author>
+            <name><![CDATA[[*if $row.username*][*$row.username*][*else*][*'guest'|lang*][*/if*]]]>
+            </name>
+            [*if $row.username*]
+            <uri>[*gen_link module='users' user=$row.username*]</uri>
+            [*/if*]
+        </author>
+    </entry>
+    [*/foreach*]
+</feed>

@@ -61,7 +61,7 @@ final class blocks {
     }
 
     /**
-     * Метод показывания блока
+     * Метод отображения блока
      * @param string $pos положение блока(left, right, top, bottom)
      * @return null
      */
@@ -75,7 +75,7 @@ final class blocks {
             $pos = $spos;
         }
         if (!$this->blocks)
-            $this->blocks = db::o()->query('SELECT * FROM blocks WHERE enabled = true', 'blocks');
+            $this->blocks = db::o()->cname('blocks')->query('SELECT * FROM blocks WHERE enabled = true');
         foreach ($this->blocks as $index => $row) {
             if ($row ['module']) {
                 $row ['module'] = explode(';', $row ['module']);
@@ -138,7 +138,7 @@ final class blocks {
         try {
             $content = plugins::o()->call_init($object);
         } catch (EngineException $e) {
-            message($e->getEMessage(), null, "error", false);
+            n("message")->stype("error")->info($e->getEMessage());
         }
         if (!$content)
             $content = ob_get_contents();
@@ -163,7 +163,7 @@ final class blocks {
             return $this->settings[$file];
         if (!validword($file))
             return;
-        $r = db::o()->query('SELECT id,settings FROM blocks WHERE file=' . db::o()->esc($file) . ' LIMIT 1');
+        $r = db::o()->p($file)->query('SELECT id,settings FROM blocks WHERE file=? LIMIT 1');
         list($id, $settings) = db::o()->fetch_row($r);
         if (!$id)
             return;

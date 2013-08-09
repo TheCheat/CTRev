@@ -18,11 +18,11 @@
             [*foreach from=$mailer_res item=row*]
                 [*assign var="slv" value=$intervals[$row.interval]*]
                 <tr>
-                    <td>[*$row.id|get_mailer_title:$row.type*]</td>
-                    <td><span class="clickable" ondblclick="mchange_type(this, '[*$row.id*]', '[*$row.type|sl*]');">
+                    <td>[*$row.toid|get_mailer_title:$row.type*]</td>
+                    <td><span class="clickable" ondblclick="mchange_type(this, '[*$row.toid*]', '[*$row.type|sl*]');">
                             [*"usercp_mailer_interval_every_$slv"|lang*]
                         </span></td>
-                    <td><a href="javascript:void(0);" onclick="delete_mailer(this, '[*$row.id*]', '[*$row.type|sl*]');">
+                    <td><a href="javascript:void(0);" onclick="delete_mailer(this, '[*$row.toid*]', '[*$row.type|sl*]');">
                             <img src="[*$theme_path*]engine_images/delete.png"
                                  alt="[*'delete'|lang*]" title="[*'delete'|lang*]"></a></td>
                 </tr>

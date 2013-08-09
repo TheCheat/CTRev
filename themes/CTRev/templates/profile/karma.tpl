@@ -1,16 +1,15 @@
 [*if !$karma_type*]
-    [*assign var='karma_type' value='torrents'*]
+    [*assign var='karma_type' value='content'*]
 [*/if*]
 <span class='karma'>
     <nobr>
         [*if 'vote'|perm && 'id'|user!=$uid*]
-            <img src="[*$theme_path*]engine_images/minus.png" alt="-" class="clickable"
+            <img src="[*$theme_path*]engine_images/minus.png" alt="-" class='minus'
                  onclick="set_rating(-1, '[*$uid*]', 'users', '#karma_[*$uid*]', null, '[*$tid*]', '[*$karma_type|sl*]')">
         [*/if*]
-        <span style="position: relative;font-weight: bold;[*if 'vote'|perm && 'id'|user!=$uid*] top: -5px;[*/if*]"
-              id="karma_[*$uid*][*if $tid*]_[*$tid*][*/if*]">[*$karma*]</span>
+        <span id="karma_[*$uid*][*if $tid*]_[*$tid*][*/if*]">[*$karma*]</span>
         [*if 'vote'|perm && 'id'|user!=$uid*]
-            <img src="[*$theme_path*]engine_images/plus.png" alt="+" class="clickable"
+            <img src="[*$theme_path*]engine_images/plus.png" class='plus' alt="+"
                  onclick="set_rating(1, '[*$uid*]', 'users', '#karma_[*$uid*]', null, '[*$tid*]', '[*$karma_type|sl*]')">
         [*/if*]
     </nobr>

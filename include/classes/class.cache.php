@@ -120,7 +120,7 @@ final class cache {
             $f = 'include/cache/' . $cache_file . '.html';
             $cfile = file::o()->write_file($contents, $f);
             if (!$cfile)
-                error("cannot_write_cache", $cache_file);
+                n("message")->error("cannot_write_cache", $cache_file);
         } else
             $this->m->set($cache_file, $my_array);
         if ($tmp) {

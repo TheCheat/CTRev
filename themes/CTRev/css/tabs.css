@@ -139,7 +139,7 @@
 
 .tabs-loading em {
     padding: 0 0 0 20px;
-    /* background: url(../engine_images/loading.gif) no-repeat 0 50%; */
+    /* background: url(../images/loading/loading.gif) no-repeat 0 50%; */
 }
 
 .tabs-nav li.tabs-disabled {

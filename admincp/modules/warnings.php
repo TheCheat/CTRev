@@ -37,15 +37,17 @@ class warnings_man {
     }
 
     /**
-     * Функция показа предупреждений
+     * Функция отображения предупреждений
      * @param int $id ID предупреждения
      * @return null
      */
     protected function show($id = null) {
-        $r = db::o()->query('SELECT b.*, u.username AS bu, u.group AS bg, u2.username, u2.group FROM warnings AS b
+        $id = (int) $id;
+        $r = db::o()->p($id)->query('SELECT b.*, u.username AS bu, u.group AS bg, 
+            u2.username, u2.group FROM warnings AS b
             LEFT JOIN users AS u ON u.id=b.uid
             LEFT JOIN users AS u2 ON u2.id=b.byuid' .
-                ($id ? " WHERE b.id=" . longval($id) . ' LIMIT 1' : ""));
+                ($id ? " WHERE b.id=? LIMIT 1" : ""));
         tpl::o()->assign('res', db::o()->fetch2array($r));
         tpl::o()->display('admin/warnings/index.tpl');
     }
@@ -74,11 +76,12 @@ class warnings_man {
         }
         if ((!$uid && !$id) || !$reason)
             throw new EngineException('warnings_no_user');
-        $etc->warn_user($uid, $reason, $warns, $notify, $email, true, $id);
+        $etc->warn_user($uid, $reason, $warns, $notify, $email, $id);
         if ($id) {
             $this->show($id);
             return;
-        } else
+        }
+        else
             furl::o()->location($admin_file);
     }
 
@@ -102,7 +105,7 @@ class warnings_man_ajax {
                 $this->delete($id);
                 break;
         }
-        die("OK!");
+        ok();
     }
 
     /**
@@ -124,9 +127,9 @@ class warnings_man_ajax {
      */
     protected function edit($id) {
         $id = (int) $id;
-        $r = db::o()->query('SELECT b.*, u.username FROM warnings AS b
+        $r = db::o()->p($id)->query('SELECT b.*, u.username FROM warnings AS b
             LEFT JOIN users AS u ON u.id=b.uid
-            WHERE b.id=' . $id . ' LIMIT 1');
+            WHERE b.id=? LIMIT 1');
         tpl::o()->assign("res", db::o()->fetch_assoc($r));
         tpl::o()->display('admin/warnings/edit.tpl');
     }

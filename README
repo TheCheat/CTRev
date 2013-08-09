@@ -1,9 +1,11 @@
-SQL UPDATE 16.10.2012 18:00 GMT+7
-ALTER TABLE `pmessages` ADD `deleted` ENUM( '0', '1', '2' ) NOT NULL DEFAULT '0' COMMENT '0-none,1-sender,2-reciever' AFTER `unread`;
-ALTER TABLE `pmessages` DROP INDEX `sender` , ADD INDEX `sender` ( `sender` , `deleted` );
-ALTER TABLE `pmessages` DROP INDEX `receiver`;
-ALTER TABLE `pmessages` DROP INDEX `unread` , ADD INDEX `reciever` ( `receiver` , `unread` , `deleted` );
-SQL UPDATE 26.10.2012 17:15 GMT+7
-ALTER TABLE `pmessages` DROP INDEX `time` , ADD INDEX `time` ( `time` , `receiver` , `unread` , `deleted` );
-SQL UPDATE 02.02.2012 13:15 GMT+7
-DROP TABLE captcha;
+Обновление производится так же, как и конвертация, ибо я слишком ленив, 
+чтобы каждый раз записывать все выполняемые мною запросы,
+посему проще просто скопировать/конвертировать весь контент.
+
+Не забывайте проверять права, ибо иногда метод переадресовывает на страницу
+логина, если их не хватает. Обойти это можно именно проверкой или 
+методом perm_exception в классе users, тогда вместо переадресации
+Вы получите исключение.
+
+Адрес форума "поддержки": http://ctrev.cyber-tm.ru
+Быдлокодер: The Cheat(aka PHPDog)

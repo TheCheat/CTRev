@@ -10,7 +10,6 @@
  * @name 		Загрузка основных файлов движка для аннонсера
  * @version           	1.00
  */
-
 define('INSITE', true);
 define('INANNOUNCE', true);
 
@@ -37,5 +36,7 @@ db::o()->errhandler('db_errhandler');
 $bt = new fbenc();
 db::o()->connect();
 db::o()->no_reset();
-config::o('announce');
+config::o(array('announce', 'other'));
+if (!config::o()->v('torrents_on'))
+    die('Module turned off');
 ?>

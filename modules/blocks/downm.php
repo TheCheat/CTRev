@@ -20,6 +20,8 @@ class downm_block {
      * @return null
      */
     public function init() {
+        if (!config::o()->mstate('downm'))
+            return;
         lang::o()->get("blocks/downm");
         print("Down block inited");
     }

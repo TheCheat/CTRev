@@ -1,0 +1,3 @@
+allow from all
+DirectoryIndex index.html
+AddDefaultCharset UTF-8

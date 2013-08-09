@@ -1,5 +1,5 @@
 [*if !$row*] 
-    [*message lang_var='pm_no_this' die=0*] 
+    [*message lang_var='pm_no_this' type='error'*] 
 [*else*]
     [*assign var="title" value=$row.subject*]
     <br>

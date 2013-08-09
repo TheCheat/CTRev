@@ -1,6 +1,7 @@
 <!DOCTYPE HTML PUBLIC  "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
     <head>
+        <base href="[*$baseurl*]">
         <title>[*'site_title'|config*]
             [*if $overall_title*]
                 [*$smarty.config.title_separator*]
@@ -9,22 +10,31 @@
         </title>
         <link rel="stylesheet" href="[*$theme_path*]css/style.css"
               type="text/css">
+        [*if $color_path*]
+            <link rel="stylesheet" href="[*$theme_path*]css/[*$color_path*]color.css"
+                  type="text/css">
+        [*/if*]
         <link rel="alternate" type="application/rss+xml" title="RSS Feed"
-              href="[*gen_link module='torrents' act='rss'*]">
+              href="[*gen_link module='content' act='rss'*]">
         <link rel="alternate" type="application/atom+xml" title="Atom Feed"
-              href="[*gen_link module='torrents' act='atom'*]">
+              href="[*gen_link module='content' act='atom'*]">
         [*include file="initializer.tpl"*]
-        <script type="text/javascript" src="[*$theme_path*]js/jquery.easing.js"></script>
+        <script type="text/javascript" src="js/jquery.easing.js"></script>
         <script type="text/javascript">
-            jQuery(document).ready(function ($) {
+            jQuery(document).ready(function($) {
                 var time = 60; // 60 sec. to refresh.
                 get_index_msgs();
-                setInterval('get_index_msgs();', time*1000);
+                setInterval('get_index_msgs();', time * 1000);
                 pre_search(jQuery("input[name='main_search']"));
             });
             function search_redirect() {
                 var str = "[*gen_link slashes=1 module='search' query='$1'*]";
-                str = str.replace('$1', jQuery('input[name="main_search"]').val());
+                var t = jQuery('input[name="main_search"]');
+                if (t.val() == t.attr('data-acvalue'))
+                    t.val('');
+                if (!t.val())
+                    return;
+                str = str.replace('$1', t.val());
                 window.location = str;
             }</script>
             [*'my_meta'|config*]
@@ -49,7 +59,7 @@
                         [*if !$curuser*]
                             <div class='loginbox_unlogged'>
                                 <form method="post" id="small_login_form"
-                                      action="javascript:login('[*$baseurl|sl*]/index.php?module=login&amp;from_ajax=1', '#small_login_form', '#small_status_icon');">
+                                      action="javascript:login('index.php?module=login&amp;from_ajax=1', '#small_login_form', '#small_status_icon');">
                                     <input type='text' class='styled_login autoclear_fields' 
                                            name="login" value="[*'login'|lang*]" id="small_login">
                                     <input type='password' class='styled_password autoclear_fields' 
@@ -68,25 +78,27 @@
                                 <div style="clear: both;">
                                     <div style="position: relative; float: left;" align="left"><a
                                             class="white_link" href="[*gen_link module='usercp'*]">[*'links_loginbox_cp'|lang*]</a><br>
-                                        [*if 'pm'|perm*]
+                                        [*if 'pm'|perm && 'messages'|mstate*]
                                             <a class="white_link"
                                                href="[*gen_link module='pm'*]">[*'links_loginbox_pm'|lang*]</a><span
                                                id="ajax_index_msgs"></span><br>
-                                        [*/if*] 
+                                            [*/if*] 
                                         <a class="white_link"
                                            href="[*gen_link module='users' user='username'|user act='stats'*]">[*'links_loginbox_stats'|lang*]</a><br>
-                                        <a class="white_link" href="[*gen_link module='usercp' act='mailer'*]">[*'links_loginbox_mailer'|lang*]</a><br>
+                                        [*if 'mailer_on'|config*]
+                                            <a class="white_link" href="[*gen_link module='usercp' act='mailer'*]">[*'links_loginbox_mailer'|lang*]</a><br>
+                                        [*/if*]
                                     </div>
-                                    [*if 'torrents'|perm*]
+                                    [*if 'content'|perm*]
                                         <div align="right">
                                             <a class="white_link"
-                                               href="[*gen_link module='users' user='username'|user act='torrents'*]">[*'links_loginbox_mytorrents'|lang*]</a><br>
+                                               href="[*gen_link module='users' user='username'|user act='content'*]">[*'links_loginbox_mycontent'|lang*]</a><br>
                                             <a class="white_link"
                                                href="[*gen_link module='usercp' act='bookmarks'*]">[*'links_loginbox_mybookmarks'|lang*]</a><br>
-                                            <a class="white_link" href="[*gen_link module='torrents' act='new'*]">[*'links_loginbox_newtorrents'|lang*]</a><br>
-                                            [*if 'torrents'|perm:2*]
+                                            <a class="white_link" href="[*gen_link module='content' act='new'*]">[*'links_loginbox_newcontent'|lang*]</a><br>
+                                            [*if 'content'|perm:2*]
                                                 <a class="white_link"
-                                                   href="[*gen_link module='torrents' act='add'*]">[*'links_loginbox_addtorrents'|lang*]</a><br>
+                                                   href="[*gen_link module='content' act='add'*]">[*'links_loginbox_addcontent'|lang*]</a><br>
                                             [*/if*]
                                         </div>
                                     [*/if*]
@@ -98,19 +110,21 @@
                 </div>
                 <div class='header_menu'>
                     <ul class='header_menu_buttons'>
-                        <li><a href="[*$baseurl*]"><img src="[*$theme_path*]images/menu/home.png" alt="[*'links_index'|lang*]">&nbsp;[*'links_index'|lang*]</a></li>
+                        <li><a href="index.php"><img src="[*$theme_path*]images/menu/home.png" alt="[*'links_index'|lang*]">&nbsp;[*'links_index'|lang*]</a></li>
                                 [*if 'acp'|perm*]
-                            <li><a href="[*$baseurl*]admincp.php"><img
+                            <li><a href="admincp.php"><img
                                         src="[*$theme_path*]images/menu/acp.png" alt="[*'links_admincp'|lang*]">&nbsp;[*'links_admincp'|lang*]</a></li>
                                 [*/if*] 
-                                [*if 'torrents'|perm*]
-                            <li><a href="[*gen_link module='torrents'*]"><img
-                                        src="[*$theme_path*]images/menu/torrents.png" alt="[*'links_torrents'|lang*]">&nbsp;[*'links_torrents'|lang*]</a></li>
-                            <li><a href="[*gen_link module='torrents' act='rss'*]"><img
+                                [*if 'content'|perm*]
+                            <li><a href="[*gen_link module='content'*]"><img
+                                        src="[*$theme_path*]images/menu/content.png" alt="[*'links_content'|lang*]">&nbsp;[*'links_content'|lang*]</a></li>
+                            <li><a href="[*gen_link module='content' act='rss'*]"><img
                                         src="[*$theme_path*]engine_images/rss-feed.png"
-                                        alt="[*'links_rss_torrents'|lang*]">&nbsp;[*'links_rss_torrents'|lang*]</a></li>
-                            <li><a href="[*gen_link module='search'*]"><img
-                                        src="[*$theme_path*]images/menu/search.png" alt="[*'search'|lang*]">&nbsp;[*'search'|lang*]</a></li>
+                                        alt="[*'links_rss_content'|lang*]">&nbsp;[*'links_rss_content'|lang*]</a></li>
+                                    [*if 'search_module'|mstate*]
+                                <li><a href="[*gen_link module='search'*]"><img
+                                            src="[*$theme_path*]images/menu/search.png" alt="[*'search'|lang*]">&nbsp;[*'search'|lang*]</a></li>
+                                    [*/if*] 
                                 [*/if*] 
                                 [*if $curuser*]
                             <li><a href="[*gen_link module='login' act='out'*]"><img
@@ -124,10 +138,8 @@
                                         alt="[*'links_register'|lang*]">&nbsp;[*'links_register'|lang*]</a></li>
                                 [*/if*]
                     </ul>
-                    <input type='text' class='header_search' name="main_search"
-                           value="[*'search'|lang*]"
-                           onfocus="if(this.value=='[*'search'|lang|sl*]'){this.value = '';}"
-                           onblur="if(this.value==''){this.value = '[*'search'|lang|sl*]';}">
+                    <input type='text' class='header_search autoclear_fields' 
+                           name="main_search" value="[*'search'|lang*]">
                     <a href="javascript:search_redirect();" class="search_button" title="[*'search'|lang*]">&nbsp;</a>
                 </div>
             </div>

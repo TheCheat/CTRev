@@ -154,5 +154,7 @@ if ($module) {
 }
 if (!$ajax)
     tpl::o()->display("admin/footer.tpl");
+else
+    print('<script type="text/javascript">ajax_complete();</script>');
 die();
 ?>

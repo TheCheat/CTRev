@@ -1,0 +1,247 @@
+.cat_content {
+    margin: 0 15px;
+    margin-bottom: 5px;
+}
+
+.cat_content_name {
+    color: black;
+    font-weight: bold;
+    font-size: 17px;
+    padding-left: 10px;
+}
+
+p {
+    margin: 0px;
+    padding: 0px;
+    padding-left: 15px;
+}
+
+hr.short {
+    width: 300px;
+    text-align: left;
+    margin-bottom: 2px;
+}
+
+
+.middle_pos_attach {
+    padding-bottom: 4px;
+}
+
+.middle_pos_attach img {
+    position: relative;
+    top: 4px;
+}
+
+div.center_block {
+    padding-bottom: 5px;
+}
+
+div.center_block_header, div.center_block_content, div.center_block_footer {
+    clear: both;
+}
+div.center_block_header {
+    margin-bottom: 41px;
+}
+div.center_block_footer {
+    margin-bottom: 15px;
+}
+
+div.buttons_cb {
+    position: absolute;
+    top: 3px;
+    width: 200px;
+    right: 0px;
+}
+
+div.buttons_inner {
+    position: relative;
+    width: 100%;
+}
+
+div.buttons_end {
+    position: relative;
+    float: right;
+    width: 30px;
+    height: 30px;
+}
+
+
+div.tooltip div.tooltip_content {
+    position: static;
+    min-width: 50px;
+}
+
+div.tooltip div.tooltip_content div.tooltip_html {
+    position: static;
+    background-color: #580000;
+    border: 6px solid #800b14;
+    padding: 5px;
+    display: table;
+    white-space: nowrap;
+    color: white;
+}
+
+div.tooltip div.tooltip_content ul {
+    list-style: none;
+    margin: 0px;
+    padding: 0px;
+}
+div.tooltip div.tooltip_content ul li {
+    margin: 0px;
+    padding: 0px;
+    border-bottom: 1px solid white;
+    padding-top: 1px;
+}
+div.tooltip div.tooltip_content ul li:last-child {
+    border: none !important;
+    padding: 0px !important;
+}
+
+div.tooltip div.tooltip_content a {
+    color: white !important;
+}
+
+div.tooltip div.tooltip_content div.tooltip_tail {
+    background-image: url(../images/tooltip_tail.png);
+    background-repeat: no-repeat;
+    margin-left: auto;
+    margin-right: auto;
+    width: 29px;
+    height: 14px;
+}
+
+div.buttons_tooltip ul {
+    padding: 0px;
+    margin: 0px;
+}
+
+div.buttons_tooltip ul li {
+    position: relative;
+    list-style: none;
+    padding: 0px;
+    margin: 0px;
+    text-align: left;
+    padding-left: 3px;
+    border-top: 1px solid #fff;
+}
+
+div.buttons_tooltip ul li a {
+    color: white;
+}
+
+
+div.add_content {
+    position: relative;
+    float: right;
+}
+
+hr.content_lastedit {
+    width: 250px;
+    border-style: dashed;
+}
+
+fieldset.dscreenshots {
+    clear: both;
+    padding: 8px 10px;
+    margin: 5px;
+}
+
+div.content_paginator {
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+div.info_content {
+    padding: 0 50px;
+}
+
+div.torrent_element_container {
+    width: 50%;
+}
+
+div.torrent_element {
+    background-color: #660000;
+    border: 2px solid #510000;
+    color: white;
+    clear: both;
+    margin: 5px 30px;
+    padding: 10px;
+    text-align: left;
+}
+
+div.torrent_element a {
+    color: white !important;
+}
+
+div.torrent_element img {
+    max-height: 100px !important;    
+    max-width: 80px !important;
+}
+
+div.torrent_element_name {
+    font-size: 18px;
+    text-align: center;
+}
+
+div.torrent_element_descr {
+    padding-left: 10px;
+    text-align: left;
+    width: 100%;
+}
+div.torrent_element_poster {
+    position: relative;
+    float: left;
+    width: 100px;
+    text-align: center;
+}
+div.content_search_results {
+    padding: 10px 30px;
+}
+
+dd.content_search_categories select {
+    min-width: 300px;
+    min-height: 200px;
+}
+
+div.content_catlist_header {
+    font-weight: bold;
+    text-transform: uppercase;
+    border-bottom: 1px solid lightgray;
+    padding: 3px;
+    padding-left: 15px;
+}
+
+div.content_catlist_body {
+    width: 100%;
+    padding: 5px;
+    text-align: center;
+}
+
+span.content_catlist_item {
+    padding: 2px 10px;
+    border-left: 1px solid lightgray;
+}
+
+div.content_cat_icons {
+    position: relative;
+    float: right;
+    padding-right: 5px;
+}
+
+div.content_cat_icons img {
+    height: 16px;
+}
+
+a.content_catlist_ah {
+    color: black !important;
+}
+
+span.content_catlist_title img {
+    margin-top: -7px;
+}
+
+img.mailer_icon {
+    position: relative;
+    margin-bottom: -4px;
+    top: -2px;
+}

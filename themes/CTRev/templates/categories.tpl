@@ -42,7 +42,7 @@
             });
         }
         function post_data($id, $num) {
-            jQuery.post("[*$baseurl|sl*]/index.php?module=ajax_index&act=children_cat&from_ajax=1", {
+            jQuery.post("index.php?module=ajax_index&act=children_cat&from_ajax=1", {
                 'id':$id,
                 'num':$num,
                 'type':'[*$cattype|sl*]'}, function (data) {
@@ -71,11 +71,11 @@
     [*/if*]
     [*if $cats*]
         [*if ($from_ajax && $cats) || !$from_ajax*]
-            <div rel="cats[[*$cnum*]][]" style="float: left;">
+            <div rel="cats[[*$cnum+0*]][]" style="float: left;">
                 [*if $from_ajax*]
                     [*$next_button*]
                 [*/if*]
-                <select name="cats[[*$cnum*]][]" size="4" multiple="multiple">
+                <select name="cats[[*$cnum+0*]][]" size="5" multiple="multiple">
                     [*foreach from=$cats item=crow*]
                         <option value="[*$crow.id*]" 
                                 [*if $crow.pattern*] 
@@ -93,11 +93,11 @@
         [*/if*]
     [*elseif $categories*] 
         [*foreach from=$categories key=cnum item=cats*]
-            <div rel="cats[[*$cnum*]][]" style="float: left;">
+            <div rel="cats[[*$cnum+0*]][]" style="float: left;">
                 [*if $cnum*]
                     [*$next_button*]
                 [*/if*]
-                <select name="cats[[*$cnum*]][]" size="4" multiple="multiple">
+                <select name="cats[[*$cnum+0*]][]" size="5" multiple="multiple">
                     [*foreach from=$cats item=crow*]
                         <option value="[*$crow.id*]" 
                                 [*if $crow.pattern*] 

@@ -25,14 +25,14 @@ class rating extends pluginable_object {
      * Инициализовано?
      * @var bool $inited
      */
-    protected $inited = false;
+    protected static $inited = false;
 
     /**
      * Максимальные значения рейтинга
      * @var array $max
      */
     protected $max = array(
-        "torrents" => 5,
+        "content" => 5,
         "users" => 1);
 
     /**
@@ -40,7 +40,7 @@ class rating extends pluginable_object {
      * @var array $min
      */
     protected $min = array(
-        "torrents" => 0.5,
+        "content" => 0.5,
         "users" => - 1);
 
     /**
@@ -48,27 +48,27 @@ class rating extends pluginable_object {
      * @var array $part
      */
     protected $part = array(
-        "torrents" => 0.5,
+        "content" => 0.5,
         "users" => 0);
 
     /**
      * Тип рейтинга
      * @var string $type
      */
-    protected $type = 'torrents';
+    protected $type = 'content';
 
     /**
      * Тип голоса
      * @var string $stype
      */
-    protected $stype = 'torrents';
+    protected $stype = 'content';
 
     /**
      * Допустимые типы рейтинга
      * @var array $allowed_types
      */
     protected $allowed_types = array(
-        'torrents',
+        'content',
         'users');
 
     /**
@@ -76,14 +76,20 @@ class rating extends pluginable_object {
      * @var array $allowed_stypes
      */
     protected $allowed_stypes = array(
-        'torrents');
+        'content');
+
+    /**
+     * Номер рейтинга
+     * @var int $count
+     */
+    protected static $count = 0;
 
     /**
      * Конструктор класса
      * @return null 
      */
     protected function plugin_construct() {
-        $this->state = (bool) config::o()->v('rating_on');
+        $this->state = (bool) config::o()->mstate('rating_manage');
         $this->access_var('allowed_types', PVAR_ADD);
         $this->access_var('allowed_stypes', PVAR_ADD);
         $this->access_var('max', PVAR_ADD);
@@ -91,11 +97,11 @@ class rating extends pluginable_object {
         $this->access_var('part', PVAR_ADD);
         /**
          * @note Отображение рейтинга(display_rating)
-         * int rid ID ресурса
+         * int toid ID ресурса
          * string type тип ресурса
          * int owner владелец ресурса
          * array res массив ресурса
-         * int srid доп. ID ресурса(для уникальности)
+         * int stoid доп. ID ресурса(для уникальности)
          * string stype доп. тип ресурса(для уникальности)
          */
         tpl::o()->register_function("display_rating", array(
@@ -128,6 +134,32 @@ class rating extends pluginable_object {
     }
 
     /**
+     * Проверка невозможности голосовать
+     * @param int $owner владелец ресурса(ч\с создатель торрента)
+     * @param int $toid ID ресурса
+     * @param int $stoid доп. ID ресурса(только для проверки на то, голосовал ли)
+     * @return bool true, если голосование отключено
+     */
+    protected function check_voted($owner, $toid, $stoid) {
+
+        $type = $this->type;
+        $stype = $this->stype;
+        $disabled = false;
+        if (!users::o()->perm('vote') || ($owner == users::o()->v('id') && $owner))
+            $disabled = true;
+        else {
+            $u = users::o()->v() ? users::o()->v('id') : users::o()->get_ip();
+            db::o()->p($toid, $stoid, $stype, $u, !users::o()->v(), $type);
+            $q = db::o()->query('SELECT value FROM ratings WHERE 
+                toid = ? AND stoid=? AND stype=? AND user = ? AND ip=? AND type=? LIMIT 1');
+            $cur_vote = db::o()->fetch_assoc($q);
+            if ($cur_vote)
+                $disabled = true;
+        }
+        return $disabled;
+    }
+
+    /**
      * Инициализация рейтинга звёздами
      * @param int $toid ID ресурса
      * @param int $owner владелец ресурса(ч\с создатель торрента)
@@ -136,53 +168,43 @@ class rating extends pluginable_object {
      * @return null
      */
     public function display($toid, $owner = null, $res = null, $stoid = 0) {
-        if (!$this->state) {
-            disabled();
+        if (!$this->state)
             return;
-        }
         if (is_array($toid)) {
-            if ($toid ["rtype"])
-                $this->change_type($toid ["rtype"]);
+            if ($toid ["type"])
+                $this->change_type($toid ["type"]);
             $owner = $toid ["owner"];
             $res = $toid ["res"];
-            $stoid = $toid ["srid"];
+            $stoid = $toid ["stoid"];
             if ($toid ["stype"])
                 $this->change_stype($toid ["stype"]);
-            $toid = $toid ["rid"];
+            $toid = $toid ["toid"];
         }
         $type = $this->type;
         $stype = $this->stype;
         lang::o()->get('rating');
-        if (!$type)
-            $type = "torrents";
-        if (!$stype)
-            $stype = "torrents";
         $owner = (int) $owner;
         $toid = (int) $toid;
         $stoid = (int) $stoid;
         $count = 0;
+
         if (is_numeric($res ["rate_count"]) && is_numeric($res ["rnum_count"])) {
             $count = $res ["rnum_count"];
             $cur_votes = ($res ["rnum_count"] ? $res ["rate_count"] / $res ["rnum_count"] : 0);
-        } else
-            $cur_votes = db::o()->act_row("ratings", "value", "avg", ('toid =' . $toid . ' AND type =' . db::o()->esc($type)), $count);
+        } else {
+            $where = 'toid = ? AND type = ?';
+            $count = db::o()->p($toid, $type)->count_rows("ratings", $where);
+            $cur_votes = db::o()->p($toid, $type)->act_rows("ratings", "value", "avg", $where);
+        }
         $this->min [$type] = (float) $this->min [$type];
         $this->max [$type] = (float) $this->max [$type];
         $this->part [$type] = (float) $this->part [$type];
-        $disabled = false;
-        if (!users::o()->perm('vote') || ($owner == users::o()->v('id') && $owner))
-            $disabled = true;
-        else {
-            $u = db::o()->esc(users::o()->v() ? users::o()->v('id') : users::o()->get_ip());
-            $cur_vote = db::o()->fetch_assoc(db::o()->query('SELECT value FROM ratings WHERE ' .
-                            'toid =' . $toid . ' AND stoid=' . $stoid . '
-                                     AND stype=' . db::o()->esc($stype) . ' AND ' .
-                            'user = ' . $u . ' AND ip="' . (!users::o()->v()) . '" AND type=' .
-                            db::o()->esc($type) . ' LIMIT 1'));
-            if ($cur_vote)
-                $disabled = true;
-        }
+
+        $disabled = $this->check_voted($owner, $toid, $stoid);
         $this->value_to_part($cur_votes);
+
+        self::$count++;
+        tpl::o()->assign('subratingid', 'cb' . self::$count . 'ce');
         tpl::o()->assign("rtoid", $toid);
         tpl::o()->assign("rtype", $type);
         tpl::o()->assign("total", $cur_votes);
@@ -192,37 +214,37 @@ class rating extends pluginable_object {
         tpl::o()->assign("loop", ($this->part [$type] ? ($this->max [$type] - $this->min [$type]) / $this->part [$type] + 1 : 1)); // section почему-то не хочет обрабатывать последнее значение
         tpl::o()->assign("per", $this->part [$type]);
         tpl::o()->assign("split", ($this->part [$type] ? ($this->part [$type] > 0 && $this->part [$type] <= 1 ? 1 / $this->part [$type] : 1) : 0));
-        tpl::o()->assign("rating_inited", $this->inited);
-        if (!$this->inited)
-            $this->inited = true;
-        tpl::o()->display("torrents/rating.tpl");
+        tpl::o()->assign("rating_inited", self::$inited);
+        if (!self::$inited)
+            self::$inited = true;
+        tpl::o()->display("content/rating.tpl");
     }
 
     /**
-     * Проверка голосования за торрент
-     * @param int $toid ID торрента
+     * Проверка голосования за контент
+     * @param int $toid ID контента
      * @param float $value значение рейтинга
      * @return null
      * @throws EngineException 
      */
-    protected function torrents_check($toid, $value) {
-        $res = db::o()->fetch_assoc(db::o()->query('SELECT poster_id
-            FROM torrents WHERE id = ' . $toid . ' LIMIT 1'));
+    protected function content_check($toid, $value) {
+        $q = db::o()->p($toid)->query('SELECT poster_id FROM content WHERE id = ? LIMIT 1');
+        $res = db::o()->fetch_assoc($q);
         if (users::o()->v('id') == $res ["poster_id"])
-            throw new EngineException("rating_cant_vote_for_your_torrents");
+            throw new EngineException("rating_cant_vote_for_your_content");
     }
 
     /**
-     * Проверка на торренты для кармы юзера
+     * Проверка на контент для кармы юзера
      * @param int $toid ID пользователя
-     * @param int $stoid ID торрента
+     * @param int $stoid ID контента
      * @param float $value значение рейтинга
      * @return null
      * @throws EngineException 
      */
-    protected function susers_torrents_check($toid, $stoid, $value) {
-        if (!db::o()->count_rows('torrents', 'id=' . $stoid . ' AND poster_id=' . $toid))
-            throw new EngineException("rating_cant_vote_karma_for_torrent");
+    protected function susers_content_check($toid, $stoid, $value) {
+        if (!db::o()->p($stoid, $toid)->count_rows('content', 'id=? AND poster_id=?'))
+            throw new EngineException("rating_cant_vote_karma_for_content");
     }
 
     /**
@@ -238,12 +260,12 @@ class rating extends pluginable_object {
     }
 
     /**
-     * Кеш голосования за торрент
-     * @param int $toid ID торрента
+     * Кеш голосования за контент
+     * @param int $toid ID контента
      * @param float $value значение рейтинга
      * @return null
      */
-    protected function torrents_vote($toid, $value) {
+    protected function content_vote($toid, $value) {
         $one = 1;
         if ((string) $value == etc::reset_count)
             $one = etc::reset_count;
@@ -251,7 +273,7 @@ class rating extends pluginable_object {
         $etc = n("etc");
         $etc->add_res(array(
             "rate" => $value,
-            "rnum" => $one), null, 'torrents', $toid);
+            "rnum" => $one), null, 'content', $toid);
     }
 
     /**
@@ -279,10 +301,6 @@ class rating extends pluginable_object {
             return true;
         $type = $this->type;
         $stype = $this->stype;
-        if (!$type)
-            $type = "torrents";
-        if (!$stype)
-            $stype = "torrents";
         users::o()->check_perms('vote', 1, 2);
         lang::o()->get('rating');
         $funct = $type . "_check";
@@ -302,18 +320,21 @@ class rating extends pluginable_object {
             "value" => $value);
         $insert ["ip"] = !users::o()->v();
         $insert ["user"] = users::o()->v() ? users::o()->v('id') : users::o()->get_ip();
+
+        try {
+            plugins::o()->pass_data(array('insert' => &$insert), true)->run_hook('rating_vote');
+        } catch (PReturn $e) {
+            return $e->r();
+        }
+
         if ($value > $this->max [$type] || $value < $this->min [$type])
             throw new EngineException("rating_false");
         if ((floatval($this->part [$type]) ? ($value * 100) % ($this->part [$type] * 100) != 0 : $value != $this->min [$type] && $value != $this->max [$type]))
             throw new EngineException("rating_false");
         db::o()->no_error();
         db::o()->insert($insert, "ratings");
-        //$where = 'type =' . db::o()->esc($type) . ' AND toid =' . db::o()->esc($toid) . ' AND ' . $where;
-        //$test = db::o()->count_rows("ratings", ($where));
-        //if ($test) {
         if (db::o()->errno() == UNIQUE_VALUE_ERROR)
             throw new EngineException("rating_rated");
-        //}
         $funct = $type . "_vote";
         $ret = $this->call_method($funct, array($toid, $value));
         return true;
@@ -328,9 +349,8 @@ class rating extends pluginable_object {
         if (!$this->state)
             return 0;
         $type = $this->type;
-        if (!$type)
-            $type = "users";
-        return db::o()->act_row("ratings", "value", "sum", ('type =' . db::o()->esc($type) . ' AND toid =' . longval($toid)));
+        $toid = (int) $toid;
+        return db::o()->p($type, $toid)->act_rows("ratings", "value", "sum", 'type = ? AND toid =?');
     }
 
     /**
@@ -379,9 +399,8 @@ class rating extends pluginable_object {
         if (!$this->state)
             return 0;
         $type = $this->type;
-        if (!$type)
-            $type = "torrents";
-        $value = floatval(db::o()->act_row("ratings", "value", "avg", ('type =' . db::o()->esc($type) . ' AND toid =' . longval($toid))));
+        $toid = (int) $toid;
+        $value = floatval(db::o()->p($type, $toid)->act_rows("ratings", "value", "avg", 'type = ? AND toid = ?'));
         $this->value_to_part($value);
         return number_format($value, ($del ? $del : 0), '.', '');
     }
@@ -396,11 +415,9 @@ class rating extends pluginable_object {
             return;
         $id = (int) $id;
         $type = $this->type;
-        if (!$type)
-            $type = "torrents";
         $funct = $type . '_vote';
         $this->call_method($funct, array($id, etc::reset_count));
-        db::o()->delete('ratings', 'WHERE type=' . db::o()->esc($type) . ' AND toid=' . $id);
+        db::o()->p($type, $id)->delete('ratings', 'WHERE type=? AND toid=?');
     }
 
 }

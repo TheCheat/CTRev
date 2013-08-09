@@ -278,7 +278,7 @@ class fbenc {
      */
     public function err($msg) {
         $this->benc_resp_raw($this->benc(array("failure reason" => $msg)));
-        exit();
+        die();
     }
 
 }

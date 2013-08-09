@@ -42,7 +42,8 @@ class lang_man {
                 if ($_GET['results']) {
                     $_POST['search'] = $POST['search'];
                     $this->search($_POST['id'], $_POST);
-                } else
+                }
+                else
                     tpl::o()->display('admin/languages/search.tpl');
                 break;
             default:
@@ -173,12 +174,44 @@ class lang_man {
     }
 
     /**
+     * Построение языкового массива
+     * @param array $values массив значений
+     * @param array $keys массив ключей
+     * @return array языковой массив
+     */
+    protected function build_arr($values, $keys) {
+        $was = array();
+        $arr = array();
+        foreach ($values as $key => $value) {
+            if (isset($keys[$key]))
+                $key = $keys[$key];
+            $key = (string) $key;
+            $value = (string) $value;
+            if ($key == '0') {
+                if (!validword($value))
+                    continue;
+                $value = mb_strtoupper($value);
+                $arr[] = $value;
+                continue;
+            }
+            if (!$key || !$value)
+                continue;
+            if (!validword($key) || $was[$key])
+                continue;
+            $was[$key] = true;
+            $value = str_replace('\n', "\n", $value);
+            $arr[$key] = $value;
+        }
+        return $arr;
+    }
+
+    /**
      * Сохранение языкового файла
      * @param array $data массив данных языкового файла
      * @return null
      * @throws EngineException 
      */
-    protected function save($data) {
+    public function save($data) {
         $admin_file = globals::g('admin_file');
         $cols = array(
             'name' => 'id',
@@ -202,30 +235,9 @@ class lang_man {
         $f2e = rtrim($matches[1], '/');
         if ($f2e != $of2e && file_exists($ppr . $f2e . '.php'))
             throw new EngineException('languages_file_exists');
-        $was = array();
-        $arr = array();
-        foreach ($values as $key => $value) {
-            if (isset($keys[$key]))
-                $key = $keys[$key];
-            $key = (string) $key;
-            $value = (string) $value;
-            if ($key == '0') {
-                if (!validword($value))
-                    continue;
-                $value = mb_strtoupper($value);
-                $arr[] = $value;
-                continue;
-            }
-            if (!$key || !$value)
-                continue;
-            if (!validword($key) || $was[$key])
-                continue;
-            $was[$key] = true;
-            $value = str_replace('\n', "\n", $value);
-            $arr[$key] = $value;
-        }
         if ($of2e != $f2e && $of2e)
             unlink($ppr . $of2e . '.php');
+        $arr = $this->build_arr($values, $keys);
         lang::o()->set($f2e, $arr, $name);
         if (!$of2e)
             log_add('changed_language_file', 'admin', array($f2e, $of2e, $name));
@@ -267,7 +279,7 @@ class lang_man_ajax {
                 $this->bydefault($name);
                 break;
         }
-        die('OK!');
+        ok();
     }
 
     /**
@@ -276,7 +288,7 @@ class lang_man_ajax {
      * @param array $data данные поиска
      * @return null
      */
-    protected function replace($name, $data) {
+    public function replace($name, $data) {
         $cols = array(
             'what' => 'search',
             'with',
@@ -310,7 +322,7 @@ class lang_man_ajax {
      * @param string $f2d имя файла/папки
      * @return null
      */
-    protected function delete_file($name, $f2d) {
+    public function delete_file($name, $f2d) {
         $f2d = validpath($f2d);
         file::o()->unlink_folder(LANGUAGES_PATH . '/' . $name . '/' . $f2d);
         log_add('deleted_language_file', 'admin', array($f2d, $name));
@@ -321,7 +333,7 @@ class lang_man_ajax {
      * @param string $name имя языка
      * @return null
      */
-    protected function delete($name) {
+    public function delete($name) {
         $rows = file::o()->open_folder(LANGUAGES_PATH, true);
         if (count($rows) < 2)
             return;
@@ -341,7 +353,7 @@ class lang_man_ajax {
      * @return null
      * @throws EngineException
      */
-    protected function copy($name, $newname) {
+    public function copy($name, $newname) {
         lang::o()->get('admin/languages');
         if (!validword($newname))
             throw new EngineException('languages_invalid_new_name');
@@ -354,7 +366,7 @@ class lang_man_ajax {
      * @param string $name имя языка
      * @return null
      */
-    protected function bydefault($name) {
+    public function bydefault($name) {
         if (config::o()->v('default_lang') == $name)
             return;
         config::o()->set('default_lang', $name);

@@ -1,12 +1,10 @@
 @import "allstyle.css";
 
-@import "torrents.css";
+@import "content.css";
 
 @import "bbcodes.css";
 
 /*@import "lavalamp.css";*/
-
-@import "togglemenu.css";
 
 @import "jCal.css";
 
@@ -31,8 +29,6 @@
 @import "rating.css";
 
 @import "sexylightbox.css";
-
-@import "slideshow.css";
 
 @import "highlight.css";
 
@@ -366,7 +362,7 @@ div.center_block_header_left {
     height: 29px;
 }
 
-div.torrent_button {
+div.content_button {
     display: inline;
     cursor: pointer;
 }
@@ -506,27 +502,6 @@ div.footer_right {
     width: 85px;
     height: 66px;
     z-index: 2;
-}
-
-span.db_queries {
-    background-image: url(../engine_images/db_queries.png);
-    background-repeat: no-repeat;
-    height: 12px;
-    padding-left: 13px;
-}
-ul.links {
-    padding: 2px 15px;
-    margin: 0px;
-    color: white;
-}
-
-ul.links li {
-    margin: 1px 0 0 0;
-    padding: 0px;
-}
-
-ul.links li a {
-    color: white;
 }
 
 /** Нижний блок **/
@@ -671,17 +646,4 @@ div.cbb_fr {
     background-repeat: no-repeat;
     width: 17px;
     height: 12px;
-}
-
-div.center_block_padder {    
-    padding: 0 20px;
-}
-
-#message_container .modalbox_content {
-    min-width: 500px;
-}
-
-#messages_status_icon {
-    position: relative;
-    float: left;
 }

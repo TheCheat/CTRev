@@ -38,6 +38,8 @@ function is($v, $c) {
  * @return bool если сие существует
  */
 function validfolder($folder, $where = THEMES_PATH) {
+    if ($where == THEMES_PATH && strtolower($folder) == strtolower(ADMIN_THEME))
+        return false;
     return (validword($folder) || !$where) && is_dir(ROOT . ($where ? $where . "/" : "") . $folder);
 }
 
@@ -140,7 +142,8 @@ function myerror_report($errorno, $errormsg, $file, $line) {
     if (defined('INANNOUNCE')) {
         $bt = new fbenc();
         $bt->err("[{$errtext}] №" . $errorno . ": " . $errormsg . "(" . $file . ":" . $line . ")");
-    } else
+    }
+    else
         echo "<i>[{$errtext}]</i> №<b>" . $errorno . "</b>: " . $errormsg . " in <b>" . $file . "</b>, line <b>" . $line . "</b><br>";
 }
 
@@ -209,105 +212,6 @@ function strip_magic_quotes($arr) {
 }
 
 /**
- * Функция вывода сообщения
- * @param string $lang_var языковая переменная, в соответствии с которой будет выводится на экран сообщение,
- * либо цельный текст.
- * @param array $vars массив значений, включаемых в сообщение, работают, блягодаря функции vsprintf
- * @param string $type тип выводимого значения, в зависимости от него будут выбраны различные стили вывода сообщения(error|success|info)
- * @param bool $die если параметр установлен на true, то сразу после выведения сообщения, скрипт останавливается
- * @param string $title заголовок, выше сообщения, если 0, то не выводится
- * @param string $align расположение текста в сообщении(left|right|center)
- * @param bool $no_image если параметр установлен на true, то статусная картинка не выводится
- * @param bool $only_box если параметр установлен на true, то выводится только message.tpl
- * @return null
- */
-function message($lang_var, $vars = array(), $type = "error", $die = true, $title = false, $align = 'left', $no_image = false, $only_box = false) {
-    $ajax = globals::g('ajax');
-    if (is_array($lang_var)) {
-        if ($lang_var ['vars'])
-            $vars = $lang_var ['vars'];
-        if ($lang_var ['type'])
-            $type = $lang_var ['type'];
-        if ($lang_var ['title'])
-            $title = $lang_var ['title'];
-        if ($type != "error")
-            $die = false;
-        if (isset($lang_var ['die']))
-            $die = $lang_var ['die'];
-        if ($lang_var ['align'])
-            $align = $lang_var ['align'];
-        if (isset($lang_var ['no_image']))
-            $no_image = $lang_var ['no_image'];
-        if ($lang_var ['lang_var'])
-            $lang_var = $lang_var ['lang_var'];
-    }
-    if ($die && !tpl::o()->displayed('overall_header.tpl') && !tpl::o()->displayed('admin/header.tpl') && !$only_box && !$ajax)
-        tpl::o()->display('overall_header.tpl');
-    $type = ($type ? $type : "error");
-    $align = ($align ? $align : "left");
-    if (!$title && $title !== 0)
-        $title = lang::o()->v($type);
-    elseif ($title && lang::o()->visset($title))
-        $title = lang::o()->v($title);
-    tpl::o()->assign('type', $type);
-    tpl::o()->assign('align', $align);
-    tpl::o()->assign('title', $title);
-    tpl::o()->assign('no_image', $no_image);
-    $lv = lang::o()->if_exists($lang_var);
-    $vars = $vars ? (array) $vars : null;
-    if (is_array($vars))
-        tpl::o()->assign('message', vsprintf($lv, $vars));
-    else
-        tpl::o()->assign('message', $lv);
-    if ($die)
-        tpl::o()->assign("died_mess", true);
-    tpl::o()->display('message.tpl');
-    if ($die && !$only_box && !$ajax) {
-        if (tpl::o()->displayed('overall_header.tpl') && !tpl::o()->displayed('overall_footer.tpl'))
-            tpl::o()->display('overall_footer.tpl');
-        elseif (tpl::o()->displayed('admin/header.tpl') && !tpl::o()->displayed('admin/footer.tpl'))
-            tpl::o()->display('admin/footer.tpl');
-    }
-    if ($die)
-        die();
-}
-
-/**
- * Функция вывода ошибки(именно ошибки типа fatal error, а не сообщения об ошибке,
- * которое выводится через функцию message)
- * @param string|array $lang_var языковая переменная, в соответствии с коорой будет выводится на экран сообщение,
- * либо цельный текст, так же, может содержать в себе все остальные паремтры в качестве ассоциативного массива.
- * @param array $vars массив значений, включаемых в сообщение, работают, блягодаря функции vsprintf
- * @param string $title заголовок, выше сообщения
- * @return null
- */
-function error($lang_var, $vars = array(), $title = false) {
-    $ajax = globals::g('ajax');
-    ob_end_clean();
-    if (!$title && !is_null($title))
-        $title = lang::o()->v('error');
-    elseif ($title && lang::o()->visset($title))
-        $title = lang::o()->v($title);
-    if (lang::o()->visset($lang_var)) {
-        $vars = (!is_array($vars) && $vars ? array(
-                    $vars) : $vars);
-        if (is_array($vars))
-            $message = vsprintf(lang::o()->v($lang_var), $vars);
-        else
-            $message = lang::o()->v($lang_var);
-    } else
-        $message = $lang_var;
-    if ($ajax) {
-        print($title . ": " . $message);
-        die();
-    }
-    tpl::o()->assign('message', $message);
-    tpl::o()->assign('title', $title);
-    tpl::o()->display("error.tpl");
-    die();
-}
-
-/**
  * Обрезаем XSS "примочки" у массивов
  * @param string|array $arr "обрезаемый" массив
  * @return string|array "обрезанный" массив
@@ -337,17 +241,22 @@ function fsize($handler) {
     if (is_resource($handler)) {
         $s = fstat($handler);
         return $s['size'];
-    } else
+    }
+    else
         return 0;
 }
 
 /**
- * Функция подсчёта данного времени в миллисекундах
- * @return int данное время
+ * Функция подсчёта данного времени в (мили)секундах
+ * @param bool $ms вернутся милисекунды
+ * @return float время в секундах
  */
-function timer() {
+function timer($ms = false) {
     list ( $usec, $sec ) = explode(" ", microtime());
-    return ((float) $usec + (float) $sec);
+    $r = ((float) $usec + (float) $sec);
+    if ($ms)
+        $r = (float) sprintf('%.0f', $r * 1000);
+    return $r;
 }
 
 /**
@@ -455,8 +364,11 @@ function init_spaths() {
     tpl::o()->right_delimiter = "*]";
     tpl::o()->set_theme($_style);
     $theme_path = $baseurl . THEMES_PATH . '/' . $_style . '/';
+    $atheme_path = $baseurl . THEMES_PATH . '/' . ADMIN_THEME . '/';
     tpl::o()->assign('theme_path', $theme_path);
+    tpl::o()->assign('atheme_path', $atheme_path);
     globals::s('theme_path', $theme_path);
+    globals::s('atheme_path', $atheme_path);
     globals::s('_style', $_style);
 }
 
@@ -511,32 +423,6 @@ function check_formkey($var = "fk") {
 }
 
 /**
- * Анти-флуд проверка
- * @param string $table таблица
- * @param string $where условие
- * @param array $columns столбецы автора и времени постинга соотв.
- * @return null
- * @throws EngineException 
- */
-function anti_flood($table, $where, $columns = array("poster_id", "posted_time")) {
-    if (!is_array($columns) || !config::o()->v('antispam_time'))
-        return;
-    list($author, $time_var) = $columns;
-    $time = time() - config::o()->v('antispam_time');
-    $lang_var = 'anti_flood_subj';
-    $uid = users::o()->v('id') ? users::o()->v('id') : -1;
-    $c = db::o()->query('SELECT `' . $time_var . '` FROM `' . $table . '` WHERE ' . ($where ? $where . " AND " : "") .
-            '`' . $author . "`=" . $uid . "
-                AND `" . $time_var . "` >= " . $time . '
-                ORDER BY `' . $time_var . '` DESC LIMIT 1');
-    $c = db::o()->fetch_assoc($c);
-    if ($c) {
-        $intrvl_time = display::o()->get_estimated_time(config::o()->v('antispam_time') + 1, time() - $c[$time_var]);
-        throw new EngineException($lang_var, $intrvl_time);
-    }
-}
-
-/**
  * Выделение нужной части из массива для последующего извлечения
  * @param array $data массив данных
  * @param array $data_params массив извлекаемых переменных
@@ -560,6 +446,19 @@ function array_merge_inside($input) {
     for ($i = 0; $i < $c; $i++)
         $output = array_merge($output, $input[$i]);
     return $output;
+}
+
+/**
+ * Поиск в строке с разделителем
+ * @param string $string строка
+ * @param string $what что ищем
+ * @param string $spl разделитель
+ * @return bool true, если найдено
+ */
+function checkpos($string, $what, $spl = ";") {
+    if (!$spl)
+        $spl = ";";
+    return mb_strpos($spl . $string . $spl, $spl . $what . $spl) !== false;
 }
 
 /**
@@ -600,6 +499,18 @@ function log_add($subject, $type = "user", $vars = array(), $touid = null) {
 }
 
 /**
+ * Получение значащей части имени файла, уникальный идентефикатор для каждого файла
+ * @param int $time время создания
+ * @param int $user ID создателя
+ * @return string идентефикатор
+ */
+function default_filename($time, $user) {
+    $user = (int) $user;
+    $time = (float) $time;
+    return sprintf(DEFAULT_FILENAME_PATTERN, $time, $user);
+}
+
+/**
  * Добавление своего значения в данный массив
  * @param array $array массив
  * @param mixed $value после чего добавить?
@@ -625,10 +536,13 @@ function array_value_append($array, $value, $what, $key = null) {
 
 /**
  * Выводит сообщение об отключенной функции
+ * @param bool $die прекращать выполнение скрипта?
  * @return null
  */
-function disabled() {
-    message('function_was_disabled_by_admin', null, "info", false);
+function disabled($die = true) {
+    /* @var $m message */
+    $m = n("message");
+    $m->sdie($die)->info('function_was_disabled_by_admin');
 }
 
 /**
@@ -675,6 +589,28 @@ function n($class, $name = false) {
     return plugins::o()->get_class($class, $name);
 }
 
+/**
+ * Запретить вывод сообщения, что всё хорошо
+ * @return null
+ */
+function deny_ok() {
+    globals::s('ok_denied', true);
+}
+
+/**
+ * Выдаёт сообщение о том, что всё хорошо
+ * @param bool $print функция print вместо die?
+ * @return null
+ */
+function ok($print = false) {
+    if (globals::g('ok_denied'))
+        return;
+    if ($print)
+        print(OK_MESSAGE);
+    else
+        die(OK_MESSAGE);
+}
+
 if (!function_exists('class_alias')) {
 
     /**
@@ -696,7 +632,8 @@ if (!function_exists('class_alias')) {
                 return false;
             $f = mb_substr($f, 0, mb_strlen($f) - 2);
             $f .= $string . '?>';
-        } else
+        }
+        else
             return true;
         file_put_contents($p, $f);
         load_aliases();

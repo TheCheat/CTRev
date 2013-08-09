@@ -35,22 +35,23 @@ $area = $seeder ? 'seeders' : 'leechers';
 $itime = config::o()->v('announce_interval') * 60;
 if (!$itime)
     $bt->err('There\'s not an announce interval o_O.');
-
+$q = db::o()->p($info_hash)->query('SELECT cid, ' . $area . ',downloaded FROM content_torrents WHERE
+    info_hash=? AND banned="0" LIMIT 1');
 list($torrent, $seedleech,
-        $downloaded) = db::o()->fetch_row(db::o()->query('SELECT id, ' . $area . ',downloaded FROM torrents WHERE
-    info_hash=' . db::o()->esc($info_hash) . ' AND banned="0" LIMIT 1'));
+        $downloaded) = db::o()->fetch_row($q);
 if (!$torrent)
     $bt->err('Unknown torrent. Infohash - ' . $info_hash);
-list($user) = db::o()->fetch_row(db::o()->query('SELECT id FROM users WHERE
-    passkey=' . db::o()->esc($passkey) . ' AND `group`>0 LIMIT 1'));
-$where = "WHERE tid=" . $torrent . ' AND uid=' . $user . " LIMIT 1";
+$q = db::o()->p($passkey)->query('SELECT id FROM users WHERE
+    passkey=? AND `group`>0 LIMIT 1');
+list($user) = db::o()->fetch_row($q);
 if (!$user)
     $bt->err('Unknown user. Passkey - ' . $passkey);
 
 if (!$numwant)
     $numwant = 50;
 
-$r = db::o()->query('SELECT peer_id, ip, port, uid, uploaded, time FROM peers WHERE tid=' . $torrent . ($numwant ? ' LIMIT ' . $numwant : ""));
+$r = db::o()->p($torrent)->query('SELECT peer_id, ip, port, uid, uploaded, time FROM content_peers 
+    WHERE tid=?' . ($numwant ? ' LIMIT ' . $numwant : ""));
 $was = false;
 $seeders = 0;
 $leechers = 0;
@@ -76,27 +77,32 @@ if ($event != 'stopped') {
                 $plist[] = $bt->benc($arr);
         }
     }
-} else
+}
+else
     $numwant = 1;
 
+$params = array($torrent, $user);
+$where = "WHERE tid=? AND uid=? LIMIT 1";
+
 if (!$was && $numwant) {
-    list($was, $puploaded, $time) = db::o()->fetch_row(db::o()->query('SELECT uid, uploaded, time FROM peers ' . $where));
+    $q = db::o()->p($params)->query('SELECT uid, uploaded, time FROM content_peers ' . $where);
+    list($was, $puploaded, $time) = db::o()->fetch_row($q);
     if ($was)
         peer_bonus($uploaded - $puploaded, $time, $user);
 }
 
 if ($event == 'completed') {
-    db::o()->update(array('finished' => '1'), 'downloaded', $where);
+    db::o()->p($params)->update(array('finished' => '1'), 'content_downloaded', $where);
     if (db::o()->affected_rows())
-        db::o()->update(array('last_active' => time(),
-            'downloaded' => (string) ($downloaded + 1)), 'torrents', 'WHERE id=' . $torrent . ' LIMIT 1');
+        db::o()->p($torrent)->update(array('last_active' => time(),
+            'downloaded' => (string) ($downloaded + 1)), 'content_torrents', 'WHERE cid=? LIMIT 1');
 }
 
 if ($event == 'stopped' && $was) {
-    db::o()->delete('peers', $where);
+    db::o()->p($params)->delete('content_peers', $where);
     if ($seedleech > 0)
-        db::o()->update(array('last_active' => time(),
-            $area => (string) ($seedleech - 1)), 'torrents', 'WHERE id=' . $torrent . ' LIMIT 1');
+        db::o()->p($torrent)->update(array('last_active' => time(),
+            $area => (string) ($seedleech - 1)), 'content_torrents', 'WHERE cid=? LIMIT 1');
 } elseif ($event != 'stopped') {
     $update = array(
         'peer_id' => $peer_id,
@@ -106,13 +112,13 @@ if ($event == 'stopped' && $was) {
         'seeder' => $seeder,
         'time' => time());
     if ($was)
-        db::o()->update($update, "peers", $where);
+        db::o()->p($params)->update($update, "content_peers", $where);
     else {
         $update["tid"] = $torrent;
         $update["uid"] = $user;
-        db::o()->insert($update, "peers");
-        db::o()->update(array('last_active' => time(),
-            $area => (string) ($seedleech + 1)), 'torrents', 'WHERE id=' . $torrent . ' LIMIT 1');
+        db::o()->insert($update, "content_peers");
+        db::o()->p($torrent)->update(array('last_active' => time(),
+            $area => (string) ($seedleech + 1)), 'content_torrents', 'WHERE cid=? LIMIT 1');
     }
 }
 

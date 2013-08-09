@@ -1,0 +1,130 @@
+table bookmarks/id
+user_id
+toid
+type: IF(type=='torrents','content',type)
+added
+
+table bans/id
+period
+byuid
+reason
+ip_f
+ip_t
+uid
+to_time
+email
+
+table comments/id
+poster_id
+text
+posted_time
+toid
+type: IF(type=='torrents','content',type)
+edited_time
+
+table categories/id
+id
+name
+transl_name
+parent_id
+post_allow
+type: IF(type=='torrents','content',type)
+pattern
+
+table mailer/user,toid,type
+user
+toid
+type: IF(type=='torrents','content',type)
+interval
+last_check
+is_new
+
+table patterns/id
+id
+name
+pattern
+
+table ratings/id
+toid
+type: IF(type=='torrents','content',type)
+user
+ip
+stoid
+stype: IF(type=='torrents','content',type)
+value
+
+table smilies/id
+code
+image
+name
+show_bbeditor
+
+table warnings/id
+uid
+reason
+byuid
+time
+
+table zebra/id
+user_id
+to_userid
+type
+
+table content_downloaded/tid,uid: downloaded
+tid
+uid
+finished
+
+table content/id:torrents
+id
+title
+content
+tags
+posted_time
+poster_id
+comm_count
+sticky
+on_top
+category_id
+rate_count
+rnum_count
+
+table content_torrents/id:torrents
+cid: id
+info_hash
+size
+filelist
+announce_list
+last_active
+downloaded
+banned
+price
+status
+statusby
+screenshots
+
+table users/id
+id
+username
+username_lower
+password
+confirmed
+salt
+ip
+email
+registered
+last_visited
+admin_email
+group|function: group({`group`})
+bonus_count
+gender
+birthday
+avatar
+passkey
+settings
+refered_by
+hidden
+karma_count
+content_count
+warnings_count
+comm_count

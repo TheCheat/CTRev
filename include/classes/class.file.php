@@ -45,7 +45,8 @@ final class file {
      * @return string тип файла
      */
     public function get_filetype($path) {
-        return mb_strtolower(end(explode(".", $path)));
+        preg_match('/\.([a-zA-Z0-9]+)$/siu', $path, $matches);
+        return $matches[1];
     }
 
     /**
@@ -75,7 +76,8 @@ final class file {
                     $ret[] = $matches;
                 else
                     $ret[] = $matches[$match];
-            } else
+            }
+            else
                 $ret[] = $res;
         }
         closedir($dir);
@@ -168,7 +170,8 @@ final class file {
             $ret = finfo_file($finfo, $filepath);
             finfo_close($finfo);
             return $ret;
-        } else
+        }
+        else
             return null;
     }
 
@@ -194,7 +197,8 @@ final class file {
                 $this->unlink_folder($path . '/' . $r[$i], $savedirs, $except);
             if (!$savedirs)
                 rmdir($npath);
-        } else
+        }
+        else
             unlink($npath);
     }
 
@@ -213,7 +217,8 @@ final class file {
             mkdir($nnewpath);
             for ($i = 0; $i < $c; $i++)
                 $this->copy_folder($path . '/' . $r[$i], $newpath . '/' . $r[$i]);
-        } else
+        }
+        else
             copy($npath, $nnewpath);
     }
 

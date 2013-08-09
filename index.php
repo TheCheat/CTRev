@@ -14,7 +14,6 @@ if (!file_exists('install/lock') && file_exists('install/')) {
     @header('Location: install.php');
     die();
 }
-
 define('DELAYED_UINIT', true); // отложенная инициализация юзерей...
 include_once "./include/include.php";
 $module = $_GET ['module'];
@@ -42,6 +41,8 @@ try {
     if ($mod) {
         if (!$ajax) {
             ob_start();
+            if ($mod instanceof empty_class)
+                disabled(false);
             plugins::o()->call_init($mod);
             $content = ob_get_contents();
             ob_end_clean();
@@ -49,6 +50,7 @@ try {
                 tpl::o()->assign("overall_title", $mod->title);
         } else {
             plugins::o()->call_init($mod);
+            print('<script type="text/javascript">ajax_complete();</script>');
             die();
         }
     }

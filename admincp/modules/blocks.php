@@ -66,20 +66,7 @@ class blocks_man {
             default:
                 return;
         }
-        return input::o()->select_folder($type, $path, $current, false, $empty, '/^' . $regexp . '$/siu', 1);
-    }
-
-    /**
-     * Селектор типа
-     * @param string $current данное значение
-     * @return string HTML код
-     */
-    protected function types_selector($current = null) {
-        $types = array();
-        $c = count(self::$types);
-        for ($i = 0; $i < $c; $i++)
-            $types[self::$types[$i]] = lang::o()->v('blocks_block_type_' . self::$types[$i]);
-        return input::o()->simple_selector('type', $types, true, $current);
+        return input::o()->scurrent($current)->snull($empty)->select_folder($type, $path, false, '/^' . $regexp . '$/siu', 1);
     }
 
     /**
@@ -87,7 +74,7 @@ class blocks_man {
      * @param string $current данное значение
      * @return string HTML код
      */
-    protected function modules_selector($current = null) {
+    public function modules_selector($current = null) {
         $arr = allowed::o()->get();
         $c = count($arr);
         for ($i = 0; $i < $c; $i++)
@@ -95,7 +82,7 @@ class blocks_man {
                 unset($arr[$i]);
         $current = explode(';', $current);
         $arr[] = "index";
-        return input::o()->simple_selector('module', $arr, false, $current, 5, true);
+        return input::o()->scurrent($current)->ssize(5)->snull()->simple_selector('module', $arr);
     }
 
     /**
@@ -107,7 +94,7 @@ class blocks_man {
         $row = array();
         if ($id) {
             $id = (int) $id;
-            $r = db::o()->query('SELECT * FROM blocks WHERE id=' . $id . ' LIMIT 1');
+            $r = db::o()->p($id)->query('SELECT * FROM blocks WHERE id=? LIMIT 1');
             $row = db::o()->fetch_assoc($r);
             $row["settings"] = unserialize($row["settings"]);
             $row["group_allowed"] = explode(";", $row["group_allowed"]);
@@ -117,7 +104,7 @@ class blocks_man {
             tpl::o()->assign('bsetting_manager', modsettings::o()->change_type('blocks')->display($row['id'], $object, $row["settings"], $lpre));
         }
         tpl::o()->assign('id', $id);
-        tpl::o()->assign('types_selector', $this->types_selector($row['type']));
+        tpl::o()->assign('types', self::$types);
         tpl::o()->assign('modules_selector', $this->modules_selector($row["module"]));
         tpl::o()->register_modifier('files_selector', array($this, 'files_selector'));
         tpl::o()->display('admin/blocks/add.tpl');
@@ -140,7 +127,7 @@ class blocks_man {
      * @return null
      * @throws EngineException 
      */
-    protected function save($data) {
+    public function save($data) {
         $admin_file = globals::g('admin_file');
         $cols = array('title',
             'file',
@@ -159,7 +146,7 @@ class blocks_man {
             throw new EngineException('blocks_invalid_input');
         $update['settings'] = serialize(modsettings::o()->change_type('blocks')->save($id, $data));
         if ($id) {
-            db::o()->update($update, 'blocks', 'WHERE id=' . $id . ' LIMIT 1');
+            db::o()->p($id)->update($update, 'blocks', 'WHERE id=? LIMIT 1');
             log_add('changed_block', 'admin', $id);
         } else {
             db::o()->insert($update, 'blocks');
@@ -192,7 +179,7 @@ class blocks_man_ajax {
                 break;
         }
         cache::o()->remove('blocks');
-        die('OK!');
+        ok();
     }
 
     /**
@@ -200,9 +187,9 @@ class blocks_man_ajax {
      * @param int $id ID блока
      * @return null
      */
-    protected function delete($id) {
+    public function delete($id) {
         $id = intval($id);
-        db::o()->delete('blocks', 'WHERE id=' . $id . ' LIMIT 1');
+        db::o()->p($id)->delete('blocks', 'WHERE id=? LIMIT 1');
         modsettings::o()->change_type('blocks')->uncache($id);
         log_add('deleted_block', 'admin', $id);
     }
@@ -212,8 +199,9 @@ class blocks_man_ajax {
      * @param int $id ID блока
      * @return null
      */
-    protected function switch_state($id) {
-        db::o()->update(array('_cb_enabled' => 'IF(enabled="1","0","1")'), 'blocks', 'WHERE id=' . intval($id) . ' LIMIT 1');
+    public function switch_state($id) {
+        $id = (int) $id;
+        db::o()->p($id)->update(array('_cb_enabled' => 'IF(enabled="1","0","1")'), 'blocks', 'WHERE id=? LIMIT 1');
         log_add('switched_block', 'admin', $id);
     }
 
@@ -222,13 +210,15 @@ class blocks_man_ajax {
      * @return null
      * @throws EngineException
      */
-    protected function save_order($sort) {
+    public function save_order($sort) {
         if (!$sort)
             throw new EngineException;
         foreach ($sort as $p => $obj)
-            foreach ($obj as $s => $id)
-                db::o()->update(array('pos' => (int) $s,
-                    'type' => blocks_man::$types[$p]), 'blocks', 'WHERE id=' . intval($id) . ' LIMIT 1');
+            foreach ($obj as $s => $id) {
+                $id = (int) $id;
+                db::o()->p($id)->update(array('pos' => (int) $s,
+                    'type' => blocks_man::$types[$p]), 'blocks', 'WHERE id=? LIMIT 1');
+            }
         db::o()->query('ALTER TABLE `blocks` ORDER BY `pos`');
     }
 

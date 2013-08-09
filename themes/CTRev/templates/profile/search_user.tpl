@@ -2,7 +2,7 @@
     search_user_subpost = '';
     search_user_subid = '';
     function remote_ts_location($post) {
-        search_user_subpost = $post+"&subupdate=1";
+        search_user_subpost = $post + "&subupdate=1";
         search_user_subid = 'subupdate_rows';
         submit_search_form('');
         reset_paginator();
@@ -11,28 +11,29 @@
     function submit_search_form(page) {
         var $form_data = jQuery("#search_users_form").serialize();
         if (search_user_subpost)
-            $form_data += "&orderby="+search_user_subpost;
+            $form_data += "&orderby=" + search_user_subpost;
         var si = 'search_status_icon';
         status_icon(si, 'loading_white');
-        jQuery.post("[*$baseurl|sl*]index.php?"
+        jQuery.post("index.php?"
     [*if $admin_file*]
-                + '[*$admin_sid*]&'
+        + '[*$admin_sid*]&'
         [*if $s_unco*]
-                    + 'unco=1&'
+        +'unco=1&'
         [*/if*]
     [*/if*]
-                + "module=search_module&act=user&from_ajax=1"+
-                (page?"&page="+page:"")
+        + "module=search_module&act=user&from_ajax=1" +
+                (page ? "&page=" + page : "")
 
     [*if $parent_form && $parent_el*]
-                + '&parent=1'
-    [*/if*], $form_data, function (data) {
-            var obj = "#"+(search_user_subid?search_user_subid:'ajax_search_body');
+        + '&parent=1'
+    [*/if*], $form_data, function(data) {
+            var obj = "#" + (search_user_subid ? search_user_subid : 'ajax_search_body');
             jQuery(obj).empty();
             jQuery(obj).append(data);
             init_tablesorter();
             status_icon(si, 'success');
-        });
+        }
+        );
     }
     [*if $parent_form && $parent_el*]
     function insert_intoparent(username) {
@@ -41,7 +42,7 @@
     }
     [*/if*]
     [*if $s_nosearch*]
-    jQuery(document).ready(function () {
+    jQuery(document).ready(function() {
         submit_search_form();
     });
     [*/if*]
@@ -59,34 +60,26 @@
                                 <dd><input type="text" name="user" value="[*$uname*]"></dd>
                                 <dt>[*'usearch_email'|lang*]</dt>
                                 <dd><input type="text" name="email" value="[*$email*]"></dd>
-                                <dt>[*'usearch_icq'|lang*]</dt>
-                                <dd><input type="text" name="icq" value=""></dd>
-                                <dt>[*'usearch_skype'|lang*]</dt>
-                                <dd><input type="text" name="skype" value=""></dd>
-                                <dt>[*'usearch_name_surname'|lang*]</dt>
-                                <dd><input type="text" name="name_surname" value=""></dd>
+                                <dt>[*'usearch_group'|lang*]</dt>
+                                <dd>[*select_groups null=true*]</dd>
                             </dl>
                         </div>
                         <div class="td">
                             <dl class="info_text">
                                 <dt>[*'usearch_ip'|lang*]</dt>
                                 <dd><input type="text" name="ip" value="[*$ip*]"></dd>
-                                <dt>[*'usearch_country'|lang*]</dt>
-                                <dd>[*select_countries*]</dd>
-                                <dt>[*'usearch_group'|lang*]</dt>
-                                <dd>[*select_groups*]</dd>
                                 <dt>[*'usearch_registered'|lang*]</dt>
                                 <dd><select name='reg_type'>
                                         <option value="0">=</option>
                                         <option value="1">&gt;</option>
                                         <option value="2">&lt;</option>
-                                    </select>&nbsp;[*select_date name="reg"*]</dd>
+                                    </select>&nbsp;[*select_date name="reg" null=true*]</dd>
                                 <dt>[*'usearch_last_visit'|lang*]</dt>
                                 <dd><select name='lv_type'>
                                         <option value="0">=</option>
                                         <option value="1">&gt;</option>
                                         <option value="2">&lt;</option>
-                                    </select>&nbsp;[*select_date name="lv"*]</dd>
+                                    </select>&nbsp;[*select_date name="lv" null=true*]</dd>
                             </dl>
                         </div>
                     </div>

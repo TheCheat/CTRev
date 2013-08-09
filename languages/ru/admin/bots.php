@@ -10,7 +10,7 @@ $languages = array(
     'bots_area_firstip' => 'Первый IP',
     'bots_area_lastip' => 'Последний IP',    
     'bots_area_agent' => 'Поле User-agent',       
-    'bots_name_not_entered' => 'Не введено имя бота',
-    'bots_data_not_entered' => 'Не введено определение бота',
+    'bots_empty_name' => 'Не введено имя бота',
+    'bots_empty_data' => 'Не введено определение бота',
 );
 ?>

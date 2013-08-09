@@ -59,6 +59,8 @@ class display_html {
 
     /**
      * Отображение инициализации jQuery Uploadify
+     * @note Не забываем в pre_init прописать
+     * define('ALLOW_REQUEST_COOKIES', true);
      * @param string $id_postfix постфикс к ID(uploadify_$postfix)
      * @param string $type_desc описание к типу
      * @param string $file_type файловый тип
@@ -68,7 +70,7 @@ class display_html {
      * @param boolean $auto автозагрузка
      * @return null
      */
-    public function display_uploadify($id_postfix, $type_desc = "", $file_type = "", $scriptData = null, $onComplete = "", $print = false, $auto = true) {
+    public function uploadify($id_postfix, $type_desc = "", $file_type = "", $scriptData = null, $onComplete = "", $print = false, $auto = true) {
         if (!is_array($scriptData))
             return;
         if ($file_type) {
@@ -131,7 +133,7 @@ class display_html {
         $pages = "";
         if ($this->paginator_id == 1)
             $pages .= "<script type=\"text/javascript\"
-	src=\"" . $theme_path . "js/jquery.paginator.js\"></script>";
+	src=\"js/jquery.paginator.js\"></script>";
         $pages .= "<div class=\"paginator\" id=\"" . self::paginator_id_prefix . $this->paginator_id . "\"></div>";
         $pages .= $this->pagintator_js($count, $perpage, $file, $var, $page_on_this, $ajax);
         if ($start <= $count && $start > 0)
@@ -189,13 +191,13 @@ class display_html {
     }
 
     /**
-     * Функция для показа пользовательского аватара
+     * Функция для отображения пользовательского аватара
      * @param string $avatar_path путь к аватару
      * @return string HTML код аватары
      */
-    public function display_user_avatar($avatar_path) {
-        $baseurl = globals::g('baseurl');
+    public function useravatar($avatar_path) {
         $theme_path = globals::g('theme_path');
+        $color_path = globals::g('color_path');
         /* @var $uploader uploader */
         $uploader = n("uploader");
         $avatar_path = trim($avatar_path);
@@ -204,9 +206,9 @@ class display_html {
         if (preg_match('/^' . display::url_pattern . '\.(' . $av_allowed . ')$/siu', $avatar_path))
             $url = $avatar_path;
         elseif (preg_match('/^' . self::avatar_prefix . users::o()->v('id') . '\.(' . $av_allowed . ')$/siu', $avatar_path))
-            $url = $baseurl . config::o()->v('avatars_folder') . '/' . $avatar_path;
+            $url = config::o()->v('avatars_folder') . '/' . $avatar_path;
         else
-            $url = $theme_path . 'images/default_avatar.png';
+            $url = $theme_path . 'images/' . $color_path . 'default_avatar.png';
         $max_width = $aft ['max_width'];
         $max_height = $aft ['max_height'];
         $style = ($max_width ? 'max-width: ' . $max_width . 'px;' : "") . ($max_height ? 'max-height: ' . $max_height . 'px;' : "");
@@ -218,8 +220,7 @@ class display_html {
      * @param int $birthday день рождения в формате UNIXTIME
      * @return string HTML код картинки
      */
-    public function get_zodiac_image($birthday) {
-        $baseurl = globals::g('baseurl');
+    public function zodiac_image($birthday) {
         lang::o()->get('zodiac');
         $month = date("m", $birthday);
         $day = date("d", $birthday);
@@ -244,7 +245,7 @@ class display_html {
             if ($time >= $curtime && $time < $nexttime)
                 break;
         }
-        return '<img src="' . $baseurl . config::o()->v('zodiac_folder') . '/' . $word . '.png"
+        return '<img src="' . config::o()->v('zodiac_folder') . '/' . $word . '.png"
                  height="11" alt="' . lang::o()->v('zodiac_sign_' . $word) . '"
 		 title="' . lang::o()->v('zodiac_sign_' . $word) . '">&nbsp;' . lang::o()->v('zodiac_sign_' . $word);
     }
@@ -255,9 +256,10 @@ class display_html {
      * @param string $name имя дирректории
      * @param string $folder выбранная дирректория
      * @param array $apaths разрешённые дирректории внутри основной
+     * @param bool $deny_delete запретить удалять?
      * @return null
      */
-    public function filechooser($path, $name, $folder = null, $apaths = null) {
+    public function filechooser($path, $name, $folder = null, $apaths = null, $deny_delete = false) {
         $ajax = globals::g('ajax');
         if (!validfolder($name, $path))
             return;
@@ -293,8 +295,9 @@ class display_html {
             tpl::o()->assign('parent', $folder . '/');
         elseif ($apaths)
             tpl::o()->assign('deny_modify', true);
+        tpl::o()->assign('deny_delete', (bool) $deny_delete);
         if ($ajax)
-            print("OK!");
+            ok(true);
         tpl::o()->display('admin/filechooser.tpl');
     }
 
@@ -302,7 +305,7 @@ class display_html {
      * Функция для экранирования HTML кода
      * @param string $html HTML код
      * @param bool $decode деэкранировать до нового экранирования?
-     * @param bool $nonbsp не преопразовывать многократные пробелы в &nbsp;?
+     * @param bool $nonbsp не преобразовывать многократные пробелы в &nbsp;?
      * @return string текст с экранированными спец.символами HTML
      */
     public function html_encode($html, $decode = false, $nonbsp = false) {
@@ -381,9 +384,10 @@ class display_time extends display_html {
                 else
                     $h_m = "";
                 return trim((strpos($format, "d") !== false ? $day : "") . " " .
-                                (strpos($format, "m") !== false ? $month : "") . " " .
-                                (strpos($format, "y") !== false ? $year : "") . " " . $h_m);
-            } else
+                        (strpos($format, "m") !== false ? $month : "") . " " .
+                        (strpos($format, "y") !== false ? $year : "") . " " . $h_m);
+            }
+            else
                 return date($format, $unixtime);
         }
     }
@@ -412,7 +416,7 @@ class display_time extends display_html {
      * @param int $to конечное время
      * @return string текст разницы
      */
-    public function get_estimated_time($from, $to = 0) {
+    public function estimated_time($from, $to = 0) {
         if ($to === "c")
             $to = time();
         if (!$to)
@@ -447,7 +451,8 @@ class display_time extends display_html {
             if ($ret[$i] >= $delta[$i]) {
                 $ret[$i + 1] = longval($ret[$i] / $delta[$i]);
                 $ret[$i] -= $ret[$i + 1] * $delta[$i];
-            } else
+            }
+            else
                 break;
         }
         $answ = "";
@@ -581,14 +586,13 @@ class display_modifier extends display_time {
      * @return string обрезанная строка
      */
     public function cut_word($text, $start, $length) {
-        $after = "";
+        preg_match('/^(' . WORD_REGEXP . '+)/siu', mb_substr($text, $length + $start), $matches);
         $prev = "";
-        preg_match('/^\w+/siu', mb_substr($text, $length + $start), $matches);
-        $after = $matches [0];
+        $after = $matches [1];
         if ($start > 0) {
             $string = mb_substr($text, 0, $start);
-            preg_match('/\w+$/siu', $string, $matches);
-            $prev = $matches [0];
+            preg_match('/(' . WORD_REGEXP . '+)$/siu', $string, $matches);
+            $prev = $matches [1];
         }
         return $prev . mb_substr($text, $start, $length) . $after;
     }
@@ -596,16 +600,22 @@ class display_modifier extends display_time {
     /**
      * Обрезание текста и добавление трёх точек в конец
      * @param string $txt текст
-     * @param int $car макс. длина
+     * @param int|string $car макс. длина или символ, до которого обрезается
      * @param bool $autotags автоматически закрывать обрезанные теги?
      * @return string обрезанный текст
      */
     public function cut_text($txt, $car, $autotags = true) {
+        if (!is_numeric($car)) {
+            preg_match('/^(.*?)(' . mpc($car) . '|$)/siu', $txt, $matches);
+            return $matches[1];
+        }
         if (mb_strlen($txt) > $car && $car) {
+            $tlen = mb_strlen($txt);
             $txt = $this->cut_word($txt, 0, $car);
             if ($autotags)
                 $txt = $this->autoclose_tags($txt);
-            $txt .= "...";
+            if (mb_strlen($txt) != $tlen)
+                $txt .= "...";
         }
         return $txt;
     }
@@ -745,7 +755,8 @@ class display extends display_modifier {
             if (!is_array($val)) {
                 if (!$export || in_array($key, $export))
                     $JS_array .= ( $JS_array ? ", " : "{") . '"' . $this->jslashes($key) . '": "' . $this->jslashes($val) . '"';
-            } else
+            }
+            else
                 $JS_array .= ( $JS_array ? ", " : "{") . '"' . $this->jslashes($key) . '": ' . $this->array_export_to_js($val);
         return $JS_array . ($JS_array ? "}" : "");
     }
@@ -891,6 +902,290 @@ class display extends display_modifier {
             self::$o = new $c();
         }
         return self::$o;
+    }
+
+}
+
+class display_userfields extends pluginable_object {
+    /**
+     * Префикс для имени методов отображения
+     */
+
+    const method_input_prefix = 'input_field_';
+    /**
+     * Префикс для имени методов отображения
+     */
+    const method_show_prefix = 'show_field_';
+    /**
+     * Префикс для имени методов проверки
+     */
+    const method_check_prefix = 'check_field_';
+
+    /**
+     * Префикс для переменных в input
+     */
+    const var_prefix = 'custom_userfield_';
+
+    /**
+     * Доступные типы полей => тип значений
+     * @var array $types
+     */
+    protected $types = array('int' => 0,
+        'string' => 0,
+        'text' => 0,
+        'date' => 1,
+        'folder' => 1,
+        'radio' => 2,
+        'select' => 2,
+        'checkbox' => 0,
+        'other' => 0);
+
+    /**
+     * Данные пользователя
+     * @var array $data
+     */
+    protected $data = array();
+
+    /**
+     * Доп. поля
+     * @var array $fields 
+     */
+    protected static $fields = array();
+
+    /**
+     * Данный тип отображения
+     * @var string $type 
+     */
+    protected $type = "profile";
+
+    /**
+     * Допустимые типы отображений
+     * @var array $allowed_types
+     */
+    protected $allowed_types = array('profile',
+        'register');
+
+    /**
+     * Изменение типа отображений
+     * @param string $type имя типа
+     * @return display_userfields $this
+     */
+    public function change_type($type) {
+        if (!in_array($type, $this->allowed_types))
+            return $this;
+        $this->type = $type;
+        return $this;
+    }
+
+    /**
+     * Задание массива пользовательских данных
+     * @param array $data данные
+     * @return display_userfields $this
+     */
+    public function set_user($data) {
+        if (!$data)
+            return;
+        $this->data = $data;
+        return $this;
+    }
+
+    /**
+     * Получение значения переменной
+     * @param string $var имя переменной
+     * @return mixed значение
+     */
+    protected function get_data($var) {
+        $var = self::var_prefix . $var;
+        if ($this->data)
+            return $this->data[$var];
+        return users::o()->v($var);
+    }
+
+    /**
+     * Конструктор класса
+     * @return null
+     */
+    protected function plugin_construct() {
+        $this->load();
+        $this->access_var("types", PVAR_ADD);
+        $this->access_var("allowed_types", PVAR_ADD);
+        /**
+         * @note Ввод доп. пользовательских полей(input_userfields)
+         * params:
+         * string type тип ресурса(profile|register)
+         * array user данные пользователя
+         */
+        tpl::o()->register_function('input_userfields', array($this, "input"));
+        /**
+         * @note Вывод доп. пользовательских полей(display_userfields)
+         * params:
+         * string type тип ресурса(profile|register)
+         * array user данные пользователя
+         */
+        tpl::o()->register_function('display_userfields', array($this, "show"));
+    }
+
+    /**
+     * Загрузка полей
+     * @return null
+     */
+    protected function load() {
+        if (self::$fields)
+            return;
+        self::$fields = db::o()->cname('userfields')->ckeys('field')->query('SELECT * FROM users_fields');
+    }
+
+    /**
+     * Отображение в профиле
+     * @param array $params массив параметров
+     * @return string HTML код полей
+     */
+    public function show($params = null) {
+        if ($params) {
+            $this->change_type($params["type"]);
+            $this->set_user($params['user']);
+        }
+        $r = "";
+        foreach (self::$fields as $name => $row) {
+            if ($this->type == 'profile' && !$row['show_profile'])
+                continue;
+            $value = $this->get_data($name);
+            if (!$value)
+                continue;
+            $type = $row['type'];
+            $allowed = $row['allowed'];
+            $m = self::method_show_prefix . $name;
+            if ($this->is_callable($m))
+                $value = $this->call_method($m, $value);
+            else {
+                if ($type == 'other')
+                    $type = 'string';
+                $value = input::o()->stype($type)->scurrent($value)->skeyed()->standart_types_display($allowed);
+            }
+            if (!$value)
+                continue;
+            $r .= "<dt>" . $row['name'] . "</dt>
+                <dd>" . $value . "</dd>";
+        }
+        return $r;
+    }
+
+    /**
+     * Сохранение настроек
+     * @param array $data массив входных данных
+     * @return array массив данных
+     * @throws EngineException
+     */
+    public function save($data = null) {
+        if (!$data)
+            $data = $_POST;
+        $a = array();
+        foreach (self::$fields as $field => $row) {
+            //if ($this->type == 'profile' && !$row['show_profile'] && $row['show_register'])
+            //    continue;
+            if ($this->type == 'register' && !$row['show_register'])
+                continue;
+            $l = mb_strlen($row['name']) - 1;
+            $type = $row['type'];
+            $allowed = $row['allowed'];
+            $necessary = $row['name'][$l] == '*' ? true : false;
+            $value = $data[self::var_prefix . $field];
+            if ($type == 'other')
+                $s = $this->call_method(self::method_check_prefix . $field, array(&$value));
+            else
+                $s = input::o()->standart_types_check($type, $value, $allowed, self::var_prefix . $field, true);
+            if (!$s && $necessary)
+                throw new EngineException('userfield_necessary_empty', mb_substr($row['name'], 0, $l));
+            if ($s)
+                $a[self::var_prefix . $field] = $value;
+        }
+        return $a;
+    }
+
+    /**
+     * Отображение в ПУ/при регистрации
+     * @param array $params массив параметров
+     * @return null
+     */
+    public function input($params = null) {
+        if ($params) {
+            $this->change_type($params["type"]);
+            $this->set_user($params['user']);
+        }
+        $r = "";
+        foreach (self::$fields as $name => $row) {
+            //if ($this->type == 'profile' && !$row['show_profile'] && $row['show_register'])
+            //    continue;
+            if ($this->type == 'register' && !$row['show_register'])
+                continue;
+            $type = $row['type'];
+            $allowed = $row['allowed'];
+            $value = $this->get_data($name);
+            if ($type == 'other')
+                $field = $this->call_method(self::method_input_prefix . $name, $value);
+            else
+                $field = input::o()->stype($type)->scurrent($value)->skeyed()->standart_types(self::var_prefix . $name, $allowed);
+            if (!$field)
+                continue;
+            $r .= "<dt>" . $row['name'] . ":</dt>
+                <dd>" . $field . ($row['descr'] ? "<br><font size='1'>" . $row['descr'] . "</font>" : "") . "</dd>";
+        }
+        return $r;
+    }
+
+    /**
+     * Выборка страны
+     * @param string $value значение
+     * @return string HTML код
+     */
+    protected function input_field_country($value) {
+        return input::o()->scurrent($value)->snull()->select_countries(self::var_prefix . 'country');
+    }
+
+    /**
+     * Вывод страны
+     * @param string $value значение
+     * @return string HTML код
+     */
+    protected function show_field_country($value) {
+        return input::o()->get_country($value);
+    }
+
+    /**
+     * Проверка ввода страны
+     * @param int $value значение
+     * @return bool true
+     */
+    protected function check_field_country(&$value) {
+        $value = (int) $value;
+        return true;
+    }
+
+    /**
+     * Выборка страны
+     * @param string $value значение
+     * @return string HTML код
+     */
+    protected function input_field_website($value) {
+        return input::o()->stype('string')->scurrent($value)->standart_types(self::var_prefix . 'website');
+    }
+
+    /**
+     * Вывод сайта
+     * @param string $value значение
+     * @return string HTML код
+     */
+    protected function show_field_website($value) {
+        return "<a href='" . $value . "'>" . $value . "</a>";
+    }
+
+    /**
+     * Проверка ввода сайта
+     * @param string $value значение
+     * @return bool true
+     */
+    protected function check_field_website(&$value) {
+        return preg_match(display::url_pattern, $value);
     }
 
 }

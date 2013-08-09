@@ -16,6 +16,17 @@ if (!defined('INSITE'))
 final class allowed {
 
     /**
+     * Базовые модули
+     * @var array $basic_modules
+     */
+    private $basic_modules = array("ajax_index",
+        "login",
+        "registration",
+        "usercp",
+        "user",
+        "content");
+
+    /**
      * Разрешённые модули 
      * @var array $allowed
      */
@@ -34,22 +45,25 @@ final class allowed {
             "logs",
             "spages",
             "smilies",
+            "feedback",
+            "allowedft",
+            "userfields",
             "plugins"),
         "acp_pages" => array("main"),
         "modules" => array("ajax_index",
             "login",
             "registration",
-            "messages",
+            "attach_manage",
+            "polls_manage",
             "comments_manage",
             "rating_manage",
+            "messages",
             "usercp",
             "user",
             "search_module",
-            "polls_manage",
             "downm",
             "chat",
-            "bans",
-            "torrents",
+            "content",
             "news",
             "statics"));
 
@@ -59,6 +73,7 @@ final class allowed {
      */
     private $classes = array(
         "cache",
+        "message",
         "db",
         "tpl",
         "lang",
@@ -81,13 +96,16 @@ final class allowed {
         "uploader",
         "furl",
         "polls",
+        "remote",
         "getpeers",
         "rating",
         "search",
         "mailer",
         "stats",
         "etc",
-        "smtp");
+        "smtp",
+        "attachments");
+
     /**
      * Добавление модуля/класса/переменных в список разрешённых
      * @param string $what что добавляем
@@ -114,6 +132,15 @@ final class allowed {
     }
 
     /**
+     * Проверка, базовый ли модуль(невозможно отключить)
+     * @param string $module имя модуля
+     * @return bool true, если базовый
+     */
+    public function is_basic($module) {
+        return in_array($module, $this->basic_modules);
+    }
+
+    /**
      * Проверка на наличие модуля в списках разрешённых
      * @param string $what что ищем
      * @param string $type тип(modules|acp_modules|acp_pages|classes)
@@ -137,15 +164,16 @@ final class allowed {
                 return $this->allowed[$type];
                 break;
             case 'classes':
+            case 'content_modules':
                 return $this->$type;
                 break;
             default:
                 return false;
         }
     }
-    
+
     // Реализация Singleton
-    
+
     /**
      * Объект данного класса
      * @var allowed $o
@@ -180,7 +208,7 @@ final class allowed {
      * Получение объекта класса
      * @return allowed $this
      */
-    public static function o() {        
+    public static function o() {
         if (!self::$o)
             self::$o = new self();
         return self::$o;

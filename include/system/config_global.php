@@ -10,7 +10,6 @@
  * @name 		Определение основных констант движка
  * @version           	1.00
  */
-
 if (!defined('INSITE'))
     die('Remote access denied!');
 
@@ -21,14 +20,14 @@ define('ENGINE_VERSION', '1.00');
 /**
  * Стадия разработки
  */
-define('ENGINE_STAGE', 'RC2');
+define('ENGINE_STAGE', 'Beta');
 
 
 
 /**
  * Макс. время соединения для сокетов
  */
-define('DEFAULT_SOCKET_TIMEOUT', 2);
+define('DEFAULT_SOCKET_TIMEOUT', 5);
 /**
  * Макс. время выполнения скрипта
  * НЕ рекомендуется ставить 0
@@ -46,6 +45,10 @@ define('MODULES_PATH', 'modules');
  */
 define('BLOCKS_PATH', 'blocks');
 /**
+ * Путь к цветам, относительно css и изображений
+ */
+define('COLORS_PATH', 'colors');
+/**
  * Путь к модулям АЦ, относительно корня системы
  */
 define('ADMIN_MODULES_PATH', 'admincp/modules');
@@ -53,6 +56,10 @@ define('ADMIN_MODULES_PATH', 'admincp/modules');
  * Путь к страницам АЦ, относительно корня системы
  */
 define('ADMIN_PAGES_PATH', 'admincp/pages');
+/**
+ * Путь к темам, относительно корня системы
+ */
+define('ADMIN_THEME', 'admin');
 /**
  * Путь к темам, относительно корня системы
  */
@@ -95,6 +102,22 @@ define('empty_option', "<option value='0'>-----</option>");
  * Ошибка неуникальности значения
  */
 define('UNIQUE_VALUE_ERROR', 1062);
+/**
+ * Регэксп для отличного слова
+ */
+define('WORD_REGEXP', '[\wа-я]');
+/**
+ * Регэксп для отличного от слова
+ */
+define('UNWORD_REGEXP', '[^\wа-я]');
+/**
+ * Паттерн по-умолчанию для создания уникального имени файла
+ */
+define('DEFAULT_FILENAME_PATTERN', "s%.0f_%de");
+/**
+ * Сообщение о том, что всё хорошо
+ */
+define('OK_MESSAGE', 'OK!');
 
 /**
  * Установите 0, если движёк находится не в стадии разработки

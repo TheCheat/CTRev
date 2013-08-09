@@ -65,8 +65,6 @@ class logs_man {
      */
     protected function show($type = null, $sort = null) {
         tpl::o()->assign('curtype', $type);
-        if ($type)
-            $type = db::o()->esc($type);
         $orderby = '';
         if ($sort) {
             $sort = explode(",", $sort);
@@ -80,11 +78,11 @@ class logs_man {
         }
         if (!$orderby)
             $orderby = 'l.`time` DESC';
-        $count = db::o()->count_rows("logs", $type ? 'type=' . $type : '');
+        $count = db::o()->p($type)->count_rows("logs", $type ? 'type=?' : "");
         list($pages, $limit) = display::o()->pages($count, config::o()->v('table_perpage'), 'switch_logs_page', 'page', 5, true);
-        $r = db::o()->query('SELECT l.*, u.username, u.group, u2.username AS tusername, u2.group AS tgroup
+        $r = db::o()->p($type)->query('SELECT l.*, u.username, u.group, u2.username AS tusername, u2.group AS tgroup
             FROM logs AS l LEFT JOIN users AS u ON u.id=l.byuid LEFT JOIN users AS u2 ON u2.id=l.touid
-            ' . ($type ? ' WHERE l.type=' . $type : "") . '
+            ' . ($type ? ' WHERE l.type=?' : "") . '
             ' . ($orderby ? ' ORDER BY ' . $orderby : "") . '
             ' . ($limit ? ' LIMIT ' . $limit : ""));
         tpl::o()->assign('res', db::o()->fetch2array($r));
@@ -109,7 +107,7 @@ class logs_man_ajax {
                 $this->clear($type);
                 break;
         }
-        die("OK!");
+        ok();
     }
 
     /**
@@ -118,7 +116,7 @@ class logs_man_ajax {
      * @return null
      */
     public function clear($type = null) {
-        db::o()->delete('logs', ($type ? 'WHERE type=' . db::o()->esc($type) : ""));
+        db::o()->p($type)->delete('logs', ($type ? 'WHERE type=?' : ""));
         log_add('cleared_logs' . ($type ? '_' . $type : ''), 'admin');
     }
 

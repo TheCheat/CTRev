@@ -43,11 +43,17 @@ class etc {
         if (!$id && !$username)
             return;
         $where = "";
-        if ($id)
-            $where .= "id = " . $id;
-        if ($username)
-            $where .= ( $where ? " AND " : "") . "username_lower=" . db::o()->esc(mb_strtolower($username));
-        $ret = db::o()->query('SELECT ' . ($columns ? $columns : "*") . ' FROM users' . ($where ? " WHERE " . $where : "") . ' LIMIT 1');
+        $params = array();
+        if ($id) {
+            $params[] = $id;
+            $where .= "id = ?";
+        }
+        if ($username) {
+            $params[] = mb_strtolower($username);
+            $where .= ( $where ? " AND " : "") . "username_lower=?";
+        }
+        $ret = db::o()->p($params)->query('SELECT ' . ($columns ? $columns : "*") . ' 
+                    FROM users' . ($where ? " WHERE " . $where : "") . ' LIMIT 1');
         return db::o()->fetch_assoc($ret);
     }
 
@@ -63,14 +69,14 @@ class etc {
 
     /**
      * Увеличение какого-либо счётчика
-     * @param string|array $type тип ресурса(напр. torrents, comments)
+     * @param string|array $type тип ресурса(напр. content, comments)
      * @param int|string $count добавляемое кол-во(если равняется reset_count - обнуляется)
      * @param string $table обновляемая таблица
      * @param int $id ID обновляемый
      * @param string $column проверяемый столбец(для условия)
      * @return null
      */
-    public function add_res($type = 'torrents', $count = 1, $table = "users", $id = null, $column = 'id') {
+    public function add_res($type = 'content', $count = 1, $table = "users", $id = null, $column = 'id') {
         if (!$column)
             $column = 'id';
         if ($column == 'id') {
@@ -100,7 +106,7 @@ class etc {
                 $columns['_cb_' . $str] = $e;
             }
         }
-        db::o()->update($columns, $table, 'WHERE `' . $column . '`=' . db::o()->esc($id) . ' LIMIT 1');
+        db::o()->p($id)->update($columns, $table, 'WHERE `' . $column . '`=? LIMIT 1');
         $this->signed_res(false);
     }
 
@@ -157,6 +163,32 @@ class etc {
     }
 
     /**
+     * Получение первого и второго IP
+     * @param string $firstip первый IP
+     * @param string $lastip второй IP
+     * @param bool $long преобразовывать в long?
+     * @return null
+     */
+    public function get_ips(&$firstip, &$lastip, $long = false) {
+        if ($long) {
+            $firstip = ip2ulong($firstip);
+            $lastip = ip2ulong($lastip);
+        } else {
+            $ip_f = longval($ip_f);
+            $ip_t = longval($ip_t);
+        }
+        if ($lastip && !$firstip)
+            $firstip = $lastip;
+        if ($firstip && !$lastip)
+            $lastip = $firstip;
+        if ($firstip > $lastip && $lastip) {
+            $t = $firstip;
+            $firstip = $lastip;
+            $lastip = $t;
+        }
+    }
+
+    /**
      * Блокировка пользователя
      * @param int $uid ID пользователя
      * @param int $period период блокировки
@@ -169,18 +201,8 @@ class etc {
      */
     public function ban_user($uid, $period = 1, $reason = null, $email = null, $ip_f = null, $ip_t = null, $id = 0) {
         $uid = (int) $uid;
-        $ip_f = longval($ip_f);
-        $ip_t = longval($ip_t);
         $period = (int) $period;
-        if ($ip_t && !$ip_f)
-            $ip_f = $ip_t;
-        if ($ip_f && !$ip_t)
-            $ip_t = $ip_f;
-        if ($ip_f > $ip_t) {
-            $t = $ip_f;
-            $ip_f = $ip_t;
-            $ip_t = $t;
-        }
+        $this->get_ips($ip_f, $ip_t);
         if (!$uid && !$email && !$ip_f)
             return false;
         $columns = array(
@@ -202,11 +224,10 @@ class etc {
         if (!$id)
             db::o()->insert($columns, "bans");
         else
-            db::o()->update($columns, "bans", "WHERE id = " . $id . " LIMIT 1");
+            db::o()->p($id)->update($columns, "bans", "WHERE id = ? LIMIT 1");
         if ($uid)
-            db::o()->update(array(
-                "_cb_old_group" => '`group`',
-                "group" => users::banned_group), "users", "WHERE id=" . $uid . " AND `old_group`=0 LIMIT 1");
+            db::o()->p($uid)->update(array("_cb_old_group" => '`group`',
+                "group" => users::banned_group), "users", "WHERE id= ? AND `old_group`=0 LIMIT 1");
         log_add("banned", 'admin', array(
             $email ? $email : "-",
             $ip_f ? $ip_f . ($ip_t ? " - " . $ip_t : "") : "-",
@@ -225,19 +246,30 @@ class etc {
         $id = (int) $id;
         if (!$uid && !$id)
             return false;
-        if (!$uid)
-            list($uid) = db::o()->fetch_row(db::o()->query('SELECT uid FROM bans WHERE id=' . $id . ' LIMIT 1'));
+        if (!$uid) {
+            $q = db::o()->p($id)->query('SELECT uid FROM bans WHERE id = ? LIMIT 1');
+            list($uid) = db::o()->fetch_row($q);
+        }
         try {
             plugins::o()->pass_data(array('uid' => $uid,
                 'id' => $id), true)->run_hook('users_unban');
         } catch (PReturn $e) {
             return $e->r();
         }
-        db::o()->update(array(
+        db::o()->p($uid)->update(array(
             "_cb_group" => '`old_group`',
-            "old_group" => 0), "users", "WHERE id=" . $uid . " AND `old_group`<>0 LIMIT 1");
-        db::o()->delete("bans", " WHERE " . ($id ? "id=" . $id . ($uid ? " AND " : "") : "") .
-                ($uid ? "uid=" . $uid : "") . " LIMIT 1");
+            "old_group" => 0), "users", "WHERE id=? AND `old_group`<>0 LIMIT 1");
+        $where = "";
+        $params = array();
+        if ($id) {
+            $where .= "id=?";
+            $params[] = $id;
+        }
+        if ($uid) {
+            $where .= ($where ? " AND " : "") . "uid=?";
+            $params[] = $uid;
+        }
+        db::o()->p($params)->delete("bans", " WHERE " . $where . " LIMIT 1");
         log_add("unbanned", 'admin', $id, $uid);
         return true;
     }
@@ -249,11 +281,10 @@ class etc {
      * @param int $warns кол-во предупреждений
      * @param bool $notify оповестить о предупреждении пользователя?
      * @param string $email E-mail пользователя
-     * @param bool $check_ban проверять кол-во предупреждений для бана пользователя?
      * @param int $id ID предупреждения
      * @return array массив присвоенных значений столбцов
      */
-    public function warn_user($uid, $reason, $warns = null, $notify = false, $email = null, $check_ban = true, $id = null) {
+    public function warn_user($uid, $reason, $warns = null, $notify = false, $email = null, $id = null) {
         lang::o()->get('admin/bans');
         $uid = (int) $uid;
         if ((!$uid && !$id) || !$reason)
@@ -280,7 +311,7 @@ class etc {
         if (!$id)
             db::o()->insert($columns, "warnings");
         else
-            db::o()->update($columns, "warnings", "WHERE id = " . $id . " LIMIT 1");
+            db::o()->p($id)->update($columns, "warnings", "WHERE id = ? LIMIT 1");
         if ($uid) {
             if (config::o()->v('warn2ban') && $warns + 1 >= config::o()->v('warn2ban') && $warns !== false)
                 $this->ban_user($uid, config::o()->v('warn2ban_days'), sprintf(lang::o()->v('warnings_ban_reason'), config::o()->v('warn2ban')));
@@ -306,8 +337,10 @@ class etc {
         $id = (int) $id;
         if (!$uid && !$id)
             return false;
-        if (!$uid)
-            list($uid) = db::o()->fetch_row(db::o()->query('SELECT uid FROM warnings WHERE id=' . $id . ' LIMIT 1'));
+        if (!$uid) {
+            $q = db::o()->p($id)->query('SELECT uid FROM warnings WHERE id=? LIMIT 1');
+            list($uid) = db::o()->fetch_row($q);
+        }
         if (is_null($warns) || $warns === true) {
             $r = $this->select_user($uid, null, "warnings_count");
             $warns = $r["warnings_count"];
@@ -322,7 +355,17 @@ class etc {
         $this->add_res('warnings', -1, "users", $uid);
         if (config::o()->v('warn2ban') && $warns - 1 < config::o()->v('warn2ban') && $warns !== false)
             $this->unban_user($uid);
-        db::o()->delete("warnings", "WHERE " . ($id ? "id=" . $id . " AND " : "") . "uid=" . $uid, 1);
+        $where = "";
+        $params = array();
+        if ($id) {
+            $where .= "id=?";
+            $params[] = $id;
+        }
+        if ($uid) {
+            $where .= ($where ? " AND " : "") . "uid=?";
+            $params[] = $uid;
+        }
+        db::o()->p($params)->delete("warnings", " WHERE " . $where . " LIMIT 1");
         log_add("unwarned", 'admin', null, $uid);
         return true;
     }
@@ -353,28 +396,22 @@ class etc {
           if ($gr['system'] || $r['old_group'])
           return false; */
         if (!$nu)
-            db::o()->update(array('group' => $gid), 'users', 'WHERE id =' . $uid . ' LIMIT 1');
+            db::o()->p($uid)->update(array('group' => $gid), 'users', 'WHERE id = ? LIMIT 1');
         log_add('changed_group', 'admin', array(users::o()->get_group_name($gid), $gid), $uid);
         return true;
     }
 
     /**
-     * Удаление торрента
-     * @param int $id ID торрента
-     * @param EngineException $exc исключение, если есть
+     * Удаление контента
+     * @param int $id ID контента
      * @return null
+     * @throws EngineException
      */
-    public function delete_torrent($id, &$exc = null) {
+    public function delete_content($id) {
         $id = (int) $id;
-        /* @var $torrents torrents_ajax */
-        $torrents = plugins::o()->get_module('torrents', false, true);
-        try {
-            $torrents->delete($id, true);
-        } catch (EngineException $e) {
-            $exc = $e; // PHP Bydlokod
-            return false;
-        }
-        return true;
+        /* @var $content content_ajax */
+        $content = plugins::o()->get_module('content', false, true);
+        $content->delete($id);
     }
 
     /**
@@ -398,14 +435,13 @@ class etc {
         }
         if ($r['avatar'])
             $this->remove_user_avatar($id, $r['avatar']);
-        $b = users::o()->admin_mode(true);
-        db::o()->delete("bans", "WHERE uid = " . $id);
-        db::o()->delete("warnings", "WHERE uid = " . $id);
-        db::o()->delete("downloaded", "WHERE uid = " . $id);
+        users::o()->admin_mode();
+        db::o()->p($id)->delete("bans", "WHERE uid = ?");
+        db::o()->p($id)->delete("warnings", "WHERE uid = ?");
         /* @var $pm messages_ajax */
         $pm = plugins::o()->get_module('messages', false, true);
         $pm->clear($id);
-        db::o()->delete("read_torrents", "WHERE user_id = " . $id);
+        db::o()->p($id)->delete("content_readed", "WHERE user_id = ?");
         /* @var $mailer mailer */
         $mailer = n("mailer");
         /* @var $rating rating */
@@ -414,14 +450,16 @@ class etc {
         $comments = n("comments");
         $mailer->remove($id, true);
         $rating->change_type('users')->clear($id);
-        db::o()->delete("zebra", "WHERE user_id = " . $id . " OR to_userid = " . $id);
-        db::o()->delete("bookmarks", "WHERE user_id = " . $id);
-        db::o()->delete("invites", "WHERE user_id = " . $id);
-        db::o()->delete("peers", "WHERE uid = " . $id);
+        db::o()->p($id, $id)->delete("zebra", "WHERE user_id = ? OR to_userid = ?");
+        db::o()->p($id)->delete("bookmarks", "WHERE user_id = ?");
+        db::o()->p($id)->delete("invites", "WHERE user_id = ?");
+        if (config::o('torrents_on')) {
+            db::o()->p($id)->delete("content_downloaded", "WHERE uid = ?");
+            db::o()->p($id)->delete("content_peers", "WHERE uid = ?");
+        }
         $comments->change_type('users')->clear($id);
-        db::o()->delete("users", "WHERE id = " . $id);
-        if (!$b)
-            users::o()->admin_mode();
+        db::o()->p($id)->delete("users", "WHERE id = ?");
+        users::o()->admin_mode(false);
         log_add('deleted_user', 'admin', array($r['username'], $id));
         return true;
     }
@@ -482,8 +520,7 @@ class etc {
         if ($now_conf >= $confirm)
             return $now_conf;
         if ($id)
-            db::o()->update(array(
-                "confirmed" => $confirm), "users", ( 'id=' . $id), 1);
+            db::o()->p($id)->update(array("confirmed" => $confirm), "users", 'WHERE id=? LIMIT 1');
         return $confirm;
     }
 
@@ -500,6 +537,32 @@ class etc {
         $this->send_mail($email, $shablon, array(
             "link" => $link));
         return $key;
+    }
+
+    /**
+     * Анти-флуд проверка
+     * @param string $table таблица
+     * @param string $where условие
+     * @param array $columns столбецы автора и времени постинга соотв.
+     * @return null
+     * @throws EngineException 
+     */
+    public function anti_flood($table, $where, $columns = array("poster_id", "posted_time")) {
+        if (!is_array($columns) || !config::o()->v('antispam_time'))
+            return;
+        list($author, $time_var) = $columns;
+        $time = time() - config::o()->v('antispam_time');
+        $lang_var = 'anti_flood_subj';
+        $uid = users::o()->v('id') ? users::o()->v('id') : -1;
+        $c = db::o()->no_parse()->query('SELECT `' . $time_var . '` FROM `' . db::table($table) . '` WHERE ' . ($where ? $where . " AND " : "") .
+                '`' . $author . "`=" . $uid . "
+                AND `" . $time_var . "` >= " . $time . '
+                ORDER BY `' . $time_var . '` DESC LIMIT 1');
+        $c = db::o()->fetch_assoc($c);
+        if ($c) {
+            $intrvl_time = display::o()->estimated_time(config::o()->v('antispam_time') + 1, time() - $c[$time_var]);
+            throw new EngineException($lang_var, $intrvl_time);
+        }
     }
 
 }

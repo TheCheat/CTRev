@@ -20,11 +20,14 @@ class news_block {
      * @return null
      */
     public function init() {
+        if (!config::o()->mstate('news'))
+            return;
         lang::o()->get('news');
-        $a = db::o()->query('SELECT n.*, u.username, u.group FROM news AS n
+        $l = (int) config::o()->v('news_max');
+        $a = db::o()->cname('news')->query('SELECT n.*, u.username, u.group FROM news AS n
             LEFT JOIN users AS u ON u.id=n.poster_id
             ORDER BY n.posted_time DESC' .
-                (config::o()->v('news_max') ? ' LIMIT ' . config::o()->v('news_max') : ""), 'news');
+                ($l ? ' LIMIT ' . $l : ""));
         tpl::o()->assign('rows', $a);
         tpl::o()->display('news/index.tpl');
     }

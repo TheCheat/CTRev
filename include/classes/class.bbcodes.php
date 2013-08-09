@@ -34,7 +34,6 @@ abstract class formatter_callbacks extends pluginable_object {
     protected $bb_patterns = array(
         "simple" => '/\[(b|i|u|s|p|su[bp]|strong|strike|em)\](.+?)\[\/\1\]/siu',
         "position" => '/\[(left|right|center|justify)\](.+?)\[\/\1\]/siu',
-        //"base" => '/\[baseurl\]/siu',
         "url" => '/\[url\]%URL_PATTERN;\[\/url\]/siu',
         "url=" => '/\[url=%Q;%URL_PATTERN;%Q;\](.+?)\[\/url\]/siu',
         'auto_url' => '/(^|\s|\>)%URL_PATTERN;(\s|$|\<)/siu',
@@ -52,7 +51,6 @@ abstract class formatter_callbacks extends pluginable_object {
     protected $bb_replacement = array(
         "simple" => '<\1>\2</\1>',
         "position" => '<div align="\1">\2</div>',
-        //"base" => '%baseurl;',
         "url" => '<a href="\1">\1</a>',
         "url=" => '<a href="\1">\6</a>',
         'auto_url' => '\1<a href="\2">\2</a>\7',
@@ -159,11 +157,11 @@ abstract class formatter_callbacks extends pluginable_object {
         if (users::o()->v()) {
             if ($matches[1]) {
                 $matches[1] = longval(trim($matches[1]));
-                if ($matches[1] <= users::o()->v('torrents_count'))
+                if ($matches[1] <= users::o()->v('content_count'))
                     return $matches[3];
                 if (!$rss) {
-                    $vars = array($matches[1], users::o()->v('torrents_count'));
-                    $text = "hidden_need_torrents_you_have";
+                    $vars = array($matches[1], users::o()->v('content_count'));
+                    $text = "hidden_need_content_you_have";
                 }
             } elseif ($matches[2]) {
                 $grps = array_map('longval', explode(",", $matches[2]));
@@ -171,9 +169,8 @@ abstract class formatter_callbacks extends pluginable_object {
                 for ($i = 0; $i < $c; $i++) {
                     if (!users::o()->get_group($grps[$i]))
                         continue;
-                    if (!$rss) {
+                    if (!$rss)
                         $pretext .= ( $pretext ? ", " : "") . display::o()->user_group_color($grps[$i]);
-                    }
                     if (users::o()->v('group') == $grps[$i])
                         return $matches[3];
                 }
@@ -181,7 +178,8 @@ abstract class formatter_callbacks extends pluginable_object {
                     $vars = array($pretext, display::o()->user_group_color(users::o()->v('group')));
                     $text = "hidden_group_to_see";
                 }
-            } else
+            }
+            else
                 return $matches[3];
         }
         if (!$rss)
@@ -192,7 +190,9 @@ abstract class formatter_callbacks extends pluginable_object {
             if (!$vars)
                 $vars = furl::o()->construct("registration");
             ob_start();
-            message($text, $vars, "info", false, "hidden_text", "left", false, true);
+            /* @var $m message */
+            $m = n("message");
+            $m->stitle("hidden_text")->sonly_box()->info($text, $vars);
             $cont = ob_get_contents();
             ob_end_clean();
             return $cont;
@@ -328,13 +328,26 @@ abstract class bbcode_formatter extends formatter_callbacks {
     }
 
     /**
+     * Предобработка паттернов
+     * @param array $patterns паттерны
+     * @return null
+     */
+    protected function patterns_prepare(&$patterns) {
+        $q = mpc(display::o()->html_encode('"'));
+        $sq = mpc(display::o()->html_encode("'"));
+        $patterns = str_replace("%URL_PATTERN;", display::url_pattern, $patterns);
+        $patterns = str_replace('"', $q, $patterns);
+        $patterns = str_replace("'", $sq, $patterns);
+        $patterns = str_replace("%Q;", '(?:' . $q . '|' . $sq . ')?', $patterns);
+    }
+
+    /**
      * Инициализация паттернов и заменяемого текста для format_text
      * @param array $patterns паттерны
      * @param array $replacement заменяемый текст
      * @return null
      */
     protected function format_text_init(&$patterns = "", &$replacement = "") {
-        $baseurl = globals::g('baseurl');
         $global = false;
         if (!$patterns && !$replacement) {
             if ($this->executed_format)
@@ -343,18 +356,19 @@ abstract class bbcode_formatter extends formatter_callbacks {
             $this->format_text_init($this->spec_patterns);
             return;
         }
-        if ($patterns) {
-            $q = mpc(display::o()->html_encode('"'));
-            $sq = mpc(display::o()->html_encode("'"));
-            $patterns = str_replace("%URL_PATTERN;", display::url_pattern, $patterns);
-            $patterns = str_replace('"', $q, $patterns);
-            $patterns = str_replace("'", $sq, $patterns);
-            $patterns = str_replace("%Q;", '(?:' . $q . '|' . $sq . ')?', $patterns);
-        }
-        if ($replacement) {
-            $replacement = preg_replace_callback('/%LANG\[(?:"|\'|)([a-zA-Z0-9\-\_]+)(?:"|\'|)\]/siu', array($this, 'lang_macro'), $replacement);
-            $replacement = str_replace('%baseurl;', $baseurl, $replacement);
-        }
+        if ($patterns)
+            $this->patterns_prepare($patterns);
+        if ($replacement)
+            $this->lang_macro_replacement($replacement);
+    }
+
+    /**
+     * Замена "макроса" LANG в паттернах
+     * @param array $replacement заменяемый текст
+     * @return null
+     */
+    protected function lang_macro_replacement(&$replacement) {
+        $replacement = preg_replace_callback('/%LANG\[(?:"|\'|)([a-zA-Z0-9\-\_]+)(?:"|\'|)\]/siu', array($this, 'lang_macro'), $replacement);
     }
 
     /**
@@ -438,7 +452,6 @@ abstract class bbcode_formatter extends formatter_callbacks {
      * @return string форматированный текст
      */
     protected function format_text_simple($input) {
-        $baseurl = globals::g('baseurl');
         $this->init_smilies();
 // $out = nl2br ( $input ); // лишь в 5.3 можно сделать для HTML Trans.
         $out = $input;
@@ -455,7 +468,6 @@ abstract class bbcode_formatter extends formatter_callbacks {
      * @return null
      */
     protected function smilies_replace(&$input) {
-        $baseurl = globals::g('baseurl');
         if (!$this->smilies)
             return;
         foreach ($this->smilies as $smilies_pack) {
@@ -465,7 +477,7 @@ abstract class bbcode_formatter extends formatter_callbacks {
                     $image = $smilie ['image'];
                     $name = $smilie ['name'];
                     // preg_replace с модификатором i намного быстрее str_ireplace
-                    $input = preg_replace('/' . mpc($code) . '/i', "<img src=\"" . $baseurl . config::o()->v('smilies_folder') . "/" . $image . "\" 
+                    $input = preg_replace('/' . mpc($code) . '/i', "<img src=\"" . config::o()->v('smilies_folder') . "/" . $image . "\" 
                                 alt=\"" . $name . "\" 
                                 title=\"" . $name . "\">", $input);
                 }
@@ -591,7 +603,7 @@ final class bbcodes extends bbcode_formatter {
     public function init_smilies() {
         if ($this->smilies)
             return;
-        $r = db::o()->query('SELECT name,image,code,show_bbeditor FROM smilies', 'smilies');
+        $r = db::o()->cname('smilies')->query('SELECT name,image,code,show_bbeditor FROM smilies');
         $this->smilies = array(array(), array());
         foreach ($r as $row)
             $this->smilies[$row['show_bbeditor']][] = $row;

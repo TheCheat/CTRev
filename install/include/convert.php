@@ -44,7 +44,7 @@ class convert {
      * Таблица конвертации
      * @var string $cfile
      */
-    private $cfile = 'cyberhype';
+    private $cfile = 'update';
 
     /**
      * Кол-во записей за раз
@@ -80,7 +80,13 @@ class convert {
      * Конвертируемая база данных
      * @var string $db
      */
-    private $db = 'cyberhype';
+    private $db = 'ctrev';
+
+    /**
+     * Префикс для конвертируемых таблиц
+     * @var string $prefix
+     */
+    private $prefix = '';
 
     /**
      * Сопоставление групп
@@ -113,7 +119,7 @@ class convert {
         if ($_GET['check']) {
             if (INSTALL_PAGE == "database")
                 $this->check_settings();
-            die('OK!');
+            ok();
         } else {
             tpl::o()->assign("config", config::o());
             switch (INSTALL_PAGE) {
@@ -149,7 +155,7 @@ class convert {
      */
     private function show_database() {
         require_once ROOT . 'include/classes/class.input.php';
-        $cfiles = input::o()->select_folder("file", 'install/database', $this->cfile, false, false, "/^(.*)\.conv$/siu", 1);
+        $cfiles = input::o()->scurrent($this->cfile)->select_folder("file", 'install/database', false, "/^(.*)\.conv$/siu", 1);
         tpl::o()->assign('cfiles', $cfiles);
         $r = db::o()->query('SELECT id, name FROM groups');
         tpl::o()->assign('groups', db::o()->fetch2array($r, 'assoc', array('id' => 'name')));
@@ -161,7 +167,7 @@ class convert {
      */
     private function show_convert() {
         require_once ROOT . sprintf(self::gpath, $this->cfile);
-        $this->getter = new get_convert($this->db, unserialize($this->groups));
+        $this->getter = new get_convert($this->db, $this->prefix, unserialize($this->groups));
         if ($_GET['convert']) {
             if ($_GET['finish']) {
                 db::o()->update(array('value' => '1'), 'convert', 'WHERE field="converted" LIMIT 1');
@@ -187,8 +193,9 @@ class convert {
         if ($peronce < 20)
             $peronce = 20;
         $cdb = $_POST['db'];
+        $prefix = $_POST['prefix'];
         $cfile = $_POST['file'];
-        $r = db::o()->query("SHOW DATABASES LIKE " . db::o()->esc($cdb));
+        $r = db::o()->p($cdb)->query("SHOW DATABASES LIKE ?");
         if (!db::o()->num_rows($r) || !$cdb)
             die(sprintf(lang::o()->v('convert_wrong_db'), $cdb));
         if (!file_exists(ROOT . sprintf(self::fpath, $cfile)) || !file_exists(ROOT . sprintf(self::gpath, $cfile)))
@@ -211,6 +218,7 @@ class convert {
         }
         $i = array('peronce' => $peronce,
             'db' => $cdb,
+            'prefix' => $prefix,
             'cfile' => $cfile,
             'groups' => serialize($groups),
             'converted' => '0');
@@ -256,17 +264,18 @@ class convert {
         $cachefile = 'convert/cparse-off' . $toffset;
         if (!($a = cache::o()->read($cachefile))) {
             $content = $this->convert_tables();
-            $c = preg_match_all('/(^)\s*?table\s+(\w+)\/([\w\s,]+?)(?:\s*?\:\s*?(\w+))?(?:\s*?\?(.*?))?\s*?($)/miu', $content, $matches, PREG_OFFSET_CAPTURE, $toffset);
+            $c = preg_match_all('/(^)\s*?(\@?)table\s+(\w+)\/([\w\s,]+?)(?:\s*?\:\s*?(\w+))?(?:\s*?\?(.*?))?\s*?($)/miu', $content, $matches, PREG_OFFSET_CAPTURE, $toffset);
             $i = 0;
             if (!$matches)
                 die($finish);
-            $table = $matches[2][$i][0];
-            $orderby = $matches[3][$i][0];
-            $ftable = $matches[4][$i][0];
+            $noerr = $matches[2][$i][0];
+            $table = $matches[3][$i][0];
+            $orderby = $matches[4][$i][0];
+            $ftable = $matches[5][$i][0];
             if (!$ftable)
                 $ftable = $table;
-            $cond = trim($matches[5][$i][0]);
-            $pos = $matches[6][$i][1];
+            $cond = trim($matches[6][$i][0]);
+            $pos = $matches[7][$i][1];
             $i++;
             if ($matches[1][$i]) {
                 $ntoffset = $matches[1][$i][1];
@@ -274,18 +283,20 @@ class convert {
             }
             $data = trim($len ? mb_substr($content, $pos, $len) : mb_substr($content, $pos));
             $this->parse_columns($data);
-            $a = array($table, $orderby, $ftable, $cond, $ntoffset, $this->columns, $this->insert);
+            $a = array($table, $orderby, $ftable, $cond, $ntoffset, $this->columns, $this->insert, $noerr);
             cache::o()->write($a, $cachefile);
-        } else
-            list($table, $orderby, $ftable, $cond, $ntoffset, $this->columns, $this->insert) = $a;
-        $this->select4insert($table, $orderby, $ftable, $cond, $loffset);
-        $c = db::o()->prepend_db($this->db)->count_rows($ftable, $cond);
-        if ($c <= $loffset + $this->peronce) {
+        }
+        else
+            list($table, $orderby, $ftable, $cond, $ntoffset, $this->columns, $this->insert, $noerr) = $a;
+        $s = $this->select4insert($table, $orderby, $ftable, $cond, $loffset, $noerr);
+        $c = db::o()->prepend_db($this->db)->no_parse()->no_prefix()->count_rows($this->prefix . $ftable, $cond);
+        if ($c <= $loffset + $this->peronce || !$s) {
             if (!$ntoffset)
                 die($finish);
             else
                 die("<script type='text/javascript'>continue_convert(" . $ntoffset . ", '0');</script>");
-        } else
+        }
+        else
             die("<script type='text/javascript'>continue_convert(" . $toffset . ", " . ($loffset + $this->peronce) . ");</script>");
     }
 
@@ -331,30 +342,38 @@ class convert {
      * @param string $ftable имя таблицы выборки
      * @param string $cond условие для выборки
      * @param int $limit ограничение
-     * @return array массив значений
+     * @param bool $noerr без ошибок?
+     * @return bool статус выбокри/вставки
      */
-    private function select4insert($table, $orderby, $ftable, $cond, $limit) {
+    private function select4insert($table, $orderby, $ftable, $cond, $limit, $noerr = false) {
         $query = "SELECT ";
         $c = count($this->columns);
         for ($i = 0; $i < $c; $i++)
             $query .= ($i ? ', ' : '') . $this->columns[$i];
         $orderby = '`' . implode('`, `', array_map('trim', explode(',', $orderby))) . '`';
-        $query .= " FROM `" . $this->db . "`.`" . $ftable . "`" . ($cond ? " WHERE " . $cond : "") . "
+        $query .= " FROM `" . $this->db . "`.`" . $this->prefix . $ftable . "`" . ($cond ? " WHERE " . $cond : "") . "
             ORDER BY " . $orderby . "
             LIMIT " . $limit . ',' . $this->peronce;
-        $r = db::o()->no_error()->query($query);
+        $r = db::o()->no_error()->no_parse()->query($query);
         if (db::o()->errno()) {
             printf(lang::o()->v('convert_select_error'), $ftable, db::o()->errno(), db::o()->errtext());
-            die();
+            if ($noerr)
+                return false;
+            else
+                die();
         }
         while ($row = db::o()->fetch_assoc($r))
             db::o()->ignore()->insert($this->insert($row), $table, true);
         db::o()->no_error()->save_last_table();
         if (db::o()->errno()) {
             printf(lang::o()->v('convert_insert_error'), $table, db::o()->errno(), db::o()->errtext());
-            die();
+            if ($noerr)
+                return false;
+            else
+                die();
         }
         printf(lang::o()->v('convert_inserted_table'), $limit, $limit + $this->peronce - 1, $table, $ftable);
+        return true;
     }
 
     /**
@@ -369,7 +388,8 @@ class convert {
                 $args = $exp[1];
                 $this->prepare_args($args, $row);
                 $exp = call_user_func_array(array($this->getter, $exp[0]), $args);
-            } else
+            }
+            else
                 $exp = $row[$icol];
             $r[$icol] = $exp;
         }

@@ -37,15 +37,17 @@ class bans_man {
     }
 
     /**
-     * Функция показа банов
+     * Функция отображения банов
      * @param int $id ID бана
      * @return null
      */
     protected function show($id = null) {
-        $r = db::o()->query('SELECT b.*, u.username AS bu, u.group AS bg, u2.username, u2.group FROM bans AS b
+        $id = (int) $id;
+        $r = db::o()->p($id)->query('SELECT b.*, u.username AS bu, u.group AS bg, u2.username, 
+            u2.group FROM bans AS b
             LEFT JOIN users AS u ON u.id=b.uid
             LEFT JOIN users AS u2 ON u2.id=b.byuid' .
-                ($id ? " WHERE b.id=" . longval($id) . ' LIMIT 1' : ""));
+                ($id ? " WHERE b.id=? LIMIT 1" : ""));
         tpl::o()->assign('res', db::o()->fetch2array($r));
         tpl::o()->display('admin/bans/index.tpl');
     }
@@ -84,7 +86,8 @@ class bans_man {
         if ($id) {
             $this->show($id);
             return;
-        } else
+        }
+        else
             furl::o()->location($admin_file);
     }
 
@@ -108,7 +111,7 @@ class bans_man_ajax {
                 $this->delete($id);
                 break;
         }
-        die("OK!");
+        ok();
     }
 
     /**
@@ -130,11 +133,12 @@ class bans_man_ajax {
      */
     protected function edit($id) {
         $id = (int) $id;
-        $r = db::o()->query('SELECT b.*, u.username, u.group FROM bans AS b
+        $r = db::o()->p($id)->query('SELECT b.*, u.username, u.group FROM bans AS b
             LEFT JOIN users AS u ON u.id=b.uid
-            WHERE b.id=' . $id . ' LIMIT 1');
+            WHERE b.id=? LIMIT 1');
         tpl::o()->assign("res", db::o()->fetch_assoc($r));
         tpl::o()->display('admin/bans/edit.tpl');
+        deny_ok();
     }
 
 }

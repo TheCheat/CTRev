@@ -22,10 +22,10 @@ class downm {
     public function init() {
         lang::o()->get("blocks/downm");
         switch ($_GET["act"]) {
-            case "torrents":
-                users::o()->check_perms('torrents', 1, 2);
+            case "content":
+                users::o()->check_perms("content", 1, 2);
                 $sticky = isset($_GET["sticky"]) ? (bool) $_GET["sticky"] : true;
-                $this->show_torrents($sticky);
+                $this->show_content($sticky);
                 break;
             case "comments":
                 users::o()->check_perms('comment', 1, 2);
@@ -41,26 +41,29 @@ class downm {
     }
 
     /**
-     * Вывод последних торрентов
+     * Вывод последнего контента
      * @return null
      */
-    protected function show_torrents($sticky = false) {
+    public function show_content($sticky = false) {
         lang::o()->get('profile');
         /* @var $users user_ajax */
         $users = plugins::o()->get_module("user", false, true);
         tpl::o()->assign("sticky", (int) $sticky);
-        tpl::o()->display('blocks/contents/dtorrents.tpl');
-        $users->show_last_torrents(null, ($sticky ? "sticky='1'" : ""));
+        tpl::o()->display('blocks/contents/dcontent.tpl');
+        $users->show_last_content(null, ($sticky ? "sticky='1'" : ""));
     }
 
     /**
      * Вывод списка online-пользователей
      * @return null
      */
-    protected function show_online() {
-        $res = db::o()->query('SELECT userdata FROM sessions
-                WHERE time > ' . (time() - config::o()->v('online_interval')) . '
-                GROUP BY IF(uid>0,uid,ip)');
+    public function show_online() {
+        $i = (int) config::o()->v('online_interval');
+        if (!$i)
+            $i = 15;
+        $time = (time() - $i);
+        $res = db::o()->p($time)->query('SELECT userdata FROM sessions
+                WHERE time > ? GROUP BY IF(uid>0,uid,ip)');
         $res = db::o()->fetch2array($res);
         tpl::o()->assign("res", $res);
         $c = count($res);
@@ -86,9 +89,9 @@ class downm {
      * @return array список из БД
      */
     protected function bd_list() {
-        return db::o()->query("SELECT username, `group`, birthday FROM users
-                WHERE FROM_UNIXTIME(birthday, '%m') = " . date("m") . "
-                    AND FROM_UNIXTIME(birthday, '%d') = " . date("d"), 'birthday');
+        return db::o()->p(date("m"), date("d"))->cname('birthday')->query("SELECT 
+            username, `group`, birthday FROM users WHERE FROM_UNIXTIME(birthday, '%m') = ?
+                    AND FROM_UNIXTIME(birthday, '%d') = ?");
     }
 
 }

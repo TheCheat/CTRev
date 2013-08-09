@@ -72,7 +72,7 @@ function smarty_make_atom_tag($params) {
     $id = $params ['id'];
     $tag = $_SERVER ['SERVER_NAME'] . ",";
     $tag .= display::o()->date($time, "Y-m-d") . ":";
-    $tag .= $prebaseurl . furl::o()->construct('torrents', array(
+    $tag .= $prebaseurl . furl::o()->construct("content", array(
                 'title' => $title,
                 'id' => $id), false, false, true);
     return $tag;

@@ -28,6 +28,9 @@ function __autoload($class) {
             include ROOT . 'include/classes/interface.' . $class . '.php';
         if (file_exists(ROOT . 'include/classes/class.' . $class . '.php'))
             include ROOT . 'include/classes/class.' . $class . '.php';
+    } elseif (preg_match('/^(.*)_interface$/siu', $class, $matches)) {
+        if (file_exists(ROOT . 'include/classes/interface.' . $matches[1] . '.php'))
+            include ROOT . 'include/classes/interface.' . $matches[1] . '.php';
     }
 }
 
@@ -84,7 +87,7 @@ class EngineException extends Exception {
         if ($eajax)
             die($this->getEMessage());
         else
-            message($this->getMessage(), $this->getVars());
+            n("message")->stype("error")->sdie()->info($this->getMessage(), $this->getVars());
     }
 
 }

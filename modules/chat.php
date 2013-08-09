@@ -25,20 +25,18 @@ class chat {
         switch ($_GET["act"]) {
             case "text":
                 $this->get_text($id);
-                die();
                 break;
             case "delete":
                 $this->delete($id);
-                die("OK!");
+                ok();
                 break;
             case "truncate":
                 $this->truncate();
-                print(lang::o()->v('chat_no_messages'));
-                die();
+                die(lang::o()->v('chat_no_messages'));
                 break;
             case "save":
                 $this->save($_POST['text'], $id);
-                die("OK!");
+                ok();
                 break;
             default:
                 $this->show((int) $_GET['time'], (bool) $_GET['prev']);
@@ -56,8 +54,8 @@ class chat {
         $id = (int) $id;
         check_formkey();
         users::o()->check_perms('del_chat');
-        db::o()->delete('chat', 'WHERE id=' . $id .
-                (!users::o()->perm('del_chat', 2) ? " AND poster_id=" . users::o()->v('id') : "") . ' LIMIT 1');
+        db::o()->p($id, users::o()->v('id'))->delete('chat', 'WHERE id=?' .
+                (!users::o()->perm('del_chat', 2) ? " AND poster_id=?" : "") . ' LIMIT 1');
         $this->delete_logs($id);
     }
 
@@ -70,10 +68,11 @@ class chat {
         $id = (int) $id;
         if (!db::o()->affected_rows() || !config::o()->v('chat_clearlogs'))
             return;
-        db::o()->delete('chat_deleted', 'WHERE time<=' . (time() - config::o()->v('chat_clearlogs')));
+        $t = time() - intval(config::o()->v('chat_clearlogs'));
+        db::o()->p($t)->delete('chat_deleted', 'WHERE time<=?');
         db::o()->insert(array('id' => $id, 'time' => time()), 'chat_deleted');
         if (!$id && db::o()->affected_rows() < 1)
-            db::o()->update(array('time' => time()), 'chat_deleted', 'WHERE id="' . $id . '" LIMIT 1');
+            db::o()->update(array('time' => time()), 'chat_deleted', 'WHERE id=0 LIMIT 1');
     }
 
     /**
@@ -121,9 +120,10 @@ class chat {
             $update["posted_time"] = time();
             db::o()->delete("chat_deleted", "WHERE id=0");
             db::o()->insert($update, 'chat');
-        } else
-            db::o()->update($update, 'chat', 'WHERE id=' . $id .
-                    (!users::o()->perm('edit_chat', 2) ? " AND poster_id=" . users::o()->v('id') : "") . ' LIMIT 1');
+        }
+        else
+            db::o()->p($id, users::o()->v('id'))->update($update, 'chat', 'WHERE id=?' .
+                    (!users::o()->perm('edit_chat', 2) ? " AND poster_id=?" : "") . ' LIMIT 1');
     }
 
     /**
@@ -134,7 +134,8 @@ class chat {
     protected function get_text($id) {
         users::o()->check_perms('edit_chat');
         $id = (int) $id;
-        list ($text) = db::o()->fetch_row(db::o()->query("SELECT text FROM chat WHERE id=" . $id . ' LIMIT 1'));
+        $q = db::o()->p($id)->query("SELECT text FROM chat WHERE id=? LIMIT 1");
+        list ($text) = db::o()->fetch_row($q);
         print($text);
     }
 
@@ -151,6 +152,12 @@ class chat {
             return;
         list(, $cmd, $p1, $p2, $t) = $matches;
         $u = null;
+        try {
+            plugins::o()->pass_data(array('row' => &$row,
+                'matches' => $matches), true)->run_hook('chat_formatting');
+        } catch (PReturn $e) {
+            return $e->r();
+        }
         switch ($cmd) {
             case "private":
                 if (!users::o()->check_login($p1))
@@ -176,14 +183,6 @@ class chat {
             case "bye":
                 $row["text"] = sprintf(lang::o()->v("chat_" . $cmd . "_saying"), smarty_group_color_link($row["username"], $row["group"]));
                 break;
-            default:
-                try {
-                    plugins::o()->pass_data(array('row' => &$row,
-                        'matches' => $matches), true)->run_hook('chat_formatting');
-                } catch (PReturn $e) {
-                    return $e->r();
-                }
-                break;
         }
         $row["spec"] = true;
     }
@@ -194,24 +193,28 @@ class chat {
      * @param bool $prev показать пред. сообщения, до этого ID
      * @return null
      */
-    protected function show($time, $prev = false) {
+    public function show($time, $prev = false) {
         $time = (int) $time;
         users::o()->check_perms('chat', 2, 2);
+
         if ($time && !$prev) {
-            $r = db::o()->query('SELECT id FROM chat_deleted WHERE time>=' . $time);
+            $r = db::o()->p($time)->query('SELECT id FROM chat_deleted WHERE time>=?');
             $del = "";
             while (list($i) = db::o()->fetch_row($r))
                 $del .= ( $del ? "," : "") . $i;
             tpl::o()->assign('deleted', $del);
         }
+
         $orderby = " ORDER BY c.posted_time DESC ";
         $limit = $orderby . (config::o()->v('chat_maxmess') ? " LIMIT " . config::o()->v('chat_maxmess') : "");
         if ($prev) {
-            $where = ' WHERE c.id < ' . $time . $limit;
+            $where = ' WHERE c.id < ?' . $limit;
             tpl::o()->assign('prev', true);
-        } else
-            $where = $time ? ' WHERE c.edited_time>=' . $time . $orderby : $limit;
-        $r = db::o()->query('SELECT c.*, u.username, u.group FROM chat AS c
+        }
+        else
+            $where = $time ? ' WHERE c.edited_time>=?' . $orderby : $limit;
+
+        $r = db::o()->p($time)->query('SELECT c.*, u.username, u.group FROM chat AS c
                 LEFT JOIN users AS u ON u.id=c.poster_id ' . $where);
         tpl::o()->assign('rows', array_reverse(db::o()->fetch2array($r)));
         tpl::o()->register_modifier('chat_mf', array($this, 'chat_mf'));

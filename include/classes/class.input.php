@@ -47,16 +47,127 @@ class input {
         0 => "unended");
 
     /**
+     * Общие параметры функций
+     * @var type 
+     */
+    protected $params = array();
+
+    /**
+     * Текст для пустой опции
+     * @var string $null_text
+     */
+    protected $null_text = '';
+
+    /**
+     * Установка текста для пустой опции
+     * @param string $value строка
+     * @return null
+     */
+    public function set_null_text($value) {
+        $this->null_text = $value;
+    }
+
+    /**
+     * Получение текста для пустой опции
+     * @return string HTML код пустой опции
+     */
+    protected function get_null_text() {
+        if (!$this->null_text)
+            return empty_option;
+        $r = "<option value='0'>" . $this->null_text . '</option>';
+        $this->null_text = "";
+        return $r;
+    }
+
+    /**
+     * Установка параметра текущего
+     * @param mixed $value значение
+     * @return input $this
+     */
+    public function scurrent($value) {
+        return $this->sparam('current', $value);
+    }
+
+    /**
+     * Установка параметра типа ч/либо
+     * @param mixed $value значение
+     * @return input $this
+     */
+    public function stype($value) {
+        return $this->sparam('type', $value);
+    }
+
+    /**
+     * Установка параметра размера поля
+     * Обычно, если size > 1, то считается как multiple
+     * @param int $value значение
+     * @return input $this
+     */
+    public function ssize($value) {
+        return $this->sparam('size', $value);
+    }
+
+    /**
+     * Установка параметра значения с ключами и префикса языка
+     * @param mixed $value true - ключи в кач. значений опций, если строка, то языковой префикс
+     * @return input $this
+     */
+    public function skeyed($value = true) {
+        return $this->sparam('keyed', $value);
+    }
+
+    /**
+     * С нулевым элементом?
+     * @param bool $value значение
+     * @return input $this
+     */
+    public function snull($value = true) {
+        return $this->sparam('null', (bool) $value);
+    }
+
+    /**
+     * Выборка типа "radio"?
+     * @param bool $value значение
+     * @return input $this
+     */
+    public function sradio($value = true) {
+        return $this->sparam('radio', (bool) $value);
+    }
+
+    /**
+     * Установка общих параметров функции
+     * @param string $key имя параметра
+     * @param mixed $value значение
+     * @return input $this
+     */
+    protected function sparam($key, $value) {
+        $this->params[$key] = $value;
+        return $this;
+    }
+
+    /**
+     * Объединение и сброс параметров
+     * @param string $name имя
+     * @param array $add доп. параметры
+     * @return null
+     */
+    protected function join_params(&$name, $add = array()) {
+        $name = array_merge($this->params, array('name' => $name), $add);
+        $this->params = array();
+        return $this;
+    }
+
+    /**
      * Поле Select для выбора GMT
+     * Параметры: current
      * @param string $name имя для поля Select
-     * @param float $current данный часовой пояс
      * @return string HTML код выборки
      */
-    public function select_gmt($name = "timezone", $current = null) {
-        if (is_array($name)) {
-            $current = $name ['current'];
-            $name = $name ['name'];
-        }
+    public function select_gmt($name = "timezone") {
+        if (!is_array($name))
+            $this->join_params($name);
+        $current = $name ['current'];
+        $name = $name ['name'];
         lang::o()->get('timezones');
         $name = ($name ? $name : "timezone");
         $select = "<select name=\"" . $name . "\">";
@@ -65,34 +176,54 @@ class input {
             3,
             5,
             9);
-        $gmt = date("O");
-        $gmt = substr($gmt, 0, 1) . (substr($gmt, 1, 1) == "0" ? substr($gmt, 2, 1) : substr($gmt, 1, 2)) . ":" . substr($gmt, 3, 2);
+        if (is_null($current)) {
+            $gmt = date("O");
+            $gmt = substr($gmt, 0, 1) . (substr($gmt, 1, 1) == "0" ? substr($gmt, 2, 1) : substr($gmt, 1, 2)) . ":" . substr($gmt, 3, 2);
+            $current = $gmt;
+        }
         for ($i = - 12; $i <= 12; $i += 0.5) {
             if ($i != longval($i) && !in_array(longval($i), $half))
                 continue;
             $ii = ($i > 0 ? "+" . longval($i) : ($i != 0 ? "-" : "") . abs(longval($i))) . ":" . (abs($i - longval($i)) == 0.5 ? "30" : "00");
-            $select .= "<option value=\"" . $i . "\"" . (($gmt == $ii && is_null($current)) || (!is_null($current) && $current == $i) ? " selected='selected'" : "") . ">(GMT " . $ii . ")&nbsp;" . lang::o()->v('timesone_gmt_' . $ii) . "</option>\n";
+            $select .= "<option value=\"" . $i . "\"" . (($current == $i) ? " selected='selected'" : "") . ">(GMT " . $ii . ")&nbsp;" . lang::o()->v('timesone_gmt_' . $ii) . "</option>\n";
         }
         $select .= "</select>";
         return $select;
     }
 
     /**
+     * Генерация массива значений для выборки даты
+     * @param int $from от
+     * @param int $to до
+     * @param bool $months месяца?
+     * @return array массив значений
+     */
+    protected function date_values($from = 1, $to = 59, $months = false) {
+        $a = array();
+        for ($i = $from; $i <= $to; $i++) {
+            $v = $months ? lang::o()->v('month_' . self::$months [$i - 1]) : $i;
+            if ($i == -1 || ($to != 23 && $to != 59 && $i == 0))
+                $v = "--";
+            $a[$i] = $v;
+        }
+        return $a;
+    }
+
+    /**
      * Форма ввода даты
-     * @param string $name добавочное имя к select
-     * @param string $type тип ввода даты(y - год, m - месяц, d - день, h - час, i - минута, s - секунда), пример:
+     * Параметры: current, type, null
+     * type тип ввода даты(y - год, m - месяц, d - день, h - час, i - минута, s - секунда), пример:
      * ymd - select года, месяца и дня
-     * @param int $time предустановленное время(в формате UNIXTIME)
-     * @param int $fromnull начинаем с 0
+     * @param string $name добавочное имя к select
      * @return string HTML код выборки
      */
-    public function select_date($name = "date", $type = "ymd", $time = null, $fromnull = false) {
-        if (is_array($name)) {
-            $type = $name ["type"];
-            $time = $name ["time"];
-            $fromnull = $name ["fromnull"];
-            $name = $name ["name"];
-        }
+    public function select_date($name = "date") {
+        if (!is_array($name))
+            $this->join_params($name);
+        $type = $name ["type"];
+        $time = $name ["current"];
+        $fromnull = $name ["null"];
+        $name = $name ["name"];
         $type = ($type ? $type : "ymd");
         $name = ($name ? $name : "date");
         $time = ($time ? $time : null);
@@ -105,86 +236,35 @@ class input {
         $besecond = strpos($type, "s") !== false;
         $ttime = $tdate = array();
         $now = - 1;
-        $text = "";
         if ($beday) {
-            if ($time > 0)
-                $now = date("d", $time);
-            $text .= "<select name=\"" . $name . "_day\">";
-            if ($fromnull)
-                $text .= "<option value=\"0\"" . ($now == 0 ? " selected=\"selected\"" : "") . ">--</option>";
-            for ($i = 1; $i <= 31; $i++) {
-                if (strlen($i) < 2)
-                    $i = "0" . $i;
-                $text .= "<option value=\"" . $i . "\"" . ($now == $i ? " selected=\"selected\"" : "") . ">" . $i . "</option>";
-            }
-            $text .= "</select>";
-            $tdate[] = $text;
+            $values = $this->date_values(($fromnull ? 0 : 1), 31);
+            $tdate[] = $this->scurrent((int) date("d", $time))->skeyed()->
+                    simple_selector($name . "_day", $values);
         }
-        $text = "";
         if ($bemonth) {
-            if ($time > 0)
-                $now = date("m", $time);
-            $text .= "<select name=\"" . $name . "_month\">";
-            if ($fromnull)
-                $text .= "<option value=\"0\"" . ($now == 0 ? " selected=\"selected\"" : "") . ">----</option>";
-            for ($i = 1; $i <= 12; $i++) {
-                $text .= "<option value=\"" . $i . "\"" . ($now == $i ? " selected=\"selected\"" : "") . ">" . lang::o()->v('month_' . self::$months [$i - 1]) . "</option>";
-            }
-            $text .= "</select>";
-            $tdate[] = $text;
+            $values = $this->date_values(($fromnull ? 0 : 1), 12);
+            $tdate[] = $this->scurrent((int) date("m", $time))->skeyed()->
+                    simple_selector($name . "_month", $values);
         }
-        $text = "";
         if ($beyear) {
+            $text = "";
             if ($time > 0)
                 $now = date("Y", $time);
             $text .= "<input name=\"" . $name . "_year\" type=\"text\" size=\"4\" maxlength=\"4\" value=\"" . ($now > 0 ? $now : "") . "\">";
             $tdate[] = $text;
         }
-        $text = "";
         if ($behour) {
-            if ($time > 0)
-                $now = date("h", $time);
-            $text .= "<select name=\"" . $name . "_hour\">";
-            if ($fromnull)
-                $text .= "<option value=\"-1\"" . ($now == 0 ? " selected=\"selected\"" : "") . ">--</option>";
-            for ($i = 0; $i <= 23; $i++) {
-                if (strlen($i) < 2)
-                    $i = "0" . $i;
-                $text .= "<option value=\"" . $i . "\"" . ($now == $i ? " selected=\"selected\"" : "") . ">" . $i . "</option>";
-            }
-            $text .= "</select>";
-            $ttime[] = $text;
+            $values = $this->date_values(($fromnull ? -1 : 0), 23);
+            $ttime[] = $this->scurrent((int) date("h", $time))->skeyed()->
+                    simple_selector($name . "_hour", $values);
         }
-        $text = "";
-        if ($beminute) {
-            if ($time > 0)
-                $now = date("i", $time);
-            $text .= "<select name=\"" . $name . "_minute\">";
-            if ($fromnull)
-                $text .= "<option value=\"-1\"" . ($now == 0 ? " selected=\"selected\"" : "") . ">--</option>";
-            for ($i = 0; $i <= 59; $i++) {
-                if (strlen($i) < 2)
-                    $i = "0" . $i;
-                $text .= "<option value=\"" . $i . "\"" . ($now == $i ? " selected=\"selected\"" : "") . ">" . $i . "</option>";
-            }
-            $text .= "</select>";
-            $ttime[] = $text;
-        }
-        $text = "";
-        if ($besecond) {
-            if ($time > 0)
-                $now = date("s", $time);
-            $text .= "<select name=\"" . $name . "_second\">";
-            if ($fromnull)
-                $text .= "<option value=\"-1\"" . ($now == 0 ? " selected=\"selected\"" : "") . ">--</option>";
-            for ($i = 0; $i <= 59; $i++) {
-                if (strlen($i) < 2)
-                    $i = "0" . $i;
-                $text .= "<option value=\"" . $i . "\"" . ($now == $i ? " selected=\"selected\"" : "") . ">" . $i . "</option>";
-            }
-            $text .= "</select>";
-            $ttime[] = $text;
-        }
+        $values = $this->date_values(($fromnull ? -1 : 0), 59);
+        if ($beminute)
+            $ttime[] = $this->scurrent((int) date("i", $time))->skeyed()->
+                    simple_selector($name . "_minute", $values);
+        if ($besecond)
+            $ttime[] = $this->scurrent((int) date("s", $time))->skeyed()->
+                    simple_selector($name . "_second", $values);
         $text = implode("&nbsp;-&nbsp;", $tdate) .
                 ($ttime ? "<div class='br'>" . implode("&nbsp;:&nbsp;", $ttime) . "</div>" : "");
         return $text;
@@ -192,47 +272,51 @@ class input {
 
     /**
      * Функция выборки категорий
+     * Параметры: current, size, null, type
      * @param string $name имя поля
-     * @param int $size размер поля выборки
-     * @param int $current выбранная категория
-     * @param bool $not_null без нулевого элемента?
      * @param string $nbsp префикс категорий(необходимо для рекурсии)
      * @param array $carr массив категорий(необходимо для рекурсии)
      * @return string HTML-код выборки
      */
-    public function select_categories($name = "categories", $size = 5, $current = null, $not_null = false, $nbsp = null, $carr = null) {
-        if (is_array($name)) {
-            $current = $name ['current'];
-            $size = $name ['size'];
-            $not_null = $name ["not_null"];
-            $name = $name ['name'];
+    public function select_categories($name = "categories", $nbsp = null, $carr = null) {
+        if (!is_array($name))
+            $this->join_params($name);
+        else {
             $nbsp = null;
             $carr = null;
         }
+        $current = $name ['current'];
+        $size = $name ['size'];
+        $null = $name ["null"];
+        $type = $name['type'];
+        $name = $name ['name'];
         if (!$name)
             $name = "categories";
         if (!longval($size))
             $size = 5;
         /* @var $cats categories */
         $cats = n("categories");
+        $cats->change_type($type);
         if (!is_array($carr) || !$carr) {
             $carr = $cats->get(null, 't');
-            $select = "<select name='" . $name . "" . ($size == 1 ? "" : "[]' multiple='multiple") . "' 
-                " . (!$not_null ? " onclick='clear_select(this)'" : "") . "
+            $select = "<select name='" . $name . "" . ($size == 1 ? "" : "[]'
+multiple='multiple") . "' 
+                " . ($null ? " onclick='clear_select(this)'" : "") . "
                 size='" . longval($size) . "'>";
             $first_run = true;
             $nbsp = "";
-            if (!$not_null)
-                $select .= empty_option;
+            if ($null)
+                $select .= $this->get_null_text();
         }
         $count = count($carr);
         for ($i = 0; $i < $count; $i++) {
             $id = $carr [$i] ["id"];
             $select .= "<option value='" . $id . "'
-                " . ($current == $id ? " selected='selected'" : '') . ">" . $nbsp . $carr [$i] ["name"] . "</option>";
+                " . ($current == $id ? " selected='selected'" : '') . ">" .
+                    $nbsp . $carr [$i] ["name"] . "</option>";
             $a = $cats->get($id, 'c');
             if ($a)
-                $select .= $this->select_categories("", "", "", "", $nbsp . "&nbsp;&nbsp;&nbsp;", $a);
+                $select .= $this->stype($type)->select_categories($name, $nbsp . "&nbsp;&nbsp;&nbsp;", $a);
         }
         if ($first_run)
             $select .= "</select>";
@@ -240,22 +324,42 @@ class input {
     }
 
     /**
-     * Функция вывода списка стран\одной страны
-     * @param array $country выводимая страна(не для списка)(вкл. в себя name и image)
-     * @param string $name имя для списка стран
-     * @param int $current ID данной страны
-     * @return string HTML код выборки списка стран\данной страны
+     * Получение массива категорий
+     * @return array массив категорий, где ключ - ID
      */
-    public function select_countries($country = '', $name = 'country', $current = 0) {
-        $baseurl = globals::g('baseurl');
-        if (is_array($country)) {
-            $name = $country ['name'];
-            $current = $country ['current'];
-            $country = $country ['country'];
-        }
+    protected function get_countries() {
+        return db::o()->cname('countries')->ckeys('id')->query('SELECT id, name, image FROM countries');
+    }
+
+    /**
+     * Вывод иконки страны
+     * @param int $id ID страны
+     * @return HTML код изображения
+     */
+    public function get_country($id) {
+        $res = $this->get_countries();
+        $name = $res[$id]['name'];
+        $image = $res[$id]['image'];
+        return '<img src="' . config::o()->v('countries_folder') . '/' . $image . '"
+                                     alt="' . $name . '" title="' . $name . '">';
+    }
+
+    /**
+     * Функция вывода списка стран
+     * Параметры: current, null
+     * @param string $name имя для списка стран
+     * @return string HTML код выборки списка стран
+     */
+    public function select_countries($name = 'country') {
+        if (!is_array($name))
+            $this->join_params($name);
+        $country = $name ['country'];
+        $current = $name ['current'];
+        $null = $name['null'];
+        $name = $name ['name'];
         $name = ($name ? $name : 'country');
         $select = "";
-        $show_flag = "show_flag_image('" . addslashes($baseurl . config::o()->v('countries_folder') . "/") . "',
+        $show_flag = "show_flag_image('" . addslashes(config::o()->v('countries_folder') . "/") . "',
 			'#" . addslashes("country_" . $name) . "',
 			'" . addslashes("flag_image_" . $name) . "');";
         $select .= "<script type=\"text/javascript\">
@@ -263,9 +367,10 @@ class input {
 					" . $show_flag . "
 				});
 				</script>";
-        $res = db::o()->query('SELECT id, name, image FROM countries', 'countries');
+        $res = $this->get_countries();
         $select .= "<select name=\"" . $name . "\" id=\"country_" . $name . "\" onchange=\"" . $show_flag . "\">";
-        $select .= empty_option;
+        if ($null)
+            $select .= $this->get_null_text();
         foreach ($res as $row) {
             $id = $row ['id'];
             $cname = $row ['name'];
@@ -278,37 +383,39 @@ class input {
         }
         $select .= "</select>";
         $select = "<span id=\"flag_image_" . $name . "\" style=\"display:none;\">
-            <img src=\"" . $baseurl . config::o()->v('countries_folder') . "/" . ($this_i ? $this_i : $image) . "\"
+            <img src=\"" . config::o()->v('countries_folder') . "/" . ($this_i ? $this_i : $image) . "\"
                 height=\"20\" alt=\"\" align=\"left\"></span>" . $select;
         return $select;
     }
 
     /**
      * Выборка дирректорий
+     * Параметры: current, null
      * @param string $name имя селектора
      * @param string $folder дирректория
-     * @param string $current данный язык
      * @param bool $onlydir искать только дирректории?
-     * @param bool $empty включить пустой селектор?
      * @param string $regexp рег. выражение для выборки файлов(с делимиттерами)
      * @param int $match значение из рег. выражения
      * @return string HTML код селектора
      */
-    public function select_folder($name = "lang", $folder = LANGUAGES_PATH, $current = '', $onlydir = false, $empty = false, $regexp = '', $match = '') {
-        if (is_array($name)) {
-            $current = $name ["current"];
-            $folder = $name ["folder"];
-            $empty = $name ["empty"];
-            if (!is_null($name ["onlydir"]))
-                $onlydir = $name ["onlydir"];
-            $regexp = $name ["regexp"];
-            $match = $name ["match"];
-            $name = $name ["name"];
-        }
+    public function select_folder($name = "theme", $folder = THEMES_PATH, $onlydir = false, $regexp = '', $match = '') {
+        if (!is_array($name))
+            $this->join_params($name, array('folder' => $folder,
+                'onlydir' => $onlydir,
+                'regexp' => $regexp,
+                'match' => $match));
+        $current = $name ["current"];
+        $folder = $name ["folder"];
+        $null = $name ["null"];
+        if (!is_null($name ["onlydir"]))
+            $onlydir = $name ["onlydir"];
+        $regexp = $name ["regexp"];
+        $match = $name ["match"];
+        $name = $name ["name"];
         if (!$name)
             $name = "lang";
         if (!$folder)
-            $folder = LANGUAGES_PATH;
+            $folder = THEMES_PATH;
         if ($folder == LANGUAGES_PATH || $folder == THEMES_PATH)
             $onlydir = true;
         $res = file::o()->open_folder($folder, $onlydir);
@@ -320,6 +427,8 @@ class input {
             $matches = array();
             if ($folder == LANGUAGES_PATH && lang::o()->visset("lang_" . $cur))
                 $value = lang::o()->v("lang_" . $cur);
+            if ($folder == THEMES_PATH && strtolower($value) == strtolower(ADMIN_THEME))
+                continue;
             if ($regexp && !preg_match($regexp, $cur, $matches))
                 continue;
             if ($matches && $match)
@@ -330,36 +439,34 @@ class input {
         }
         if (!$options)
             return;
-        if ($empty)
-            $options = empty_option . $options;
+        if ($null)
+            $options = $this->get_null_text() . $options;
         $html = "<select name=\"" . $name . "\">" . $options . "</select>";
         return $html;
     }
 
     /**
      * Функция выборки групп
+     * Параметры: current, null, size
      * @param string $name имя поля
-     * @param int $current ID группы, выбранной по-умолчанию
      * @param bool $guest в т.ч. и гость
-     * @param bool $not_null убрать опцию "для всех групп"
-     * @param bool $multiple выбор нескольких групп
      * @return string HTML код выборки
      */
-    public function select_groups($name = "group", $current = null, $guest = false, $not_null = false, $multiple = false) {
-        if (is_array($name)) {
-            $current = $name ["current"];
-            $guest = $name ["guest"];
-            $not_null = $name ["not_null"];
-            $multiple = $name ["multi"];
-            $name = $name ["name"];
-        }
+    public function select_groups($name = "group", $guest = false) {
+        if (!is_array($name))
+            $this->join_params($name, array('guest' => $guest));
+        $current = $name ["current"];
+        $guest = $name ["guest"];
+        $null = $name ["null"];
+        $size = $name ["size"];
+        $name = $name ["name"];
         if (!$name)
             $name = "group";
-        $sel = "<select name='" . $name . ($multiple ? "[]' size='4' multiple='multiple'
-            " . (!$not_null ? " onclick='clear_select(this)" : "") : "") . "'>";
+        $sel = "<select name='" . $name . ($size > 1 ? "[]' size='" . $size . "' multiple='multiple'
+            " . ($null ? " onclick='clear_select(this)" : "") : "") . "'>";
         $id = 0;
-        if (!$not_null)
-            $sel .= empty_option;
+        if ($null)
+            $sel .= $this->get_null_text();
         foreach (users::o()->get_group() as $id => $group)
             if ($guest || (!$guest && !$group ['guest'])) {
                 $s = ((!is_array($current) ? $current == $id : in_array($id, $current)) ? " selected='selected'" : "");
@@ -373,37 +480,37 @@ class input {
 
     /**
      * Выборка интервалов подписок
+     * Параметры: current
      * @param string $name имя селектора
-     * @param int $current данная подписка
      * @return string HTML код селектора
      */
-    public function select_mailer($name = "interval", $current = '') {
+    public function select_mailer($name = "interval") {
         lang::o()->get('usercp');
-        if (is_array($name)) {
-            $current = $name ["current"];
-            $name = $name ["name"];
-        }
+        if (!is_array($name))
+            $this->join_params($name);
+        $current = $name ["current"];
+        $name = $name ["name"];
         if (!$name)
             $name = "interval";
         $arr = mailer::$allowed_interval;
         foreach ($arr as $i => $lv)
             $arr[$i] = lang::o()->v('usercp_mailer_interval_every_' . $lv);
-        $html = $this->simple_selector($name, $arr, true, $current);
+        $html = $this->scurrent($current)->skeyed()->simple_selector($name, $arr);
         return $html;
     }
 
     /**
      * Функция выборки периодов, прежде всего, для банов
+     * Параметры: current
      * @param string $name имя поля выборки
-     * @param string $current данный период
      * @return string HTML код селектора
      */
-    public function select_periods($name = "period", $current = null) {
-        if (is_array($name)) {
-            if (isset($name["current"]))
-                $current = $name ['current'];
-            $name = $name ['name'];
-        }
+    public function select_periods($name = "period") {
+        if (!is_array($name))
+            $this->join_params($name);
+        if (isset($name["current"]))
+            $current = $name ['current'];
+        $name = $name ['name'];
         if (!$name)
             $name = 'period';
         $c = $name . time();
@@ -414,7 +521,8 @@ class input {
                 $current = $time;
                 $s = " selected='selected'";
                 $selected = true;
-            } else
+            }
+            else
                 $s = "";
             $sel .= "<option value='" . $time . "'" . $s . ">" . lang::o()->v("period_" . $period) . "</option>";
         }
@@ -427,38 +535,161 @@ class input {
 
     /**
      * Простой селектор
+     * Параметры: current, size, null, radio, keyed
      * @param string $name имя поля
      * @param array $values массив значений
-     * @param bool $keyed ключи в кач. значений опций?
-     * @param mixed $current данное значение
-     * @param int $size размер поля
-     * @param bool $empty пустое значение?
      * @return string HTML код
      */
-    public function simple_selector($name, $values, $keyed = false, $current = null, $size = 1, $empty = false) {
-        if (is_array($name)) {
-            $values = $name ['values'];
-            $current = $name ['current'];
-            $size = $name ['size'];
-            $keyed = $name ['keyed'];
-            $empty = $name ['empty'];
-            $name = $name ['name'];
+    public function simple_selector($name, $values) {
+        if (!is_array($name))
+            $this->join_params($name, array('values' => $values));
+        $values = $name ['values'];
+        $current = $name ['current'];
+        $size = $name ['size'];
+        $keyed = $name ['keyed'];
+        $null = $name ['null'];
+        $radio = $name['radio'];
+        $name = $name ['name'];
+        $lang_prefix = "";
+        if (!is_numeric($keyed) && is_string($keyed)) {
+            $lang_prefix = $keyed;
+            $keyed = false;
         }
         if (!$values || !is_array($values))
             return;
-        $html = "<select name='" . $name . ($size > 1 ? '[]\' size="' . $size . '" 
-            ' . ($empty ? 'onclick="clear_select(this)"' : '') . ' multiple="multiple"' : "") . "'>";
-        if ($empty)
-            $html .= empty_option;
+        $html = "";
+        if (!$radio)
+            $html = "<select name='" . $name . ($size > 1 ? '[]\' size="' . $size . '" 
+            ' . ($null ? 'onclick="clear_select(this)"' : '') . ' multiple="multiple"' : "") . "'>";
+        if (!$radio && $null)
+            $html .= $this->get_null_text();
+        $c = count($values);
         foreach ($values as $k => $v) {
             $k = ($keyed ? $k : $v);
+            if ($lang_prefix)
+                $v = lang::o()->v($lang_prefix . $v);
             $s = '';
-            if (is_array($current) ? in_array($k, $current) : $current == $k)
-                $s = ' selected="selected"';
-            $html .= '<option value="' . $k . '"' . $s . '>' . $v . '</option>';
+            if (is_array($current) ? in_array($k, $current) : $current == $k) {
+                if (!$radio)
+                    $s = ' selected="selected"';
+                else
+                    $s = ' checked="checked"';
+            }
+            if (!$radio)
+                $html .= '<option value="' . $k . '"' . $s . '>' . $v . '</option>';
+            else
+                $html .= '<input type="radio" name="' . $name . '" value="' . $k . '"' . $s . '>&nbsp;' . $v .
+                        ($c > 3 ? "<br>" : ' ');
         }
-        $html .= '</select>';
+        if (!$radio)
+            $html .= '</select>';
         return $html;
+    }
+
+    /**
+     * Стандартные типы полей
+     * Параметры type, current, size
+     * @param string $name имя поля
+     * @param mixed $allowed допустимые значения
+     * @return null
+     */
+    public function standart_types($name, $allowed = null) {
+        if (!is_array($name))
+            $this->join_params($name, array('allowed' => $allowed));
+        $type = $name['type'];
+        $value = $name['current'];
+        $size = $name['size'];
+        $allowed = $name['allowed'];
+        $keyed = $name['keyed'];
+        $name = $name['name'];
+        $radio = false;
+        switch ($type) {
+            case "int":
+            case "string":
+                return "<input type='text' name='" . $name . "' value='" . $value . "'" . ($size ? " size='" . $size . "'" : "") . ">";
+            case "text":
+                return "<textarea rows='4' name='" . $name . "' " . ($size ? " cols='" . $size . "'" : "") . ">" . $value . "</textarea>";
+            case "date":
+                return "<input type='hidden' value='1' name='" . $name . "'>" .
+                        $this->stype($allowed)->scurrent($value)->select_date($name);
+            case "folder":
+                return $this->scurrent($value)->select_folder($name, $allowed);
+            case "radio":
+                $radio = true;
+            case "select":
+                if (!is_array($allowed))
+                    $allowed = unserialize($allowed);
+                return $this->scurrent($value)->sradio($radio)->ssize($size)->skeyed($keyed)->
+                                simple_selector($name, $allowed);
+            case "checkbox":
+                return "<input type='checkbox' name='" . $name . "'
+                    value='1'" . ($value ? " checked='checked'" : "") . ">";
+        }
+    }
+
+    /**
+     * Проверка стандартных типов
+     * @param string $type имя типа
+     * @param string $value значение
+     * @param mixed $allowed допустимые значения
+     * @param string $name имя поля
+     * @param bool $keyed ключи в кач. значений опций?
+     * @return bool всё верно?
+     */
+    public function standart_types_check($type, &$value, $allowed = null, $name = null, $keyed = false) {
+        switch ($type) {
+            case "int":
+                return is_numeric($value);
+            case "text":
+            case "string":
+                return is_string($value);
+            case "date":
+                $value = display::o()->make_time($name, $allowed);
+                return true;
+            case "folder":
+                return validfolder($value, $allowed);
+            case "radio":
+            case "select":
+                if (!is_array($allowed))
+                    $allowed = unserialize($allowed);
+                return $keyed ? isset($allowed[$value]) : in_array($value, (array) $allowed);
+            case "checkbox":
+                $value = (bool) $value;
+                return true;
+        }
+        return false;
+    }
+
+    /**
+     * Отображение значения в зависимости от типа поля
+     * Параметры: type,current,keyed
+     * @param array $allowed допустимые значения
+     * @return mixed преобразованное значени
+     */
+    public function standart_types_display($allowed = null) {
+        if ($this->params)
+            $this->join_params($allowed, array('allowed' => $allowed));
+        $type = $allowed['type'];
+        $value = $allowed['current'];
+        $keyed = $allowed['keyed'];
+        $allowed = $allowed['allowed'];
+        switch ($type) {
+            case "int":
+            case "text":
+            case "string":
+                return $value;
+            case "date":
+                return display::o()->date($value, $allowed);
+            case "folder":
+                return ($allowed ? $allowed . '/' : '') . $value;
+            case "radio":
+            case "select":
+                if (!is_array($allowed))
+                    $allowed = unserialize($allowed);
+                return $keyed ? $allowed[$value] : $value;
+            case "checkbox": // не отображаем
+                return "";
+        }
     }
 
     // Реализация Singleton для переопределяемого класса

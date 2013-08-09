@@ -1,7 +1,7 @@
 [*assign var='owntitle' value=1*]
 <legend>
     <span class='hidden' id='chat_loader'>
-        <img src="[*$theme_path*]/engine_images/white_loading.gif"
+        <img src="[*$theme_path*]images/[*$color_path*]loading/white_loading.gif"
              alt="[*'loading'|lang*]" title="[*'loading'|lang*]"></span>
         [*'chat_block'|lang*]
 </legend>
@@ -10,7 +10,7 @@
     chat_server_time = '[*$smarty.now*]';
     fk_ajax = '?[*fk ajax=1*]';
 </script>
-<script type='text/javascript' src='[*$theme_path*]js/jquery.chat.js'></script>
+<script type='text/javascript' src='js/jquery.chat.js'></script>
 <div class='chat_box'>
     <div id='chat_area'>[*'loading'|lang*]...</div>
 </div>

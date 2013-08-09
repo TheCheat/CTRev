@@ -31,6 +31,7 @@ function users_init() {
     tpl::o()->assign('groups', users::o()->get_group());
     tpl::o()->assign('curlang', users::o()->get_lang());
     tpl::o()->assign('curtheme', users::o()->get_theme());
+    tpl::o()->assign('curtheme_color', users::o()->get_theme(true));
     tpl::o()->assign('curuser', users::o()->v('username'));
     tpl::o()->assign('curgroup', users::o()->v('group'));
 }
@@ -47,8 +48,13 @@ $bbcodes = bbcodes::o();
 $input = input::o();
 $display = display::o();
 
+if (config::o()->v('torrents_on'))
+    lang::o()->get('torrents', null, true, true);
+
 /* @var $blocks blocks */
 $blocks = n("blocks");
+/* @var $message message */
+$message = n("message");
 tpl::o()->register_modifier('unserialize', 'unserialize');
 tpl::o()->register_modifier('arr_current', 'current');
 tpl::o()->register_modifier('arr_key', 'key');
@@ -59,6 +65,9 @@ tpl::o()->register_modifier('sl', 'slashes_smarty');
 tpl::o()->register_modifier('uamp', 'w3c_amp_replace');
 tpl::o()->register_modifier('ue', 'urlencode');
 tpl::o()->register_modifier('gval', 'smarty_group_value');
+tpl::o()->register_modifier('null_text', array(
+    $input,
+    'set_null_text'));
 tpl::o()->register_modifier('cut', array(
     $display,
     "cut_text"));
@@ -70,7 +79,7 @@ tpl::o()->register_modifier("ft", array(
     "format_text"));
 tpl::o()->register_modifier("ge", array(
     $display,
-    "get_estimated_time"));
+    "estimated_time"));
 tpl::o()->register_modifier("ul", 'smarty_user_link');
 tpl::o()->register_modifier('gc', array(
     $display,
@@ -78,14 +87,14 @@ tpl::o()->register_modifier('gc', array(
 tpl::o()->register_modifier('gcl', 'smarty_group_color_link');
 tpl::o()->register_modifier("ua", array(
     $display,
-    "display_user_avatar"));
+    "useravatar"));
 tpl::o()->register_modifier("pf", "smarty_print_format");
 tpl::o()->register_modifier('cs', array(
     $display,
     "convert_size"));
 tpl::o()->register_modifier("zodiac_sign", array(
     $display,
-    'get_zodiac_image'));
+    'zodiac_image'));
 tpl::o()->register_modifier("decus", array(
     users::o(),
     'decode_settings'));
@@ -144,7 +153,7 @@ tpl::o()->register_function("display_blocks", array(
  * bool no_image если параметр установлен на true, то статусная картинка не выводится
  * bool only_box если параметр установлен на true, то выводится только message.tpl
  */
-tpl::o()->register_function('message', 'message');
+tpl::o()->register_function('message', array($message, "info"));
 /**
  * @note BBCode форма для ввода текста(input_form)
  * params:
@@ -225,7 +234,7 @@ tpl::o()->register_function("get_memory_usage", "smarty_get_memory_usage");
  * string folder имя дирректории в корне
  * int current текущее значение
  * bool onlydir только дирректории?
- * bool empty пустое значение?
+ * bool null пустое значение?
  * string regexp рег. выражение
  * int match номер группы рег. выражения
  */
@@ -238,7 +247,7 @@ tpl::o()->register_function("select_folder", array(
  * string name имя поля
  * int current текущее значение
  * bool guest в т.ч. и гость?
- * bool not_null без пустого значение?
+ * bool null пустое значение?
  * bool multiple множественная выборка?
  */
 tpl::o()->register_function("select_groups", array(
@@ -275,7 +284,7 @@ tpl::o()->register_function("passgen", 'smarty_passgen');
  * string name имя поля
  * int size размер поля(если больше 1 множественная выборка)
  * int current текущее значение
- * bool not_null без пустого значение?
+ * bool null пустое значение?
  */
 tpl::o()->register_function("select_categories", array(
     $input,
@@ -288,7 +297,8 @@ tpl::o()->register_function("select_categories", array(
  * bool keyed ключи в качестве значения опций?
  * mixed current текущее значение
  * int size размер поля(если больше 1 множественная выборка)
- * bool empty пустое значение?
+ * bool null пустое значение?
+ * string lang_prefix языковой префикс для значений
  */
 tpl::o()->register_function("simple_selector", array(
     $input,
@@ -304,6 +314,7 @@ unset($input);
 unset($display);
 
 unset($blocks);
+unset($message);
 /// Конец
 /// Обнаруживаем IE
 if (preg_match("/MSIE\\s*([0-9]+)/siu", $_SERVER ['HTTP_USER_AGENT'], $matches)) {

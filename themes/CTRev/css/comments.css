@@ -2,15 +2,15 @@
     font-size: 15px;
     font-weight: bold;
     padding-left: 15px;
-    border-bottom: 1px solid black;
+    border-bottom: 1px solid gray;
     margin-bottom: 4px;
 }
 
 .comment .title .author {
     position: relative;
-    float: right;
+    top: -1px;
+    display: inline-block;
     font-size: 12px;
-    bottom: -3px
 }
 
 .bbcode_comments {

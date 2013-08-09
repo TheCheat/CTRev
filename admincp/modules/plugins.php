@@ -14,6 +14,11 @@ if (!defined('INSITE'))
     die("Remote access denied!");
 
 class plugins_man {
+    /**
+     * Шаблон плагина
+     */
+
+    const plugin_template = 'include/plugins/plugin_template';
 
     /**
      * Инициализация модуля управления плагинами
@@ -51,7 +56,7 @@ class plugins_man {
      * @return null 
      * @throws EngineException
      */
-    protected function build($data) {
+    public function build($data) {
         lang::o()->get('admin/plugins');
         $data_params = array("plugin",
             "version",
@@ -66,41 +71,17 @@ class plugins_man {
             throw new EngineException("plugins_invalid_name");
         $settings = modsettings::o()->make($data);
         $defaults = modsettings::o()->save(modsettings::nocache_id, $data);
-        $contents = '<?php if (!defined("INSITE")) die("Remote access denied!");
-class plugin_' . $plugin . ' {
-    public $version = ' . var_export((string) $version, true) . ';
-    public $author = ' . var_export((string) $author, true) . ';
-    public $name = ' . var_export((string) $name, true) . ';
-    public $descr = ' . var_export((string) $descr, true) . ';
-    public $compatibility = ' . var_export((float) $comp, true) . ';
-    public $compatibility_min = ' . var_export((float) $comp_min, true) . ';
-    public $compatibility_max = ' . var_export((float) $comp_max, true) . ';
-    public $settings = ' . var_export((array) $settings, true) . ';
-    public $settings_lang = "' . $plugin . '";
-    public $defaults = ' . var_export((array) $defaults, true) . ';
-    /**
-     * @param plugins $plugins
-     */
-    public function init($plugins) {
-    
-    }
-    /**
-     * @param bool $re reinstall? without DB, only templates
-     * @return bool true, if plugin successfully installed
-     */
-    public function install($re = false) {
-        return true;
-    }
-    /**
-     * @param bool $replaced true, if all templates was successfully replaced
-     * @return bool true, if plugin successfully uninstalled
-     */
-    public function uninstall($replaced = false) {
-        return true;
-    }
-} ?>';/* @var $uploader uploader */
+        $vars = array($plugin, var_export((string) $version, true),
+            var_export((string) $author, true), var_export((string) $name, true),
+            var_export((string) $descr, true), var_export((string) $comp, true),
+            var_export((string) $comp_min, true), var_export((string) $comp_max, true),
+            var_export((array) $settings, true), $plugin,
+            var_export((array) $defaults, true));
+        $contents = @file_get_contents(ROOT . self::plugin_template);
+        $contents = vsprintf($contents, $vars);
+        /* @var $uploader uploader */
         $uploader = n("uploader");
-        $uploader->download_headers($contents, 'plugin.' . $plugin . '.php', 'text/html');
+        $uploader->download_headers($contents, 'plugin.' . $plugin . '.php', 'text/plain');
     }
 
     /**
@@ -112,7 +93,7 @@ class plugin_' . $plugin . ' {
         $res = (array) $res;
         $mask = implode('|', array_map('mpc', $res));
         $mask = '/^plugin\.' . ($mask ? "(?!" . $mask . ")" : "") . '(\w+)\.php$/i';
-        return input::o()->select_folder("plugin_files", PLUGINS_PATH, '', false, true, $mask, 1);
+        return input::o()->snull()->select_folder("plugin_files", PLUGINS_PATH, false, $mask, 1);
     }
 
     /**
@@ -163,7 +144,7 @@ class plugin_' . $plugin . ' {
         $admin_file = globals::g('admin_file');
         $id = $data['id'];
         $settings = serialize(modsettings::o()->save($id, $data));
-        db::o()->update(array('settings' => $settings), 'plugins', 'WHERE file=' . db::o()->esc($id) . ' LIMIT 1');
+        db::o()->p($id)->update(array('settings' => $settings), 'plugins', 'WHERE file=? LIMIT 1');
         plugins::o()->manager->uncache();
         furl::o()->location($admin_file);
     }
@@ -191,6 +172,7 @@ class plugins_man_ajax {
     /**
      * Инициализация AJAX-части модуля
      * @return null
+     * @throws EngineException
      */
     public function init() {
         $act = $_GET["act"];
@@ -213,8 +195,8 @@ class plugins_man_ajax {
                 break;
         }
         if (!$r)
-            die;
-        die("OK!");
+            throw new EngineException;
+        ok();
     }
 
 }

@@ -3,10 +3,10 @@
         var si ='recover_status_icon';
         status_icon(si, 'loading');
         var $form = jQuery("form#"+id).serialize();
-        jQuery.post('[*$baseurl|sl*]index.php?module=login&act=recover&from_ajax=1', $form, function (data) {
-            if (data == "OK!") {
+        jQuery.post('index.php?module=login&act=recover&from_ajax=1', $form, function (data) {
+            if (is_ok(data)) {
                 status_icon(si, 'success');
-                alert('[*'success'|lang|sl*]!');
+                //alert('[*'success'|lang|sl*]!');
             } else {
                 status_icon(si, 'error');
                 alert('[*'error'|lang|sl*]: '+data);

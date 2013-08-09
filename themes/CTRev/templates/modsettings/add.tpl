@@ -40,7 +40,7 @@
     function modsettings_defaults() {
         make_tobbcode();
         var form = jQuery('input,select,textarea', '#modsettings_create').serialize();
-        jQuery.post(baseurl+'index.php?module=ajax_index&from_ajax=1&act=modsettings', form, function (data) {
+        jQuery.post('index.php?module=ajax_index&from_ajax=1&act=modsettings', form, function (data) {
             jQuery('#modsettings_defaults').empty().append(data);
             var wr = jQuery('#modsettings_wrapper');
             if (data) 

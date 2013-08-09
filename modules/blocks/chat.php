@@ -22,6 +22,8 @@ class chat_block {
     public function init() {
         if (!users::o()->perm('chat'))
             return;
+        if (!config::o()->mstate('chat'))
+            return;
         lang::o()->get("blocks/chat");
         tpl::o()->display('chat/index.tpl');
     }

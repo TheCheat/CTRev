@@ -18,17 +18,17 @@
                     message_closer();
                 }
                 function message_closer() {
-                    jQuery(document).ready(function ($) {
-                        init_modalbox_close(function () {
+                    jQuery(document).ready(function($) {
+                        init_modalbox_close(function() {
                             if (!confirm("[*'pm_closed_before_new_notice'|lang*]"))
-                            return false;
+                                return false;
                             setcookie('[*$msg_cookie_timer|sl*]', '[*$unread_last.time*]');
                         });
                     });
                 }
                 function move_message($cur_time, $after) {
                     status_icon('messages_status_icon', 'loading');
-                    jQuery.post('[*$baseurl|sl*]index.php?module=ajax_index&from_ajax=1&act=move_unread', {"time":$cur_time, "after":$after}, function (data) {
+                    jQuery.post('index.php?module=ajax_index&from_ajax=1&act=move_unread', {"time": $cur_time, "after": $after}, function(data) {
                         if (data == "ERROR!") {
                             status_icon('messages_status_icon', 'error');
                             alert("[*'error'|lang|sl*]");
@@ -74,7 +74,7 @@
                 }
                 function act_box($id, $time, $act) {
                     status_icon('messages_status_icon', 'loading');
-                    remove_message($id, offset_of_box, $time, ($act=="read"));
+                    remove_message($id, offset_of_box, $time, ($act == "read"));
                 }
                 var prevmsgs = [*$count_prev*];
                 var nextmsgs = [*$count_after*];
@@ -87,27 +87,29 @@
 [*if ($unread_time < $unread_last.time && $unread) || $only_unread*] 
     [*if !$only_unread*]
         <!-- begin. Всплывающее окно -->
-        <div id="message_container">
+        <div id="message_container" class='hidden'>
         [*/if*]
         <div class="modalbox_title">
             <div class="status_icon" id="messages_status_icon"></div>
             [*$unread_last.subject*]</div>
         <div class="modalbox_content">[*$unread_last.text|ft*]</div>
         <div class="modalbox_subcontent">
-            <div class="float_left"><nobr>
+            <div class="float_left">
+                <nobr>
                     [*'pm_sender'|lang*][*$unread_last.username|gcl:$unread_last.group*],
-                    [*date time=$unread_last.time format="ymdhis"*]&nbsp;<input type="image"
-                                 id="before_button"
-                                 onclick="move_message('[*$unread_last.time*]');"
-                                 src="[*$theme_path*]engine_images/arrow_left.png" alt="[*'prev'|lang*]"
-                                 class='clickable [*if !$count_prev && !$only_unread*]hidden[*/if*]'>&nbsp;<input  type="image" class='clickable' id="after_button"
-                                 onclick="move_message('[*$unread_last.time*]', 1);"
-                                 class='clickable [*if !$count_after && !$only_unread*]hidden[*/if*]'
-                                 src="[*$theme_path*]engine_images/arrow_right.png" alt="[*'next'|lang*]"></nobr></div>
+                    [*date time=$unread_last.time format="ymdhis"*]
+                    <input type="image" id="before_button" onclick="move_message('[*$unread_last.time*]');"
+                           src="[*$theme_path*]engine_images/arrow_left.png" alt="[*'prev'|lang*]"
+                           class='clickable [*if !$count_prev && !$only_unread*]hidden[*/if*]'>
+                    <input type="image" id="after_button" onclick="move_message('[*$unread_last.time*]', 1);"
+                           class='clickable [*if !$count_after && !$only_unread*]hidden[*/if*]'
+                           src="[*$theme_path*]engine_images/arrow_right.png" alt="[*'next'|lang*]">
+                </nobr>
+            </div>
             <div align="right"><input type="button" value="[*'pm_read'|lang*]"
-                                      onclick="act_box('[*$unread_last.id*]','[*$unread_last.time*]', 'read')">&nbsp;<input
+                                      onclick="act_box('[*$unread_last.id*]', '[*$unread_last.time*]', 'read')">&nbsp;<input
                                       type="button" value="[*'delete'|lang*]"
-                                      onclick="act_box('[*$unread_last.id*]','[*$unread_last.time*]', 'delete')"></div>
+                                      onclick="act_box('[*$unread_last.id*]', '[*$unread_last.time*]', 'delete')"></div>
         </div>
         [*if !$only_unread*]
         </div>

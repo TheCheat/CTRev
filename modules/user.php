@@ -26,7 +26,7 @@ class user {
      * @var array $menu
      */
     protected $menu = array(
-        "torrents",
+        "content",
         "comments",
         "friends",
         "stats");
@@ -66,23 +66,27 @@ class user {
      */
     protected function show_userinfo($username, $act) {
         users::o()->check_perms('profile', 1, 2);
-        $row = db::o()->query('SELECT u.*' .
-                (users::o()->v() ? ', z.id AS zebra_id, z.type AS zebra_type' : "") . '
-                FROM users AS u
-                ' . (users::o()->v() ? 'LEFT JOIN zebra AS z ON z.user_id=' . users::o()->v('id') . ' 
-                AND z.to_userid=u.id' : "") . '
-                WHERE u.username_lower=' . db::o()->esc(mb_strtolower($username)) . '
+        $lj = $cols = "";
+        if (users::o()->v()) {
+            db::o()->p(users::o()->v('id'));
+            $cols = ", z.id AS zebra_id, z.type AS zebra_type";
+            $lj = 'LEFT JOIN zebra AS z ON z.user_id=? AND z.to_userid=u.id';
+        }
+        $row = db::o()->p(mb_strtolower($username))->query('SELECT u.* ' . $cols . '
+                FROM users AS u ' . $lj . '
+                WHERE u.username_lower=?
                 AND u.id>0 LIMIT 1');
         $row = db::o()->fetch_assoc($row);
         if (!$row)
             throw new EngineException("users_profile_not_exists", $username);
         $row = users::o()->decode_settings($row);
-        if ((int) $row["country"]) {
-            $r = db::o()->query("SELECT name, image FROM countries WHERE id=" . $row["country"] . " LIMIT 1");
-            $r = db::o()->fetch_assoc($r);
-            $row["country_name"] = $r["name"];
-            $row["country_image"] = $r["image"];
-        }
+        /*
+          if ((int) $row["country"]) {
+          $r = db::o()->p($row["country"])->query("SELECT name, image FROM countries WHERE id=? LIMIT 1");
+          $r = db::o()->fetch_assoc($r);
+          $row["country_name"] = $r["name"];
+          $row["country_image"] = $r["image"];
+          } */
         $this->title .= ' "' . $username . '"';
         $id = $row ['id'];
         $karma = $row["karma_count"];
@@ -99,6 +103,7 @@ class user {
         tpl::o()->assign("act", $act);
         tpl::o()->assign("menu", $this->menu);
         n("comments"); // для display_comments
+        n("display_userfields"); // для display_userfields
         tpl::o()->display('profile/user.tpl');
     }
 
@@ -129,10 +134,10 @@ class user_ajax {
                 $comments = n("comments");
                 $comments->usertable($id);
                 break;
-            case "show_torrents" :
-                if (!users::o()->perm("torrents"))
+            case "show_content" :
+                if (!users::o()->perm("content"))
                     die(lang::o()->v('users_you_cant_view_this'));
-                $this->show_last_torrents($id);
+                $this->show_last_content($id);
                 break;
             default :
                 break;
@@ -140,32 +145,34 @@ class user_ajax {
     }
 
     /**
-     * Отображение последних торрентов пользователя
+     * Отображение последнего контента пользователя
      * @param int $id ID пользователя
      * @param string $where доп. условие
      * @return null
      */
-    public function show_last_torrents($id = null, $where = null) {
+    public function show_last_content($id = null, $where = null) {
         $id = (int) $id;
         $select = "t.id,t.category_id,t.posted_time,t.title";
         if (!$id)
             $select .= ",t.poster_id";
         $where = ($id ? 'poster_id=' . $id : $where);
-        $tr = db::o()->query('SELECT ' . $select . (!$id ? ',u.username,u.group' : '') . ' FROM torrents AS t
-            ' . (!$id ? 'LEFT JOIN users AS u ON u.id=t.poster_id' : '') . '
+        $tr = db::o()->no_parse()->query('SELECT ' . $select . (!$id ? ',u.username,u.group' : '') . ' 
+            FROM ' . db::table('content') . ' AS t
+            ' . (!$id ? 'LEFT JOIN ' . db::table('users') . ' AS u ON u.id=t.poster_id' : '') . '
             ' . ($where ? ' WHERE ' . $where : "") . '
             ORDER BY t.posted_time DESC
-            ' . (config::o()->v('last_profile_torrents') ? "LIMIT " . config::o()->v('last_profile_torrents') : ""));
+            ' . (config::o()->v('last_profile_content') ? "LIMIT " . config::o()->v('last_profile_content') : ""));
         $trs = array();
         /* @var $cats categories */
         $cats = n("categories");
+        $cats->change_type("content");
         while ($rows = db::o()->fetch_assoc($tr)) {
             $categs = $cats->cid2arr($rows ["category_id"]);
             $rows ["category_id"] = $categs [1];
             $trs [] = $rows;
         }
-        tpl::o()->assign("torrents_row", $trs);
-        tpl::o()->display("profile/last_torrents.tpl");
+        tpl::o()->assign("content_row", $trs);
+        tpl::o()->display("profile/last_content.tpl");
     }
 
     /**
@@ -190,9 +197,9 @@ class user_ajax {
     public function show_user_friends($id) {
         $id = (int) $id;
         lang::o()->get("usercp");
-        $res = db::o()->query('SELECT u.username,u.group,u.registered,u.gender,u.avatar,z.* FROM zebra AS z
+        $res = db::o()->p($id)->query('SELECT u.username,u.group,u.registered,u.gender,u.avatar,z.* FROM zebra AS z
             LEFT JOIN users AS u ON u.id=z.to_userid
-            WHERE z.user_id=' . $id);
+            WHERE z.user_id=?');
         tpl::o()->assign("row", db::o()->fetch2array($res));
         tpl::o()->assign("from_profile", true);
         tpl::o()->display("usercp/friends.tpl");

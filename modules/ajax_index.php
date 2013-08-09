@@ -22,19 +22,29 @@ class ajax_index {
     protected $pattern_filled = true;
 
     /**
+     * Типы обратной связи
+     * @var array $feedback_types
+     */
+    protected $feedback_types = array("main");
+
+    /**
      * Функция инициализации Ajax функций для главной страницы
      * @return null
      */
     public function init() {
         $act = $_GET ['act'];
         switch ($act) {
+            case "feedback":
+                $this->feedback($_POST);
+                ok();
+                break;
             case "modsettings":
                 modsettings::o()->make_demo($_POST);
                 break;
-            case "calendar_torrents" :
+            case "calendar_content" :
                 $year = (int) $_POST ["year"];
                 $month = (int) $_POST ["month"];
-                $this->calendar_torrents($month, $year);
+                $this->calendar_content($month, $year);
                 break;
             case "search_pre" :
                 $text = $_POST ["text"];
@@ -61,40 +71,74 @@ class ajax_index {
             case "build_pattern":
                 $id = (int) $_GET["id"];
                 $this->build_pattern($id);
-                return;
                 break;
             default :
                 break;
         }
-        die();
     }
 
     /**
-     * Подсчёт кол-ва торрентов в данном месяце и в данном году
+     * Обратная связь
+     * @param array $data данные
+     * @return null
+     * @throws EngineException
+     */
+    public function feedback($data) {
+        $subject = $data['subject'];
+        $content = $data['content'];
+        $type = $data['type'];
+        if (!$subject || !$content)
+            throw new EngineException('nothing_entered');
+        n("captcha")->check($error);
+        if ($error)
+            throw new EngineException($error[0]);
+        if (!in_array($type, $this->feedback_types))
+            $type = reset($this->feedback_types);
+        $insert = array('subject' => $subject,
+            'content' => $content,
+            'type' => $type,
+            'uid' => users::o()->v('id'),
+            'ip' => users::o()->get_ip(),
+            'time' => time());
+
+        try {
+            plugins::o()->pass_data(array('insert' => &$insert, 'data' => $data), true)->run_hook('feedback_send');
+        } catch (PReturn $e) {
+            return $e->r();
+        }
+
+        db::o()->insert($insert, "feedback");
+    }
+
+    /**
+     * Подсчёт кол-ва контента в данном месяце и в данном году
      * @param int $month данный месяц
      * @param int $year данный год
      * @return null
      */
-    protected function calendar_torrents($month, $year) {
+    protected function calendar_content($month, $year) {
         /* @var $calendar_block calendar_block */
         $calendar_block = plugins::o()->get_module("calendar", true);
-        $to_print = $calendar_block->count_torrents($month, $year);
-        print ('<script language="text/javascript">$torrents_per_dates = ' . $to_print . '</script>');
+        $to_print = $calendar_block->count_content($month, $year);
+        print ('<script language="text/javascript">$content_per_dates = ' . $to_print . '</script>');
     }
 
     /**
      * Предпросмотр результатов поиска
      * @param string $text искомый текст
+     * @return null
      */
     protected function search_pre($text) {
+        if (!config::o()->mstate('search_module'))
+            return;
         lang::o()->get('search');
         /* @var $search search */
         $search = n("search");
-        $res = $search->pre_search("torrents", (config::o()->v('pre_search_title_only') ? "title" : array(
+        $res = $search->pre_search("content", (config::o()->v('pre_search_title_only') ? "title" : array(
                     "title",
                     "content")), $text);
         tpl::o()->assign("res", $res);
-        tpl::o()->display("torrents/pre_search.tpl");
+        tpl::o()->display("content/pre_search.tpl");
     }
 
     /**
@@ -102,6 +146,8 @@ class ajax_index {
      * @return null
      */
     protected function get_msgs() {
+        if (!config::o()->mstate('messages'))
+            return;
         users::o()->check_perms('pm');
         lang::o()->get("messages");
         $cvar = 'time_last_msg';
@@ -131,6 +177,8 @@ class ajax_index {
      * @return null
      */
     protected function move_unread($time, $after = false) {
+        if (!config::o()->mstate('messages'))
+            return;
         $time = (int) $time;
         users::o()->check_perms('pm');
         lang::o()->get("messages");
@@ -152,7 +200,7 @@ class ajax_index {
      * @param string $type тип категории
      * @return null
      */
-    protected function children_cat($cat_id, $num, $type = 'torrents') {
+    protected function children_cat($cat_id, $num, $type = 'content') {
         $cat_id = (int) $cat_id;
         /* @var $cats categories */
         $cats = n("categories");
@@ -170,7 +218,7 @@ class ajax_index {
     protected function parse_pattern($id) {
         $id = (int) $id;
         if (!($row = cache::o()->read('patterns/pattern-id' . $id))) {
-            $r = db::o()->query('SELECT * FROM patterns WHERE id=' . $id . ' LIMIT 1');
+            $r = db::o()->p($id)->query('SELECT * FROM patterns WHERE id=? LIMIT 1');
             $row = db::o()->fetch_assoc($r);
             if (!$row)
                 return;
@@ -245,7 +293,8 @@ class ajax_index {
                     if (is_array($value)) {
                         $key = $value[0];
                         $value = $value[1];
-                    } else
+                    }
+                    else
                         $key = $value;
                     if ($s)
                         $html .= '<option value="' . $key . '">' . $value . '</option>';
@@ -286,7 +335,8 @@ class ajax_index {
                     $val = "\n" . $val;
                 $arr[$key] .= $val;
             }
-        print('OK!' . display::o()->array_export_to_js($arr));
+        ok(true);
+        die(display::o()->array_export_to_js($arr));
     }
 
     /**

@@ -60,10 +60,11 @@ class patterns_man {
         $row = array();
         if ($id) {
             $id = (int) $id;
-            $r = db::o()->query('SELECT * FROM patterns WHERE id=' . $id . ' LIMIT 1');
+            $r = db::o()->p($id)->query('SELECT * FROM patterns WHERE id=? LIMIT 1');
             $row = db::o()->fetch_assoc($r);
             $row["pattern"] = unserialize($row["pattern"]);
-        } else
+        }
+        else
             $row["pattern"] = array(array());
         tpl::o()->assign('id', $add ? 0 : $id);
         tpl::o()->assign('rows', $row);
@@ -72,7 +73,7 @@ class patterns_man {
     }
 
     /**
-     * Вывод списка категорий
+     * Вывод списка паттернов
      * @return null 
      */
     protected function show() {
@@ -82,29 +83,12 @@ class patterns_man {
     }
 
     /**
-     * Сохранение шаблона
-     * @param array $data массив данных шаблона
-     * @return null
-     * @throws EngineException 
+     * Построение паттерна
+     * @param array $pattern массив данных
+     * @return array массив паттерна
+     * @throws EngineException
      */
-    protected function save($data) {
-        $admin_file = globals::g('admin_file');
-        $cols = array(
-            'name',
-            'rname',
-            'type',
-            'size',
-            'values',
-            'html',
-            'descr',
-            'formdata');
-        if ($data['id'])
-            $id = (int) $data['id'];
-        if (!$data['pattern_name'])
-            $data['pattern_name'] = 'tmp' . time(); // Меньше ошибок - лучше
-        $update = array();
-        $update['name'] = $data['pattern_name'];
-        $pattern = rex($data, $cols);
+    protected function build_pattern($pattern) {
         $c = count($pattern['name']);
         $obj = array();
         foreach ($pattern as $type => $e) {
@@ -156,9 +140,36 @@ class patterns_man {
             if (!$c)
                 $pattern[] = $e;
         }
-        $update['pattern'] = serialize($pattern);
+        return $pattern;
+    }
+
+    /**
+     * Сохранение шаблона
+     * @param array $data массив данных шаблона
+     * @return null
+     * @throws EngineException 
+     */
+    public function save($data) {
+        $admin_file = globals::g('admin_file');
+        $cols = array(
+            'name',
+            'rname',
+            'type',
+            'size',
+            'values',
+            'html',
+            'descr',
+            'formdata');
+        if ($data['id'])
+            $id = (int) $data['id'];
+        if (!$data['pattern_name'])
+            $data['pattern_name'] = 'tmp' . time(); // Меньше ошибок - лучше
+        $update = array();
+        $update['name'] = $data['pattern_name'];
+        $pattern = rex($data, $cols);
+        $update['pattern'] = serialize($this->build_pattern($pattern));
         if ($id) {
-            db::o()->update($update, 'patterns', 'WHERE id=' . $id . ' LIMIT 1');
+            db::o()->p($id)->update($update, 'patterns', 'WHERE id=? LIMIT 1');
             cache::o()->remove('patterns/pattern-id' . $id);
             log_add('changed_pattern', 'admin', $id);
         } else {
@@ -183,7 +194,7 @@ class patterns_man_ajax {
                 $this->delete((int) $_POST['id']);
                 break;
         }
-        die('OK!');
+        ok();
     }
 
     /**
@@ -191,9 +202,9 @@ class patterns_man_ajax {
      * @param int $id ID шаблона
      * @return null
      */
-    protected function delete($id) {
+    public function delete($id) {
         $id = (int) $id;
-        db::o()->delete('patterns', 'WHERE id="' . $id . '" LIMIT 1');
+        db::o()->p($id)->delete('patterns', 'WHERE id=? LIMIT 1');
         cache::o()->remove('patterns/pattern-id' . $id);
         log_add('deleted_pattern', 'admin', $id);
     }

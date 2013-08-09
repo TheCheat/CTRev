@@ -18,9 +18,9 @@
 if (!defined('INSITE'))
     die('Remote access denied!');
 
-if (!class_exists('my_torrents') && class_exists('plugin_extend_simple_base_torrents')) {
+if (!class_exists('my_torrents') && class_exists('plugin_extend_simple_base_content')) {
 
-    class my_torrents extends plugin_extend_simple_base_torrents {
+    class my_torrents extends plugin_extend_simple_base_content {
 
         public function init() {
             print('Extending torrents init method');

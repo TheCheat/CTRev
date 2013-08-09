@@ -11,8 +11,8 @@
                 if (!confirm("[*'pm_are_you_sure_to_delete_many'|lang|sl*]"))
                 return;
             }
-            jQuery.post("[*$baseurl|sl*]index.php?[*fk ajax=1*]module=messages&from_ajax=1&act="+$act, $post, function (data) {
-                if (data=="OK!") {
+            jQuery.post("index.php?[*fk ajax=1*]module=messages&from_ajax=1&act="+$act, $post, function (data) {
+                if (is_ok(data)) {
                     jQuery($pmcbox).each(function () {
                         if (!jQuery(this).attr("checked"))
                             return;
@@ -29,7 +29,7 @@
                             jQuery("td.item_"+$id+" img").remove();
                         }
                     });
-                    alert("[*'success'|lang|sl*]!");
+                    //alert("[*'success'|lang|sl*]!");
                 } else
                     alert("[*'error'|lang|sl*]! " + data);
             });

@@ -1,7 +1,7 @@
 <?php
 
 $languages = array(
-    "log_deleted_torrents" => "Удалён торрент",
+    "log_deleted_content" => "Удалёна статья",
     "log_cleared_comments" => "Очищены комментарии",
     "log_cleared_comments_descr" => "Ресурс - %s, ID - %d",
     "log_deleted_comment" => "Удалён комментарий",
@@ -10,8 +10,8 @@ $languages = array(
     "log_cleared_polls" => "Очищены опросы",
     'log_deleted_news' => 'Удалена новость',
     'log_cleared_news' => 'Очищены новости',
-    "log_edited_torrents" => "Отредактирован торрент",
-    "log_edited_torrents_descr" => "%s(ID - %d)",
+    "log_edited_content" => "Отредактирована статья",
+    "log_edited_content_descr" => "%s(ID - %d)",
     "log_edited_comment" => "Отредактирован комментарий",
     "log_edited_poll" => "Отредактирован опрос",
     "log_edited_poll_descr" => "%s(ID - %d)",
@@ -79,7 +79,12 @@ $languages = array(
     'log_changed_style_file_descr' => '%s(бывш. %s) в %s',
     'log_deleted_style_file' => 'Удалён файл в теме',
     'log_deleted_style_file_descr' => '%s в %s',
+    'log_added_filetype' => 'Добавлен файловый тип',
+    'log_deleted_filetype' => 'Удалён файловый тип',
+    'log_added_userfield' => 'Добавлено доп. поле профиля',
+    'log_deleted_userfield' => 'Удалёно доп. поле профиля',
     'log_replaced_in_style' => 'Произведена замена в теме',
+    'log_cleared_feedback' => 'Очищены сообщения обратной связи',
     'log_cleared_logs' => 'Очищены логи всего и вся',
     'log_cleared_logs_system' => 'Очищены логи системы',
     'log_cleared_logs_admin' => 'Очищены логи администраторов',

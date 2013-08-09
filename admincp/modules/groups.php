@@ -120,7 +120,7 @@ class groups_man {
                 'default',
                 'bot',
                 'guest',
-                'torrents_count',
+                'content_count',
                 'karma_count',
                 'acp_modules',
                 'bonus_count');
@@ -135,9 +135,7 @@ class groups_man {
         while ($row = db::o()->fetch_assoc($r)) {
             $p = 'can_' . $row['perm'];
             $dvalue = $fgroup ? $fgroup[$p] : $row['dvalue'];
-            if (isset($data[$p]) && strval((int) $data[$p]) === $data[$p]
-                    && $data[$p] <= $row['allowed']
-                    && (int) $data[$p] !== (int) $dvalue)
+            if (isset($data[$p]) && strval((int) $data[$p]) === $data[$p] && $data[$p] <= $row['allowed'] && (int) $data[$p] !== (int) $dvalue)
                 $perms .= ($perms ? ";" : "") . $row['id'] . ":" . $data[$p];
         }
         if ($fgroup)
@@ -145,7 +143,7 @@ class groups_man {
         $update['perms'] = $perms;
         $update['acp_modules'] = implode(';', array_map('trim', (array) $update['acp_modules']));
         if ($id) {
-            db::o()->update($update, 'groups', 'WHERE id=' . $id . ' LIMIT 1');
+            db::o()->p($id)->update($update, 'groups', 'WHERE id=? LIMIT 1');
             log_add('changed_group', 'admin', $id);
         } else {
             db::o()->insert($update, 'groups');
@@ -175,7 +173,7 @@ class groups_man_ajax {
                 break;
         }
         cache::o()->remove('groups');
-        die('OK!');
+        ok();
     }
 
     /**
@@ -183,8 +181,9 @@ class groups_man_ajax {
      * @param int $id ID группы
      * @return null
      */
-    protected function delete($id) {
-        db::o()->delete('groups', 'WHERE id=' . intval($id) . ' AND notdeleted="0" LIMIT 1');
+    public function delete($id) {
+        $id = (int) $id;
+        db::o()->p($id)->delete('groups', 'WHERE id=? AND notdeleted="0" LIMIT 1');
         log_add('deleted_group', 'admin', $id);
     }
 
@@ -193,11 +192,13 @@ class groups_man_ajax {
      * @return null
      * @throws EngineException
      */
-    protected function save_order($sort) {
+    public function save_order($sort) {
         if (!$sort)
             throw new EngineException;
-        foreach ($sort as $s => $id)
-            db::o()->update(array('sort' => (int) $s), 'groups', 'WHERE id=' . intval($id) . ' LIMIT 1');
+        foreach ($sort as $s => $id) {
+            $id = (int) $id;
+            db::o()->p($id)->update(array('sort' => (int) $s), 'groups', 'WHERE id=? LIMIT 1');
+        }
         db::o()->query('ALTER TABLE `groups` ORDER BY `sort`');
     }
 

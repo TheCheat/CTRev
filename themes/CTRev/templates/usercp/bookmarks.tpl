@@ -12,9 +12,8 @@
         </thead>
         <tbody>
             [*foreach from=$row item=arr*]
-                [*assign var="arrtype" value=$arr.type*]
                 <tr id="usercp_bookmark_[*$arr.id*]">
-                    <td><b>[*"usercp_bookmarks_type_$arrtype"|lang*]:</b>
+                    <td><b>[*"usercp_bookmarks_type_`$arr.type`"|lang*]:</b>
                         <a href="[*gen_link module=$arr.type id=$arr.toid title=$arr.res_name*]">[*$arr.res_name*]</a></td>
                     <td>[*date time=$arr.added*]</td>
                     <td><a href="javascript:delete_bookmark('[*$arr.id*]', true)"><img

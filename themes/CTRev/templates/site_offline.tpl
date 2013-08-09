@@ -1,11 +1,12 @@
 <!DOCTYPE HTML PUBLIC  "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
     <head>
+        <base href="[*$baseurl*]">
         <title>[*'site_title'|config*]</title>
         <link rel="stylesheet" href="[*$theme_path*]css/error.css"
               type="text/css">
-        <script type="text/javascript" src="[*$theme_path*]js/jquery.js"></script>
-        <script type="text/javascript" src="[*$theme_path*]js/jquery.corners.js"></script>
+        <script type="text/javascript" src="js/jquery.js"></script>
+        <script type="text/javascript" src="js/jquery.corners.js"></script>
         <script type="text/javascript">init_corners();</script>
         <meta http-equiv="Content-Language" content="ru-en">
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">

@@ -21,13 +21,14 @@ final class cleanup extends pluginable_object {
      */
     protected $methods = array(
         "sessions",
-        "readtorrents",
+        "readcontent",
         "bans",
         "warnings",
         "peers",
         "users",
-        "torrents",
-        "chat");
+        "content",
+        "chat",
+        "sitemap");
 
     /**
      * Конструктор класса
@@ -50,19 +51,21 @@ final class cleanup extends pluginable_object {
         if (!$force && time() < $time + config::o()->v('cleanup_each') * $hour)
             return;
         stats::o()->write('last_cleanup', time());
-        $am = users::o()->admin_mode(true);
+        users::o()->admin_mode();
         users::o()->set_tmpvars(array('id' => -1));
         /* @var $mailer mailer */
         $mailer = n("mailer");
-        $mailer->change_type('torrents')->cleanup();
+        $mailer->change_type('content')->cleanup();
         $mailer->change_type('categories')->cleanup();
+        /* @var $attach attachments */
+        $attach = n("attachments");
+        $attach->clear();
         users::o()->groups_autoupdate();
 
         foreach ($this->methods as $m)
             $this->call_method('clear_' . $m);
         users::o()->remove_tmpvars();
-        if ($am)
-            users::o()->admin_mode();
+        users::o()->admin_mode(false);
         //cache::o()->clear_ocache(config::o()->v('cache_oldtime') * 3600);
     }
 
@@ -73,22 +76,22 @@ final class cleanup extends pluginable_object {
     protected function clear_sessions() {
         $hour = 3600; // Секунд в часу
         $maxtime = time() - $hour * config::o()->v('session_clear');
-        db::o()->delete("sessions", ( 'WHERE time < ' . $maxtime));
+        db::o()->p($maxtime)->delete("sessions", 'WHERE time < ?');
     }
 
     /**
-     * Очистка прочтённых торрентов
+     * Очистка прочтённого контента
      * @return null
      */
-    protected function clear_readtorrents() {
-        if (!config::o()->v('clean_rt_interval'))
+    protected function clear_readcontent() {
+        if (!config::o()->v('clean_rc_interval'))
             return;
         $day = 86400; // Секунд в день
-        $time = stats::o()->read('last_clean_rt');
-        if (time() < $time + config::o()->v('clean_rt_interval') * $day)
+        $time = stats::o()->read('last_clean_rc');
+        if (time() < $time + config::o()->v('clean_rc_interval') * $day)
             return;
-        db::o()->truncate_table('read_torrents');
-        stats::o()->write('last_clean_rt', time());
+        db::o()->truncate_table('content_readed');
+        stats::o()->write('last_clean_rc', time());
     }
 
     /**
@@ -97,17 +100,17 @@ final class cleanup extends pluginable_object {
      */
     protected function clear_bans() {
         $r = db::o()->query("SELECT id,uid FROM bans WHERE to_time <> 0 AND to_time <= " . time());
-        $ids = "";
+        $ids = [];
         while ($row = db::o()->fetch_assoc($r)) {
             $uid = $row["uid"];
             if ($uid)
-                db::o()->update(array("_cb_group" => 'old_group',
-                    "old_group" => 0), "users", "WHERE id=" . $uid . " AND old_group<>0 LIMIT 1");
-            $ids .= ( $ids ? ", " : "") . $row["id"];
+                db::o()->p($uid)->update(array("_cb_group" => 'old_group',
+                    "old_group" => 0), "users", "WHERE id=? AND old_group<>0 LIMIT 1");
+            $ids[] = $row["id"];
         }
         if (!$ids)
             return;
-        db::o()->delete("bans", 'WHERE id IN(' . $ids . ')');
+        db::o()->p($ids)->delete("bans", 'WHERE id IN(@' . count($ids) . '?)');
     }
 
     /**
@@ -119,19 +122,19 @@ final class cleanup extends pluginable_object {
             return;
         $day = 86400; // Секунд в день
         $when = time() - config::o()->v('clear_warn_period') * $day;
-        $r = db::o()->query("SELECT id,uid FROM warnings WHERE time <= " . $when);
-        $ids = "";
+        $r = db::o()->p($when)->query("SELECT id,uid FROM warnings WHERE time <= ?");
+        $ids = array();
         /* @var $etc etc */
         $etc = n("etc");
         while ($row = db::o()->fetch_assoc($r)) {
             $uid = $row["uid"];
             $etc->add_res('warnings', -1, "users", $uid);
             /// Да, да, да.. я тут не сделал удаление юзера из банов, если слишком мало предов, но так и задумывалось ;)
-            $ids .= ( $ids ? ", " : "") . $row["id"];
+            $ids[] = $row["id"];
         }
         if (!$ids)
             return;
-        db::o()->delete("warnings", 'WHERE id IN(' . $ids . ')');
+        db::o()->p($ids)->delete("warnings", 'WHERE id IN(@' . count($ids) . '?)');
     }
 
     /**
@@ -141,26 +144,30 @@ final class cleanup extends pluginable_object {
     protected function clear_peers() {
         if (!config::o()->v('clean_peers_interval'))
             return;
+        if (!config::o()->v('torrents_on'))
+            return;
         $hour = 3600; // Секунд в часу
         $when = time() - config::o()->v('clean_peers_interval') * $hour;
-        $r = db::o()->query("SELECT peer_id,tid,seeder FROM peers WHERE time <= " . $when);
-        $ids = "";
+        $r = db::o()->p($when)->query("SELECT peer_id,tid,seeder FROM content_peers WHERE time <= ?");
+        $ids = array();
         $sl = array();
         while ($row = db::o()->fetch_assoc($r)) {
             $sl[$row['tid']][0] += ($row["seeder"] ? 1 : 0);
             $sl[$row['tid']][1] += (!$row["seeder"] ? 1 : 0);
-            $ids .= ( $ids ? ", " : "") . db::o()->esc($row["peer_id"]);
+            $ids[] = $row["peer_id"];
         }
         if (!$ids)
             return;
         if ($sl)
             foreach ($sl as $id => $cur) {
                 if ($cur[0])
-                    db::o()->update(array("seeders" => 'IF(seeders>=' . $cur[0] . ',seeders-' . $cur[0] . ',0)'), "torrents", 'WHERE id=' . $id . ' LIMIT 1');
+                    db::o()->p($id)->update(array("_cb_seeders" => 'IF(seeders>=' . $cur[0] . ',
+                        seeders-' . $cur[0] . ',0)'), "content_torrents", 'WHERE cid=? LIMIT 1');
                 if ($cur[1])
-                    db::o()->update(array("leechers" => 'IF(leechers>=' . $cur[1] . ',leechers-' . $cur[1] . ',0)'), "torrents", 'WHERE id=' . $id . ' LIMIT 1');
+                    db::o()->p($id)->update(array("_cb_leechers" => 'IF(leechers>=' . $cur[1] . ',
+                        leechers-' . $cur[1] . ',0)'), "content_torrents", 'WHERE cid=? LIMIT 1');
             }
-        db::o()->delete("peers", 'WHERE peer_id IN(' . $ids . ')');
+        db::o()->p($ids)->delete("content_peers", 'WHERE peer_id IN(@' . count($ids) . '?)');
     }
 
     /**
@@ -172,7 +179,7 @@ final class cleanup extends pluginable_object {
             return;
         $day = 86400; // Секунд в день
         $when = time() - config::o()->v('del_inactive') * $day;
-        $r = db::o()->query("SELECT id FROM users WHERE last_visited <= " . $when);
+        $r = db::o()->p($when)->query("SELECT id FROM users WHERE last_visited <= ?");
         /* @var $etc etc */
         $etc = n("etc");
         while (list($id) = db::o()->fetch_row($r))
@@ -188,11 +195,15 @@ final class cleanup extends pluginable_object {
             return;
         $day = 86400; // Секунд в день
         $when = time() - config::o()->v('del_oldtorrents') * $day;
-        $r = db::o()->query("SELECT id FROM torrents WHERE last_active <= " . $when);
+        $r = db::o()->p($when)->query("SELECT cid FROM content_torrents WHERE last_active <= ?");
         /* @var $etc etc */
         $etc = n("etc");
         while (list($id) = db::o()->fetch_row($r))
-            $etc->delete_torrent($id);
+            try {
+                $etc->delete_content($id);
+            } catch (EngineException $e) {
+                
+            }
     }
 
     /**
@@ -204,7 +215,17 @@ final class cleanup extends pluginable_object {
             return;
         $hour = 3600; // Секунд в час
         $when = time() - config::o()->v('chat_autoclear') * $hour;
-        db::o()->delete('chat', 'WHERE posted_time <= ' . $when);
+        db::o()->p($when)->delete('chat', 'WHERE posted_time <= ?');
+    }
+
+    /**
+     * Генерация sitemap.xml
+     * @return null
+     */
+    protected function clear_sitemap() {
+        /* @var $m main_page_ajax */
+        $m = plugins::o()->get_module("main", 2, 1);
+        $m->sitemap();
     }
 
 }

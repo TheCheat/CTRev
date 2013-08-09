@@ -14,9 +14,16 @@ if (!defined('INSITE'))
     die('Remote access denied!');
 
 /**
- * @todo юзать Sphinx, если доступен
+ * @todo юзать Sphinx, если доступен, реализовать в виде плагина.
+ * @todo поиск для других СУБД?
  */
 class search {
+
+    /**
+     * Статус поисковой системы
+     * @var bool $state
+     */
+    protected $state = true;
 
     /**
      * Правила в PCRE для выборки слов
@@ -34,7 +41,7 @@ class search {
     protected $bool_rules = array(
         '^([\\\]([\+\(\<\>\~]))+' => '',
         '[\\\]\)$' => '',
-        '([^\\\])[\\\]\*$' => '$1\w*',
+        '([^\\\])[\\\]\*$' => '$1[\wа-я]*',
     );
 
     /**
@@ -54,6 +61,14 @@ class search {
      * @var string $infiles_replace_cb
      */
     protected $infiles_replace_cb = null;
+
+    /**
+     * Конструктор
+     * @return null
+     */
+    public function __construct() {
+        $this->state = (bool) config::o()->mstate('rating_module');
+    }
 
     /**
      * Для array_map: regexp -> /$regexp/siu
@@ -98,6 +113,8 @@ class search {
      * @return bool true, если найдено
      */
     public function highlight_text(&$text, $regexp, $cut = true) {
+        if (!$this->state)
+            return;
         $cut_symb_max = config::o()->v('max_search_symb');
         if (!is_array($regexp))
             $regexp = array($regexp);
@@ -184,7 +201,7 @@ class search {
         }
         foreach ($this->pcre_rules as $key => $value)
             $text = preg_replace("/" . (is_numeric($key) ? $value : $key) . "/siu", '(' . $value . ')', $text);
-        $text = '(?:\W|^)(' . $text . ')(?:\W|$)';
+        $text = '(?:' . UNWORD_REGEXP . '|^)(' . $text . ')(?:' . UNWORD_REGEXP . '|$)';
     }
 
     /**
@@ -194,6 +211,8 @@ class search {
      * @return string условие, если верная строка поиска
      */
     public function like_where($value, $column) {
+        if (!$this->state)
+            return "";
         $this->check_str($value);
         if (!$value)
             return "";
@@ -224,41 +243,32 @@ class search {
     }
 
     /**
-     * Создание условия полнотекстового поиска и выделение слов для подсветки
+     * Выделение фраз для полнотекстового поиска в логическом режиме
      * @param string $value искомые слова
-     * @param string|array $columns столбец\столбцы
-     * @param array $regexp рег. выражение для подсветки текста
-     * Если изначально переменной присвоено значение true, 
-     * то будут вычислены рег. выражения, иначе - нет
-     * @param bool $boolean поиск в логическом режиме
-     * @return string условие, если верная строка поиска
+     * @param array $regexp массив регэкспов
+     * @return null
      */
-    public function make_where($value, $columns, &$regexp = true, $boolean = true) {
-        $this->check_str($value);
-        if (!$value)
-            return "";
-        if (is_array($columns))
-            $columns = implode(',', array_map(array(db::o(), "cesc"), $columns));
-        else
-            $columns = db::o()->cesc($columns);
-        $where = 'MATCH(' . $columns . ') AGAINST(' . db::o()->esc($value) .
-                ($boolean ? ' IN BOOLEAN MODE' : '') . ')';
-        if (!$regexp)
-            return $where;
-        $value = mpc(strval($value));
-        $regexp = array();
-        if ($boolean) { // выделяем фразы
-            $r = preg_split('/(?:\s+|^)"([^\"]*)"(?:\s+|$)/siu', $value, - 1, PREG_SPLIT_DELIM_CAPTURE);
-            $c = count($r);
-            $value = "";
-            for ($i = 0; $i < $c; $i++)
-                if ($i % 2 == 0)
-                    $value .= ($value ? " " : "") . $r[$i];
-                else {
-                    $this->rules_execute($r[$i], false);
-                    $regexp [] = $r[$i];
-                }
-        }
+    protected function boolean_phrases(&$value, &$regexp) {
+        $r = preg_split('/(?:\s+|^)"([^\"]*)"(?:\s+|$)/siu', $value, - 1, PREG_SPLIT_DELIM_CAPTURE);
+        $c = count($r);
+        $value = "";
+        for ($i = 0; $i < $c; $i++)
+            if ($i % 2 == 0)
+                $value .= ($value ? " " : "") . $r[$i];
+            else {
+                $this->rules_execute($r[$i], false);
+                $regexp [] = $r[$i];
+            }
+    }
+
+    /**
+     * Получение регэкспов для подсветки
+     * @param string $value искомые слова
+     * @param array $regexp массив регэкспов
+     * @param bool $boolean поиск в логическом режиме
+     * @return null
+     */
+    protected function get_regexps($value, &$regexp, $boolean) {
         $value = preg_split('/\s+/', $value);
         $c = count($value);
         for ($i = 0; $i < $c; $i++) {
@@ -269,6 +279,33 @@ class search {
             if ($cvalue)
                 $regexp [] = $cvalue;
         }
+    }
+
+    /**
+     * Создание условия полнотекстового поиска и выделение слов для подсветки
+     * @param string $value искомые слова
+     * @param string|array $columns столбец\столбцы
+     * @param array $regexp рег. выражение для подсветки текста
+     * Если изначально переменной присвоено значение true, 
+     * то будут вычислены рег. выражения, иначе - нет
+     * @param bool $boolean поиск в логическом режиме
+     * @return string условие, если верная строка поиска
+     */
+    public function make_where($value, $columns, &$regexp = false, $boolean = true) {
+        if (!$this->state)
+            return "";
+        $this->check_str($value);
+        if (!$value)
+            return "";
+        $where = db::o()->fulltext_search($columns, $value, $boolean);
+        if (!$regexp)
+            return $where;
+        $value = mpc(strval($value));
+        $regexp = array();
+        if ($boolean)
+            $this->boolean_phrases($value, $regexp);
+        $this->get_regexps($value, $regexp, $boolean);
+
         return $where;
     }
 
@@ -282,10 +319,11 @@ class search {
      * @return array результат поиска
      */
     public function pre_search($table, $columns, $value, $limit = 10, $id_col = "id") {
+        if (!$this->state)
+            return;
         if (!$id_col)
             $id_col = "id";
-        $regexp = false; // reference
-        $where = $this->make_where($value, $columns, $regexp);
+        $where = $this->make_where($value, $columns);
         if (!$where)
             return;
         if (is_array($columns))
@@ -295,7 +333,7 @@ class search {
                 $id_col,
                 $columns);
         $cols = implode('`, `', $cols);
-        $res = db::o()->query('SELECT `' . $cols . '` FROM `' . $table . '` WHERE ' . $where
+        $res = db::o()->no_parse()->query('SELECT `' . $cols . '` FROM `' . db::table($table) . '` WHERE ' . $where
                 . ($limit ? " LIMIT " . $limit : ""));
         if ($where)
             return db::o()->fetch2array($res);
@@ -348,6 +386,86 @@ class search {
     }
 
     /**
+     * Поиск/замена в текстовом файле
+     * @param array $r массив файлов(ключи) и подсвеченных результатов(значения)
+     * @param string $c контент файла
+     * @param string $what что ищем
+     * @param string $nf полный путь до файла включительно
+     * @param string $wf путь до папки, в кот. расположен файл
+     * @return null
+     */
+    protected function search_infiles_na(&$r, $c, $what, $nf, $wf) {
+        if (is_null($this->infiles_replace))
+            $c = display::o()->html_encode($c);
+        if (!preg_match($what, $c))
+            continue;
+        if (is_null($this->infiles_replace))
+            $this->highlight_text($c, $what, true);
+        else {
+            $c = preg_replace($what, $this->infiles_replace, $c);
+            if ($this->infiles_replace_cb)
+                call_user_func($this->infiles_replace_cb, $nf, $c);
+            else
+                file::o()->write_file($c, $nf);
+        }
+        $r[$wf] = $c;
+    }
+
+    /**
+     * Поиск в файле, содержащем массив
+     * @param array $r массив файлов(ключи) и подсвеченных результатов(значения)
+     * @param array $c контент
+     * @param string $what что ищем
+     * @param int $where где
+     * @param string $nf полный путь до файла включительно
+     * @param string $wf путь до папки, в кот. расположен файл
+     * @return null
+     */
+    protected function search_infiles_a(&$r, $c, $what, $where, $nf, $wf) {
+        $tmp = array();
+        $b = $where == -1;
+        if ($b)
+            $where = 0;
+        $keys = array();
+        foreach ($c as $k => $v) {
+            if (!$b && !validword($k))
+                continue;
+            if (is_null($this->infiles_replace)) {
+                $v = display::o()->html_encode($v);
+                $k = display::o()->html_encode($k);
+            }
+            if ($where == 0 && !preg_match($what, $v))
+                continue;
+            if ($where == 1 && !preg_match($what, $k))
+                continue;
+            if ($where == 2 && !preg_match($what, $v) && !preg_match($what, $k))
+                continue;
+            if ($where < 0 || $where > 2)
+                continue;
+            if (is_null($this->infiles_replace)) {
+                if ($where == 0 || $where == 2)
+                    $this->highlight_text($v, $what, false);
+                if ($where == 1 || $where == 2)
+                    $this->highlight_text($k, $what, false);
+            } else {
+                $ok = $k;
+                if ($where == 0 || $where == 2)
+                    $v = preg_replace($what, $this->infiles_replace, $v);
+                if ($where == 1 || $where == 2)
+                    $k = preg_replace($what, $this->infiles_replace, $k);
+                if ($ok != $k)
+                    $keys[$k] = $ok;
+            }
+            $tmp[$k] = $v;
+        }
+        if (!$tmp)
+            return;
+        if (!is_null($this->infiles_replace) && $this->infiles_replace_cb)
+            call_user_func($this->infiles_replace_cb, $nf, $tmp, $keys);
+        $r[$wf] = $tmp;
+    }
+
+    /**
      * Поиск/замена в файлах
      * @param string|array $dir путь к дирректории или массив файлов
      * @param string $what что ищем? (рег. выражение без делимиттеров)
@@ -356,7 +474,7 @@ class search {
      * если указать -1, то не будет проверяться, слово ли ключ, а поиск будет по значению
      * @param callback $callback callback функция для получения контента файла
      * единственный параметр функции - путь к файлу
-     * @param string $was пред. путь
+     * @param string $was пред. путь(для рекурсии)
      * @return array массив файлов(ключи) и подсвеченных результатов(значения)
      */
     public function search_infiles($dir, $what, $regexp = false, $where = null, $callback = null, $was = '') {
@@ -370,8 +488,8 @@ class search {
         if (!$regexp) {
             $what = mpc($what);
             $regexp = true;
-        } else
-            $what = str_replace('/', '\\/', $what);
+        } elseif (!$was)
+            $what = str_replace('/', '\/', $what);
         $owhat = $what;
         if (is_null($this->infiles_replace))
             $what = display::o()->html_encode($what);
@@ -381,7 +499,8 @@ class search {
             if (!is_array($dir)) {
                 $nf = $dir . '/' . $f;
                 $wf = ($was ? $was . '/' : '') . $f;
-            } else
+            }
+            else
                 $wf = $nf = $f;
             if (!$f)
                 return;
@@ -398,65 +517,12 @@ class search {
             if (!$c)
                 continue;
             if (!is_array($c)) {
-                if (is_null($this->infiles_replace))
-                    $c = display::o()->html_encode($c);
-                if (!preg_match($what, $c))
-                    continue;
-                if (is_null($this->infiles_replace))
-                    $this->highlight_text($c, $what, true);
-                else {
-                    $c = preg_replace($what, $this->infiles_replace, $c);
-                    if ($this->infiles_replace_cb)
-                        call_user_func($this->infiles_replace_cb, $nf, $c);
-                    else
-                        file::o()->write_file($c, $nf);
-                }
-                $r[$wf] = $c;
+                $this->search_infiles_na($r, $fr, $what, $nf, $wf);
                 continue;
             }
-            $tmp = array();
-            $b = $where == -1;
-            if ($b)
-                $where = 0;
-            $keys = array();
             if (!is_null($this->infiles_replace) && !$this->infiles_replace_cb)
                 continue;
-            foreach ($c as $k => $v) {
-                if (!$b && !validword($k))
-                    continue;
-                if (is_null($this->infiles_replace)) {
-                    $v = display::o()->html_encode($v);
-                    $k = display::o()->html_encode($k);
-                }
-                if ($where == 0 && !preg_match($what, $v))
-                    continue;
-                if ($where == 1 && !preg_match($what, $k))
-                    continue;
-                if ($where == 2 && !preg_match($what, $v) && !preg_match($what, $k))
-                    continue;
-                if ($where < 0 || $where > 2)
-                    continue;
-                if (is_null($this->infiles_replace)) {
-                    if ($where == 0 || $where == 2)
-                        $this->highlight_text($v, $what, false);
-                    if ($where == 1 || $where == 2)
-                        $this->highlight_text($k, $what, false);
-                } else {
-                    $ok = $k;
-                    if ($where == 0 || $where == 2)
-                        $v = preg_replace($what, $this->infiles_replace, $v);
-                    if ($where == 1 || $where == 2)
-                        $k = preg_replace($what, $this->infiles_replace, $k);
-                    if ($ok != $k)
-                        $keys[$k] = $ok;
-                }
-                $tmp[$k] = $v;
-            }
-            if (!$tmp)
-                continue;
-            if (!is_null($this->infiles_replace) && $this->infiles_replace_cb)
-                call_user_func($this->infiles_replace_cb, $nf, $tmp, $keys);
-            $r[$wf] = $tmp;
+            $this->search_infiles_a($r, $c, $what, $where, $nf, $wf);
         }
         if (!$was)
             $this->replace_infiles(null, null);

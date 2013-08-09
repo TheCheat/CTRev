@@ -14,6 +14,11 @@ if (!defined('INSITE'))
     die("Remote access denied!");
 
 class main_page {
+    /**
+     * Файл sitemap.xml
+     */
+
+    const sitemap = "upload/sitemap.xml";
 
     /**
      * Инициализация индексной страницы АЦ
@@ -23,11 +28,12 @@ class main_page {
         lang::o()->get('admin/pages/main');
         if (!($a = cache::o()->read('admin_stats'))) {
             $uc = db::o()->count_rows('users');
-            $tc = db::o()->count_rows('torrents');
+            $tc = db::o()->count_rows('content');
             $cc = db::o()->count_rows('comments');
             $a = array('uc' => $uc, 'tc' => $tc, 'cc' => $cc);
             cache::o()->write($a);
         }
+        tpl::o()->assign('sitemap', self::sitemap);
         tpl::o()->assign('PHP_VERSION', PHP_VERSION);
         tpl::o()->assign('MYSQL_VERSION', db::o()->version());
         tpl::o()->assign('row', $a);
@@ -50,7 +56,19 @@ class main_page_ajax {
         users::o()->admin_mode();
         /* @var $etc etc */
         $etc = n("etc");
+        $all = false;
         switch ($act) {
+            case "attachments":
+                $all = true;
+            case "unattachments":
+                /* @var $attach attachments */
+                $attach = n("attachments");
+                $attach->clear(0, $all);
+                break;
+            case "sitemap":
+                $this->sitemap();
+                ok();
+                break;
             case "cleanup":
                 /* @var $cleanup cleanup */
                 $cleanup = n("cleanup");
@@ -73,13 +91,12 @@ class main_page_ajax {
                 $logs->clear();
                 break;
             case "peers":
-                db::o()->truncate_table('peers');
-                db::o()->update(array('leechers' => 0,
-                    'seeders' => 0), 'torrents');
+                db::o()->truncate_table('content_peers');
+                db::o()->update(array('leechers' => 0, 'seeders' => 0), 'content_torrents');
                 break;
             case "downloaded":
-                db::o()->truncate_table('downloaded');
-                db::o()->update(array('downloaded' => 0), 'torrents');
+                db::o()->truncate_table('content_downloaded');
+                db::o()->update(array('downloaded' => 0), 'content_torrents');
                 break;
             case "chat":
                 /* @var $chat chat */
@@ -100,10 +117,14 @@ class main_page_ajax {
                 break;
 
             // Далее: Важная часть сайта, да
-            case "torrents":
-                $r = db::o()->query('SELECT id FROM torrents');
+            case "content":
+                $r = db::o()->query('SELECT id FROM content');
                 while (list($id) = db::o()->fetch_row($r))
-                    $etc->delete_torrent($id);
+                    try {
+                        $etc->delete_content($id);
+                    } catch (EngineException $e) {
+                        
+                    }
                 break;
             case "comments":
                 /* @var $comments comments */
@@ -132,7 +153,19 @@ class main_page_ajax {
                 break;
         }
         log_add('system_clean', 'admin', array(lang::o()->v('main_page_clear_' . $act), $act));
-        die("OK!");
+        ok();
+    }
+
+    /**
+     * Генератор sitemap.xml
+     * @return null
+     */
+    public function sitemap() {
+        $file = main_page::sitemap;
+        $r = db::o()->query('SELECT * FROM content');
+        tpl::o()->assign('content', db::o()->fetch2array($r));
+        $c = tpl::o()->fetch('content/sitemap.xtpl');
+        file::o()->write_file($c, $file);
     }
 
 }

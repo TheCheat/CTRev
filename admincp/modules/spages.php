@@ -56,7 +56,7 @@ class spages_man {
     protected function add($id = null) {
         $id = (int) $id;
         if ($id) {
-            $r = db::o()->query('SELECT * FROM static WHERE id=' . $id . ' LIMIT 1');
+            $r = db::o()->p($id)->query('SELECT * FROM static WHERE id=? LIMIT 1');
             tpl::o()->assign("row", db::o()->fetch_assoc($r));
         }
         tpl::o()->assign("id", $id);
@@ -69,29 +69,33 @@ class spages_man {
      * @return null
      * @throws EngineException 
      */
-    protected function save($data) {
+    public function save($data) {
         $admin_file = globals::g('admin_file');
         $cols = array(
             'url',
             'title',
             'content',
-            'bbcode');
+            'type');
         $update = rex($data, $cols);
         $id = (int) $data['id'];
-        $update['bbcode'] = (bool) $update['bbcode'];
         if (!validword($update['url']))
-            throw new EngineException('static_url_not_entered');
+            throw new EngineException('static_empty_url');
         if (!$update['title'])
-            throw new EngineException('static_title_not_entered');
-        if (!$update['bbcode'])
+            throw new EngineException('static_empty_title');
+        if ($update['type'] == 'html')
             $update['content'] = $data['html'];
+        elseif ($update['type'] == 'tpl') {
+            $update['content'] = $data['tpl'];
+            if (!validpath($update['content']) || !tpl::o()->template_exists($update['content']))
+                throw new EngineException('static_tpl_not_exists');
+        }
         if (!$update['content'])
-            throw new EngineException('static_content_not_entered');
+            throw new EngineException('static_empty_content');
         if (!$id) {
             db::o()->insert($update, 'static');
             log_add('added_static', 'admin', $data['url']);
         } else {
-            db::o()->update($update, 'static', 'WHERE id=' . $id . ' LIMIT 1');
+            db::o()->p($id)->update($update, 'static', 'WHERE id=? LIMIT 1');
             log_add('changed_static', 'admin', $data['url']);
         }
         furl::o()->location($admin_file);
@@ -113,7 +117,7 @@ class spages_man_ajax {
                 $this->delete($id);
                 break;
         }
-        die("OK!");
+        ok();
     }
 
     /**
@@ -121,9 +125,9 @@ class spages_man_ajax {
      * @param int $id ID страницы
      * @return null
      */
-    protected function delete($id) {
+    public function delete($id) {
         $id = (int) $id;
-        db::o()->delete('static', 'WHERE id=' . $id . ' LIMIT 1');
+        db::o()->p($id)->delete('static', 'WHERE id=? LIMIT 1');
         log_add('deleted_static', 'admin', $id);
     }
 

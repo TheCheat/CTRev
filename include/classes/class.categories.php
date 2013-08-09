@@ -23,9 +23,15 @@ class categories {
 
     /**
      * Данный тип категорий
-     * @var type $curtype 
+     * @var string $type 
      */
-    protected $curtype = "torrents";
+    protected $type = "content";
+
+    /**
+     * Допустимые типы категорий
+     * @var array $allowed_types
+     */
+    protected $allowed_types = array('content');
 
     /**
      * Конструктор категорий
@@ -47,10 +53,9 @@ class categories {
      * @param string $type тип категории
      * @return array массив категорий данного родителя
      */
-    protected static function cats2array($pid = 0, $type = 'torrents') {
-        $r = db::o()->query('SELECT * FROM categories 
-            WHERE ' . ($pid ? 'type=' . db::o()->esc($type) . ' AND' : "") . ' 
-                parent_id=' . $pid);
+    protected static function cats2array($pid = 0, $type = 'content') {
+        $r = db::o()->p($pid, $type)->query('SELECT * FROM categories 
+            WHERE parent_id=?' . ($pid ? ' AND type=?' : ""));
         $ret = array();
         while ($row = db::o()->fetch_assoc($r)) {
             $type = $row['type'];
@@ -66,23 +71,40 @@ class categories {
                 self::$c['p'][$type][$id] = &self::$c['e'][$type][$pid]; // родитель, если есть
             $a = self::cats2array($id, $type);
             if ($a)
-                self::$c['c'][$type][$id] = $a; // дети, если есть
+                self::$c['c'][$type][$id] = $a; // подкатегории, если есть
             if ($pid)
-                $ret[] = &self::$c['e'][$type][$id]; // записываем для детей, если нужно
+                $ret[] = &self::$c['e'][$type][$id]; // записываем для подкатегорий, если нужно
         }
         return $ret;
     }
 
     /**
-     * Получение категории/родителя/детей
+     * Рекурсивное получение родителей категории
+     * @param int|string $id ID категории или транслитерованное имя
+     * @return array массив родителей от самого старшего к младшему
+     */
+    protected function getp($id) {
+        $catparents = array();
+        $catparent["id"] = $id;
+        while ($catparent = $this->get($catparent["id"], 'p'))
+            $catparents[] = $catparent;
+        return array_reverse($catparents);
+    }
+
+    /**
+     * Получение категории/родителя/подкатегорий
      * @param int|string $id ID категории или транслитерованное имя
      * @param string $type получаем категорию(e), 
-     * категории без PID(t), типы(z), родителя(p) или детей(c)
+     * категории без PID(t), типы(z), родителя(p),
+     * всех родителей(ps) или подкатегорий(c)
      * @return array массив данных категории(ий) 
      */
     public function get($id = null, $type = 'e') {
         $e = !is_numeric($id) ? 'n' : 'e';
         switch ($type) {
+            case 'ps':
+                return $this->getp($id);
+                break;
             case 'e':
                 $type = $e;
             case 'p':
@@ -90,12 +112,12 @@ class categories {
             case 'c':
                 break;
             case 'z':
-                return array_keys(self::$c['e']);
+                return $this->allowed_types;
             default:
                 $type = $e;
                 break;
         }
-        return $type == 't' ? self::$c[$type][$this->curtype] : self::$c[$type][$this->curtype][$id];
+        return $type == 't' ? self::$c[$type][$this->type] : self::$c[$type][$this->type][$id];
     }
 
     /**
@@ -104,9 +126,9 @@ class categories {
      * @return categories $this
      */
     public function change_type($type) {
-        if (!self::$c['e'][$type])
+        if (!in_array($type, $this->allowed_types))
             return $this;
-        $this->curtype = $type;
+        $this->type = $type;
         return $this;
     }
 
@@ -127,6 +149,8 @@ class categories {
                 $cat = $matches[1];
         }
         $c = $this->get($cat);
+        if (!$c)
+            return;
         $cat_row = array(
             $c ['name'],
             $c ['descr'],
@@ -140,7 +164,7 @@ class categories {
     }
 
     /**
-     * Получение ID всех детей, и детей их детей, и детей их детей, и ...
+     * Получение ID всех подкатегорий, и подкатегорий подкатегорий, и...
      * @param int $id ID данной категории
      * @param array $ids уже полученные ID'ы
      * @return null
@@ -183,7 +207,8 @@ class categories {
             }
             if ($r)
                 $r = "(" . $r . ")";
-        } else
+        }
+        else
             $r = $column . '"%,' . intval($id) . ',%"';
         return $r;
     }
@@ -257,7 +282,7 @@ class categories {
             tpl::o()->assign("categories", $categories[0]);
             tpl::o()->assign("cids", $categories[1]);
         }
-        tpl::o()->assign("cattype", $this->curtype);
+        tpl::o()->assign("cattype", $this->type);
         $r = tpl::o()->fetch('categories.tpl');
         return $r;
     }
@@ -285,24 +310,27 @@ class categories {
      * Вывод категорий с родителями
      * @param array|string $cat_arr массив данных категорий/строка с их ID
      * @param array $parents массив родителей вида transl_name=>name
-     * @param string $type тип категорий
+     * @param string $type тип категорий(для модификатора)
+     * @param string $dividor разделитель для родительских категорий
      * @return string HTML код
      */
-    public function print_selected($cat_arr, $parents = null, $type = "torrents") {
+    public function print_selected($cat_arr, $parents = null, $type = "content", $dividor = "") {
         if (!$cat_arr)
             return;
         if (!is_array($cat_arr)) {
             $cat_arr = $this->cid2arr($cat_arr);
             $cat_arr = $cat_arr[1];
         }
+        if (!$dividor)
+            $dividor = "<b>&nbsp;&raquo;&nbsp;</b>";
         $this->change_type($type);
-        $type = $this->curtype;
+        $type = $this->type;
         $html = '';
         if ($parents) {
-            $html = '<b>&nbsp;&raquo;&nbsp;</b>';
+            $html = $dividor;
             foreach ($parents as $trcat => $cat)
                 $html .= '<a href="' . furl::o()->construct($type, array(
-                            'cat' => $trcat)) . '">' . $cat . '</a><b>&nbsp;&raquo;&nbsp;</b>';
+                            'cat' => $trcat)) . '">' . $cat . '</a>' . $dividor;
         }
         $b = false;
         foreach ($cat_arr as $cat) {

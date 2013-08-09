@@ -14,7 +14,7 @@ if (!defined('INSITE'))
     die("Remote access denied!");
 
 class rating_manage {
-    
+
     /**
      * Объект рейтинга
      * @var rating $rating
@@ -43,6 +43,7 @@ class rating_manage {
             default :
                 break;
         }
+        ok();
     }
 
     /**
@@ -56,7 +57,6 @@ class rating_manage {
      */
     protected function vote_to($type, $toid, $value, $stoid, $stype) {
         $error = $this->rating->change_type($type)->change_stype($stype)->vote($toid, $value, $stoid);
-        die("OK!");
     }
 
     /**

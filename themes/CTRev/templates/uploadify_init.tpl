@@ -1,11 +1,11 @@
 <script type="text/javascript"
-src="[*$theme_path*]js/uploader/swfobject.js"></script>
+src="js/uploader/swfobject.js"></script>
 <script type="text/javascript"
-src="[*$theme_path*]js/uploader/jquery.uploadify.js"></script>
+src="js/uploader/jquery.uploadify.js"></script>
 <script type="text/javascript">
     jQuery(document).ready(function ($) {
         $("#uploadify_[*$postfix*]").uploadify({
-            'uploader'       : '[*$theme_path|sl*]js/uploader/uploadify.swf',
+            'uploader'       : 'js/uploader/uploadify.swf',
             'script'         : '[*$baseurl|sl*]index.php',
             'scriptData'	 : {[*$scriptData*]},
             'method'		 : 'GET',
@@ -26,8 +26,9 @@ src="[*$theme_path*]js/uploader/jquery.uploadify.js"></script>
 
             'buttonText'	 : '[*'browse'|lang|sl*]',
             'onComplete'	 : function (event, queueID, fileObj, response) {
+        fileObj.name = html_encode(fileObj.name);
     [*if !$onComplete*]
-                        if (response=='OK!')
+                        if (is_ok(response))
                             alert("[*'success'|lang|sl*]!");
                         else
                             alert("[*'error'|lang|sl*]: "+response);

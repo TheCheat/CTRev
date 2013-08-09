@@ -46,7 +46,7 @@ final class stats {
             return;
         }
         $this->res[$name] = $value;
-        db::o()->update(array("value" => $value), "stats", "WHERE name=" . db::o()->esc($name) . " LIMIT 1");
+        db::o()->p($name)->update(array("value" => $value), "stats", "WHERE name=? LIMIT 1");
     }
 
     /**
@@ -58,7 +58,7 @@ final class stats {
         if (!isset($this->res[$name]))
             return;
         unset($this->res[$name]);
-        db::o()->delete("stats", "WHERE name=" . db::o()->esc($name) . " LIMIT 1");
+        db::o()->p($name)->delete("stats", "WHERE name=? LIMIT 1");
     }
 
     // Реализация Singleton

@@ -14,7 +14,7 @@ if (!defined('INSITE'))
     die('Remote access denied!');
 
 class getpeers {
-    
+
     /**
      * Объект bittorrent
      * @var bittorrent $bt 
@@ -22,18 +22,16 @@ class getpeers {
     protected $bt = null;
 
     /**
-     * Параметры, отсылаемые аннонсеру
+     * Объект remote
+     * @var remote $remote
+     */
+    protected $remote = null;
+
+    /**
+     * URL аннонсера
      * @var string $announce_url
      */
     protected $announce_url = "";
-
-    /**
-     * Ограничение на запрос по времени в секундах
-     * По-умолчанию DEFAULT_SOCKET_TIMEOUT
-     * @var int $time_limit
-     */
-
-    protected $time_limit = 0;
 
     /**
      * Конструктор запроса для аннонсеров
@@ -47,7 +45,7 @@ class getpeers {
         $left = 1024; // Килобайт остался, ага
         $corrupt = 0;
         $key = "79202A30";
-        $numwant = 200; // Кол-во пиров, которое мы хотим получить
+        $numwant = 50; // Кол-во пиров, которое мы хотим получить
         $compact = 1; // Чтобы быстрее. И некоторые движки не поддерживают др. режим.
         $no_peer_id = 1;
         $event = "started";
@@ -64,81 +62,8 @@ class getpeers {
         $announce_url .= "&event=" . $event;
         $this->announce_url = $announce_url;
         $this->bt = n("bittorrent");
-        if (!$this->time_limit)
-            $this->time_limit = DEFAULT_SOCKET_TIMEOUT;
-            
-    }
-
-    /**
-     * Получение контента страницы посредством сокетов
-     * @param string $url URL страницы
-     * @param string $ua User-Agent
-     * @return string контент страницы
-     */
-    public function content_via_sockets($url, $ua = "uTorrent/1820") {
-        $p = parse_url($url);
-        $host = $p['host'];
-        $path = $p['path'];
-        if (!$path)
-            $path = "/";
-        $port = $p['port'];
-        if (!$port) {
-            switch ($p['scheme']) {
-                case "https":
-                    $port = 443;
-                    $host = "ssl://" . $host;
-                    break;
-                case "udp":
-                    $port = 13;
-                    $host = "udp://" . $host;
-                    break;
-                default:
-                    $port = 80;
-                    break;
-            }
-        }
-        $query = $p['query'];
-        $r = @fsockopen($host, $port, $errno, $errstr, $this->time_limit);
-        if (!$r)
-            return;
-        $out = "GET " . $path . "?" . $query . " HTTP/1.1\r\n";
-        $out .= "Host: " . $host . "\r\n";
-        $out .= "User-Agent: " . $ua . "\r\n";
-        $out .= "Connection: Close\r\n\r\n";
-        if (!@fwrite($r, $out))
-            return; // для UDP
-        $c = '';
-        while (!feof($r))
-            $c .= fgets($r, 1024);
-        return $this->parse_headers($c);
-    }
-
-    /**
-     * Обрезание заголовков и парсинг чанков
-     * @param string $c контент с заголовками
-     * @return string спарсенный контент
-     */
-    protected function parse_headers($c) {
-        $hend = "\r\n\r\n";
-        $p = strpos($c, $hend);
-        $h = substr($c, 0, $p);
-        $c = trim(substr($c, $p + strlen($hend)));
-        if (preg_match('/Transfer-Encoding\:\s*chunked\r\n/siu', $h)) {
-            $r = '';
-            $nl = "\r\n";
-            $nll = strlen($nl);
-            do {
-                $p = strpos($c, $nl);
-                $clen = hexdec(substr($c, 0, $p));
-                $p += $nll;
-                $r .= substr($c, $p, $clen);
-                $c = substr($c, $p + $clen + 2); // + 2 ибо перевод на новую строку
-                if (!$clen)
-                    break;
-            } while ($c);
-            $c = $r;
-        }
-        return $c;
+        $r = n("remote", true);
+        $this->remote = new $r(null, null, "uTorrent/1820");
     }
 
     /**
@@ -149,22 +74,7 @@ class getpeers {
      */
     protected function send_request($url, $infohash) {
         $url = $url . (strpos($url, "?") ? "&" : "?") . $this->announce_url . '&info_hash=' . $infohash;
-        $ua = "uTorrent/1820";
-        if (function_exists("curl_init")) {
-            $ch = curl_init();
-
-            curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_HEADER, false);
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->time_limit);
-            curl_setopt($ch, CURLOPT_TIMEOUT, $this->time_limit);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_USERAGENT, $ua);
-
-            @$r = curl_exec($ch);
-
-            curl_close($ch);
-        } else
-            $r = $this->content_via_sockets($url, $ua);
+        $r = $this->remote->send_request($url);
         return $r;
     }
 
@@ -198,7 +108,7 @@ class getpeers {
         }
         $stat['last_update'] = time();
         if ($update)
-            db::o()->update(array('announce_stat' => serialize($stat)), 'torrents', 'WHERE id=' . $tid . ' LIMIT 1');
+            db::o()->p($tid)->update(array('announce_stat' => serialize($stat)), 'content_torrents', 'WHERE cid=? LIMIT 1');
         return $stat;
     }
 

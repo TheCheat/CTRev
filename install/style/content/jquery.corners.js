@@ -1,6 +1,6 @@
 /**
  * Инициализация скруглённых углов
- * @return null
+ * @returns {null}
  */
 function init_corners() {
     jQuery(document).ready(function($) {
@@ -28,17 +28,17 @@ function init_corners() {
 
 /**
  * Добавление скруглённых углов
- * @param obj object объект для действий
- * @param size int радиус скругления
- * @return null
+ * @param {object} obj объект для действий
+ * @param {int} size радиус скругления
+ * @returns {null}
  */
 function add_corners(obj, size) {
     var t = jQuery(obj);
-    var b = (size?size:'5')+'px';
+    var b = (size ? size : '5') + 'px';
     if (t.is('.js_notop'))
-        b = '0 0 '+b+' '+b;
-    else if (t.is('.js_nobottom')) 
-        b = b+' '+b+' 0 0';
+        b = '0 0 ' + b + ' ' + b;
+    else if (t.is('.js_nobottom'))
+        b = b + ' ' + b + ' 0 0';
     t.css({
         'border-radius': b,
         '-moz-border-radius': b,

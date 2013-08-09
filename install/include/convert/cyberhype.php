@@ -27,6 +27,12 @@ class get_convert {
     private $db = 'cyberhype';
 
     /**
+     * Префикс таблиц
+     * @var string $prefix
+     */
+    private $prefix = '';
+
+    /**
      * Сопоставление групп
      * @var array $groups
      */
@@ -35,11 +41,13 @@ class get_convert {
     /**
      * Конструктор класса
      * @param string $db имя БД
+     * @param string $prefix префикс таблиц
      * @param array $groups список групп
      * @return null
      */
-    public function __construct($db, $groups) {
+    public function __construct($db, $prefix, $groups) {
         $this->db = $db;
+        $this->prefix = $prefix;
         $this->groups = (array) $groups;
     }
 
@@ -50,7 +58,7 @@ class get_convert {
      */
     public function get_incatid($id) {
         if (!($max = stats::o()->read(convert::stfield)))
-            stats::o()->write(convert::stfield, ($max = db::o()->act_row('categories', 'id', 'MAX')));
+            stats::o()->write(convert::stfield, ($max = db::o()->act_rows('categories', 'id', 'max')));
         return $max + $id;
     }
 
@@ -60,7 +68,7 @@ class get_convert {
      * @return int ID торрента
      */
     public function get_tfile($row) {
-        $fname = bittorrent::get_filename($row['posted_time'], $row['poster_id']);
+        $fname = default_filename($row['posted_time'], $row['poster_id']);
         $path = ROOT . config::o()->v('torrents_folder') . '/';
         $nname = $path . bittorrent::torrent_prefix . $fname . ".torrent";
         $oname = $path . $row['id'] . ".torrent";
@@ -86,7 +94,7 @@ class get_convert {
      * @return string список файлов
      */
     public function get_filelist($id) {
-        $r = db::o()->query('SELECT filename, size FROM `' . $this->db . '`.`files` 
+        $r = db::o()->no_parse()->query('SELECT filename, size FROM `' . $this->db . '`.`files` 
             WHERE torrent=' . $id . ' LIMIT 0, ' . (bittorrent::max_filelist + 1));
         $arr = db::o()->fetch2array($r, "row");
         $c = count($arr);
@@ -172,7 +180,8 @@ class get_convert {
             if (file_exists($npname))
                 return $nname;
             return '';
-        } else
+        }
+        else
             return $avatar;
     }
 

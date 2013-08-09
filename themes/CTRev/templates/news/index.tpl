@@ -8,13 +8,13 @@
         </a>
     [*/if*]
 </legend>
-<script src="[*$theme_path*]js/jquery.jtip.js" type="text/javascript"></script>
+<script src="js/jquery.jtip.js" type="text/javascript"></script>
 <script type='text/javascript'>
     function delete_news($id) {
         if (!confirm('[*'news_are_you_sure_to_delete'|lang*]'))
         return;
         var fk = {[*fk ajax=2*]};
-        jQuery.post('[*$baseurl*]index.php?module=news&act=delete&from_ajax=1&id='+$id, fk, function() {
+        jQuery.post('index.php?module=news&act=delete&from_ajax=1&id='+$id, fk, function() {
             jQuery('#news_id'+$id).fadeOut(300, function () {
                 jQuery(this).remove()
             });

@@ -56,7 +56,7 @@ class bots_man {
     protected function add($id = null) {
         $id = (int) $id;
         if ($id) {
-            $r = db::o()->query('SELECT * FROM bots WHERE id=' . $id . ' LIMIT 1');
+            $r = db::o()->p($id)->query('SELECT * FROM bots WHERE id=? LIMIT 1');
             tpl::o()->assign("row", db::o()->fetch_assoc($r));
         }
         tpl::o()->assign("id", $id);
@@ -69,7 +69,7 @@ class bots_man {
      * @return null
      * @throws EngineException 
      */
-    protected function save($data) {
+    public function save($data) {
         $admin_file = globals::g('admin_file');
         $cols = array(
             'id',
@@ -79,21 +79,13 @@ class bots_man {
             'agent');
         extract(rex($data, $cols));
         $id = (int) $id;
-        $firstip = ip2ulong($firstip);
-        $lastip = ip2ulong($lastip);
-        if ($lastip && !$firstip)
-            $firstip = $lastip;
-        if ($firstip && !$lastip)
-            $lastip = $firstip;
-        if ($firstip > $lastip && $lastip) {
-            $t = $firstip;
-            $firstip = $lastip;
-            $lastip = $t;
-        }
+        /* @var $etc etc */
+        $etc = n("etc");
+        $etc->get_ips($firstip, $lastip, true);
         if (!$name)
-            throw new EngineException('bots_name_not_entered');
+            throw new EngineException('bots_empty_name');
         if (!$firstip && !$lastip && !$agent)
-            throw new EngineException('bots_data_not_entered');
+            throw new EngineException('bots_empty_data');
         $update = array(
             'name' => $name,
             'firstip' => $firstip,
@@ -103,7 +95,7 @@ class bots_man {
             db::o()->insert($update, 'bots');
             log_add('added_bot', 'admin');
         } else {
-            db::o()->update($update, 'bots', 'WHERE id=' . $id . ' LIMIT 1');
+            db::o()->p($id)->update($update, 'bots', 'WHERE id=? LIMIT 1');
             log_add('changed_bot', 'admin', $id);
         }
         furl::o()->location($admin_file);
@@ -125,7 +117,7 @@ class bots_man_ajax {
                 $this->delete($id);
                 break;
         }
-        die("OK!");
+        ok();
     }
 
     /**
@@ -133,9 +125,9 @@ class bots_man_ajax {
      * @param int $id ID бота
      * @return null
      */
-    protected function delete($id) {
+    public function delete($id) {
         $id = (int) $id;
-        db::o()->delete('bots', 'WHERE id=' . $id . ' LIMIT 1');
+        db::o()->p($id)->delete('bots', 'WHERE id=? LIMIT 1');
         log_add('deleted_bot', 'admin', $id);
     }
 

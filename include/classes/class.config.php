@@ -79,9 +79,31 @@ final class config {
         $update = array('value' => (string) $value);
         if ($sort)
             $update['sort'] = (int) $sort;
-        db::o()->update($update, 'config', 'WHERE name=' . db::o()->esc($var) . ' LIMIT 1');
+        db::o()->p($var)->update($update, 'config', 'WHERE name=? LIMIT 1');
     }
-    
+
+    /**
+     * Удаление параметра конфигурации
+     * @param string $var имя переменной
+     * @return null
+     */
+    public function remove($var) {
+        unset($this->vars[$var]);
+        db::o()->p($var)->delete('config', 'WHERE name=? LIMIT 1');
+    }
+
+    /**
+     * Проверка, включен ли модуль
+     * @param string $module имя модуля
+     * @return bool true, если включен
+     */
+    public function mstate($module) {
+        $disabled = &$this->vars['disabled_modules'];
+        if (!is_array($disabled))
+            $disabled = explode(';', $disabled);
+        return allowed::o()->is_basic($module) || !in_array($module, $disabled);
+    }
+
     // Реализация Singleton
 
     /**
@@ -92,12 +114,19 @@ final class config {
 
     /**
      * Конструктор? А где конструктор? А нет его.
-     * @param string $cat категория конфига
+     * @param string|array $cat категория конфига
      * @return null 
      */
     private function __construct($cat = '') {
-        $cat = $cat ? ' WHERE cat=' . db::o()->esc($cat) : '';
-        $r = db::o()->query("SELECT name, value FROM config" . $cat);
+        $where = "";
+        if ($cat) {
+            if (is_array($cat))
+                $where = ' IN(@' . count($cat) . '?)';
+            else
+                $where = ' =?';
+            $where = ' WHERE cat ' . $where;
+        }
+        $r = db::o()->p($cat)->query("SELECT name, value FROM config" . $where);
         $this->vars = db::o()->fetch2array($r, null, array('name' => 'value'));
     }
 
@@ -119,7 +148,7 @@ final class config {
 
     /**
      * Получение объекта класса
-     * @param string $cat категория конфига
+     * @param string|array $cat категория конфига
      * @return config $this
      */
     public static function o($cat = '') {

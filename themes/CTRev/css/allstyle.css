@@ -125,10 +125,6 @@ div.content div.tr div.td_padded_right {
     color: white;
 }
 
-.blue_border {
-    border: 2px solid #265b8d;
-}
-
 .gray_border {
     border: 2px solid #e2e2e1;
 }
@@ -571,12 +567,12 @@ div.status_icon {
 
 div.status_icon_loading {
     display: block;
-    background-image: url(../engine_images/blue_loading.gif);
+    background-image: url(../images/loading/undercolored_loading.gif);
 }
 
 div.status_icon_loading_white {
     display: block;
-    background-image: url(../engine_images/white_loading.gif);
+    background-image: url(../images/loading/white_loading.gif);
 }
 
 div.status_icon_error {
@@ -646,8 +642,8 @@ div.query_stat {
 }
 
 input.very_simple_button {    
-    background: #DFDFDF;
-    border: 1px solid #AFAFAF;
+    background: #DFDFDF !important;
+    border: 1px solid #AFAFAF !important;
     height: auto;
     width: auto;
     color: #666;
@@ -656,7 +652,7 @@ input.very_simple_button {
 }
 
 input.very_simple_button:hover {
-    border-color: gray;
+    border-color: gray !important;
 }
 
 
@@ -666,4 +662,39 @@ img.passgen {
     height: 14px;
     left: -16px;
     top: 3px;
+}
+
+span.db_queries {
+    background-image: url(../engine_images/db_queries.png);
+    background-repeat: no-repeat;
+    height: 12px;
+    padding-left: 13px;
+}
+
+ul.links {
+    padding: 2px 15px;
+    margin: 0px;
+    color: white;
+}
+
+ul.links li {
+    margin: 1px 0 0 0;
+    padding: 0px;
+}
+
+ul.links li a {
+    color: white;
+}
+
+div.center_block_padder {    
+    padding: 0 20px;
+}
+
+#message_container .modalbox_content {
+    min-width: 500px;
+}
+
+#messages_status_icon {
+    position: relative;
+    float: left;
 }

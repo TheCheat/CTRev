@@ -8,7 +8,7 @@
  * @copyright         	(c) 2008-2012, Cyber-Team
  * @author 	  	The Cheat <cybertmdev@gmail.com>
  * @name                Класс подписок
- * @note            Подписка только для данной категории, на дочерние не действует.
+ * @note                Подписка только для данной категории, на дочерние не действует.
  * @version           	1.00
  */
 if (!defined('INSITE'))
@@ -36,14 +36,14 @@ class mailer extends pluginable_object {
      * Тип подписок
      * @var string $type
      */
-    protected $type = 'torrents';
+    protected $type = 'content';
 
     /**
      * Допустимые типы
      * @var array $allowed_types
      */
     protected $allowed_types = array(
-        'torrents',
+        'content',
         'category');
 
     /**
@@ -73,7 +73,7 @@ class mailer extends pluginable_object {
      * @param string $type тип подписки
      * @return string код заголовка
      */
-    public function get_title($id, $type = "torrents") {
+    public function get_title($id, $type = "content") {
         $vars = $this->change_type($type)->get_vars($id);
         $link = $vars["link"];
         $name = $vars["name"];
@@ -87,11 +87,10 @@ class mailer extends pluginable_object {
      * @return null
      */
     public function show() {
-        if (!$this->state) {
+        if (!$this->state)
             disabled();
-            return;
-        }
-        $res = db::o()->query("SELECT * FROM mailer");
+        users::o()->check_perms();
+        $res = db::o()->p(users::o()->v('id'))->query("SELECT * FROM mailer WHERE user=?");
         tpl::o()->register_modifier('get_mailer_title', array($this, "get_title"));
         tpl::o()->assign('mailer_res', db::o()->fetch2array($res));
         tpl::o()->assign('intervals', self::$allowed_interval);
@@ -120,7 +119,7 @@ class mailer extends pluginable_object {
             "toid" => (int) $id,
             "type" => $type
         );
-        $upd = array("interval" => ($interval ? $interval : users::o()->v('mailer_interval')));
+        $upd = array("interval" => (!is_null($interval) ? $interval : users::o()->v('mailer_interval')));
         if (!$updt) {
             db::o()->no_error();
             db::o()->insert(array_merge($upd, $where), "mailer");
@@ -128,12 +127,16 @@ class mailer extends pluginable_object {
                 throw new EngineException(lang::o()->v('db_error') . '(' . db::o()->errno() . ')');
             return true;
         }
-        if ($updt || (db::o()->errno() == UNIQUE_VALUE_ERROR && $interval)) {
+        if ($updt || (db::o()->errno() == UNIQUE_VALUE_ERROR && !is_null($interval))) {
             $wh = "";
-            foreach ($where as $key => $value)
-                $wh .= ( $wh ? " AND " : "") . "`" . $key . '`=' . db::o()->esc($value);
-            return db::o()->update($upd, "mailer", "WHERE " . $wh . " LIMIT 1");
-        } else
+            foreach ($where as $key => $value) {
+                db::o()->p($value);
+                $wh .= ( $wh ? " AND " : "") . "`" . $key . '`=?';
+            }
+            if ($wh)
+                return db::o()->update($upd, "mailer", "WHERE " . $wh . " LIMIT 1");
+        }
+        else
             return true;
     }
 
@@ -149,13 +152,8 @@ class mailer extends pluginable_object {
         $type = $this->type;
         users::o()->check_perms();
         $id = (int) $id;
-        if ($user)
-            $where = 'user = ' . $id;
-        else
-            $where = "user = " . users::o()->v('id') .
-                    " AND toid = " . $id .
-                    " AND type = " . db::o()->esc($type);
-        return db::o()->delete("mailer", "WHERE " . $where . " LIMIT 1");
+        return db::o()->p($user ? $id : users::o()->v('id'), $id, $type)->delete("mailer", "WHERE user = ?" .
+                        (!$user ? " AND toid = ? AND type = ?" : "") . " LIMIT 1");
     }
 
     /**
@@ -167,14 +165,15 @@ class mailer extends pluginable_object {
         if (!$this->state)
             return true;
         $type = $this->type;
+        users::o()->check_perms();
         if (!$id)
             return;
         if (is_array($id))
-            $id = 'IN(' . implode(',', array_map('intval', $id)) . ')';
+            $where = 'IN(@' . count($id) . '?)';
         else
-            $id = '= ' . ((int) $id);
-        $where = 'toid ' . $id . ' AND type=' . db::o()->esc($type);
-        $ret = db::o()->update(array("is_new" => 1), "mailer", "WHERE " . $where);
+            $where = '=?';
+        $where = 'toid ' . $where . ' AND type=?';
+        $ret = db::o()->p($id, $type)->update(array("is_new" => 1), "mailer", "WHERE " . $where);
         $this->cleanup($id);
         return $ret;
     }
@@ -189,34 +188,37 @@ class mailer extends pluginable_object {
             return true;
         $type = $this->type;
         $id = (int) $id;
-        if (!$type)
-            $id = null;
         $where = "m.last_check <= (" . time() . ($id ? " - interval" : "") . ")
             AND m.is_new='1'" . ($id ? "
                 AND m.interval=0
-                AND m.toid=" . $id . "
-                AND m.type=" . db::o()->esc($type) : "");
-        $res = db::o()->query('SELECT m.user,m.toid,m.type, u.email FROM mailer AS m
+                AND m.toid=?
+                AND m.type=?" : "");
+        $po = (int) config::o()->v('mailer_per_once');
+        $res = db::o()->p($id, $type)->query('SELECT m.user,m.toid,m.type, u.email FROM mailer AS m
             LEFT JOIN users AS u ON u.id=m.user
-            WHERE ' . $where . (config::o()->v('mailer_per_once') ? ' LIMIT ' . config::o()->v('mailer_per_once') : ''));
+            WHERE ' . $where . ($po ? ' LIMIT ' . $po : ''));
         $where = array();
-        $c = 0;
         while ($row = db::o()->fetch_assoc($res)) {
-            $this->send_mail($row["email"], $id);
+            $this->send_mail($row["email"], $row["toid"]);
             $where[$row["type"]]["user"][] = $row["user"];
             $where[$row["type"]]["toid"][] = $row["toid"];
-            $c++;
         }
         $wh = "";
         foreach ($where as $type => $vs) {
-            $wh .= ( $wh ? " OR " : "") . "(type=" . db::o()->esc($type);
-            foreach ($vs as $what => $vals)
-                $wh .= " AND `" . $what . "` IN (" . implode(',', $vals) . ")";
+            if (!$vs)
+                continue;
+            db::o()->p($type);
+            $wh .= ( $wh ? " OR " : "") . "(type=?";
+            foreach ($vs as $what => $vals) {
+                if (!$vals || !is_array($vals))
+                    continue;
+                db::o()->p($vals);
+                $wh .= " AND `" . $what . "` IN (@" . count($vals) . "?)";
+            }
             $wh .= ")";
         }
         if ($wh)
-            return db::o()->update(array("last_check" => time(),
-                        "is_new" => 0), "mailer", ($wh ? "WHERE " . $wh : "") . " LIMIT " . $c);
+            return db::o()->update(array("last_check" => time(), "is_new" => 0), "mailer", "WHERE " . $wh);
     }
 
     /**
@@ -241,19 +243,21 @@ class mailer extends pluginable_object {
         $cats = n("categories");
         $res = $cats->get($id);
         $name = $res["name"];
-        $link = furl::o()->construct('torrents', array('act' => 'new', 'cat' => $res["transl_name"]));
+        $link = furl::o()->construct("content", array('act' => 'new', 'cat' => $res["transl_name"]));
         return array("link" => $link, "name" => $name);
     }
 
     /**
-     * Получение переменных для торрентов
-     * @param int $id ID торрента
+     * Получение переменных для контента
+     * @param int $id ID контента
      * @return array массив переменных
      */
-    protected function get_vars_torrents($id) {
-        $res = db::o()->fetch_assoc(db::o()->query('SELECT title FROM torrents WHERE id=' . $id . ' LIMIT 1'));
+    protected function get_vars_content($id) {
+        $id = (int) $id;
+        $q = db::o()->p($id)->query('SELECT title FROM content WHERE id=? LIMIT 1');
+        $res = db::o()->fetch_assoc($q);
         $name = $res["title"];
-        $link = furl::o()->construct('torrents', array('title' => $name, 'id' => $id));
+        $link = furl::o()->construct('content', array('title' => $name, 'id' => $id));
         return array("link" => $link, "name" => $name);
     }
 

@@ -40,6 +40,12 @@ final class lang {
     private $vars = array();
 
     /**
+     * Языковые переменные поверх обычных
+     * @var array $overvars
+     */
+    private $overvars = array();
+
+    /**
      * Последний используемый язык
      * @var string $last
      */
@@ -74,6 +80,8 @@ final class lang {
      * иначе просто возвращает данную строку
      */
     public function if_exists($var) {
+        if (isset($this->overvars[$var]))
+            return $this->overvars[$var];
         if (isset($this->vars[$var]))
             return $this->vars[$var];
         else
@@ -96,6 +104,8 @@ final class lang {
      * @return string значение 
      */
     public function v($var, $nsure = false) {
+        if (isset($this->overvars[$var]))
+            return $this->overvars[$var];
         if ($nsure && !isset($this->vars[$var]))
             return '';
         if (isset($this->vars[$var]))
@@ -108,10 +118,11 @@ final class lang {
      * Подключение языка
      * @param string $file подключаемый файл(!тип файла не указывается!)
      * @param string $folder дирректория языка
-     * @param bool $join соединить с остальными переменными? Иначе возвращает массив.
+     * @param bool $join соединить с остальными переменными? Иначе возвращает массив
+     * @param bool $over записывать в overvars?
      * @return bool в зависимости от статуса
      */
-    public function get($file, $folder = null, $join = true) {
+    public function get($file, $folder = null, $join = true, $over = false) {
         $file = strtolower($file);
         if (!$folder)
             $folder = $this->folder;
@@ -133,7 +144,11 @@ final class lang {
         if (!$join)
             return $languages;
         $this->remove_splitters($languages);
-        $this->vars = array_merge($this->vars, $languages);
+        if ($over)
+            $vars = &$this->overvars;
+        else
+            $vars = &$this->vars;
+        $vars = array_merge($vars, $languages);
         $this->included [$file] = true;
         if ($this->binding [$file]) {
             $bind = (array) $this->binding [$file];

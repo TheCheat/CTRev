@@ -4,8 +4,8 @@
             if (!confirm("[*'pm_are_you_sure_to_delete'|lang|sl*]"))
             return;
         }
-        jQuery.post("[*$baseurl|sl*]index.php?[*fk ajax=1*]module=messages&from_ajax=1&act="+($read?"s_read":"delete"), {"item":$id}, function (data) {
-            if (data=="OK!") {
+        jQuery.post("index.php?[*fk ajax=1*]module=messages&from_ajax=1&act="+($read?"s_read":"delete"), {"item":$id}, function (data) {
+            if (is_ok(data)) {
                 if (!jQuery.isFunction($div)) {
                     if (!$div) {
                         jQuery("tr.item_"+$id).children("td").each(function () {
@@ -21,13 +21,13 @@
                     }
                 } else
                     $div($param);
-                alert("[*'success'|lang|sl*]!");
+                //alert("[*'success'|lang|sl*]!");
             } else
                 alert("[*'error'|lang|sl*]: "+data);
         });
     }
     function read_msg($id) {
-        jQuery.post("[*$baseurl|sl*]index.php?module=messages&from_ajax=1&act=read", {"id": $id}, function (data) {
+        jQuery.post("index.php?module=messages&from_ajax=1&act=read", {"id": $id}, function (data) {
             jQuery("div.body_messages").empty();
             jQuery("div.body_messages").append(data);
         });

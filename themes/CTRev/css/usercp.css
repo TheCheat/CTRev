@@ -19,3 +19,18 @@ span.menu_ucp_selected {
 .usercp_friends_content_bordered {
     border-top: 1px gray dashed;
 }
+
+.theme_color_selector {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin: 0 2px;
+    background: white;
+    border: 2px solid #C5C5C5;
+    cursor: pointer;
+    text-indent: -99999em;
+}
+
+.theme_color_selected {
+    border-color: #666;
+}

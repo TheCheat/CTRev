@@ -1,15 +1,15 @@
 [*if !$inited_bbcodes*]
-    <script type="text/javascript" src="[*$theme_path*]js/jquery.a-tools.js"></script>
-    <script type="text/javascript" src="[*$theme_path*]js/jquery.trackbar.js"></script>
-    <script type="text/javascript" src="[*$theme_path*]js/jquery.colorpicker.js"></script>
-    <script type="text/javascript" src="[*$theme_path*]js/jquery.slideshow.js"></script>
+    <script type="text/javascript" src="js/jquery.a-tools.js"></script>
+    <script type="text/javascript" src="js/jquery.trackbar.js"></script>
+    <script type="text/javascript" src="js/jquery.colorpicker.js"></script>
+    <script type="text/javascript" src="js/jquery.slideshow.js"></script>
     <script type="text/javascript">
         URL_PATTERN = /[*$URL_PATTERN*]/gi;
         please_enter_link = '[*'bbcode_please_enter_link'|lang|sl*]';
         please_enter_pos = '[*'bbcode_please_enter_img_position'|lang|sl*]';
         bbcode_error = '[*'bbcode_error'|lang|sl*]';
         smilies_array = [*$smilies_array*];
-        smilies_src = '[*$baseurl|sl*][*'smilies_folder'|config|sl*]/';
+        smilies_src = '[*'smilies_folder'|config|sl*]/';
         lang_bbcodes = {
             "code":'[*'bbcode_wysiwyg_code'|lang|sl*]',
             "spoiler":'[*'bbcode_wysiwyg_spoiler'|lang|sl*]',
@@ -21,7 +21,7 @@
         };
     </script>
     <script type="text/javascript"
-    src="[*$theme_path*]js/jquery.bbeditor.js"></script>
+    src="js/jquery.bbeditor.js"></script>
 [*/if*]
 <script type="text/javascript">
     opacity_bbcodes();
@@ -106,7 +106,7 @@
                     <div class="menu fixed_height_menu" style="width: 120px;">
                         <div class="cornerText">
                             [*foreach from=$smilies item=res key=num*]
-                                <img src="[*$baseurl*][*'smilies_folder'|config*]/[*$res.image*]"
+                                <img src="[*'smilies_folder'|config*]/[*$res.image*]"
                                      alt="[*$res.name*]" title="[*$res.name*]"
                                      onclick="insert_smilie('[*$textarea_name|sl*]', '[*$res.code|sl*]');">
                                 <!--&nbsp;

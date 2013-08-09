@@ -158,13 +158,25 @@ class styles_man {
     protected function files($name, $folder = null) {
         display::o()->filechooser(THEMES_PATH, $name, $folder, self::$spaths);
     }
+    
+    /**
+     * Проверка, является ли данная тема темой АЦ
+     * @param string $row тема
+     * @return bool true, если не является
+     */
+    public function admin_check($row) {
+        if (strtolower($row) == strtolower(ADMIN_THEME))
+            return false;
+        return true;
+    }
 
     /**
      * Вывод списка тем
      * @return null 
      */
-    public function show() {
+    protected function show() {
         $rows = file::o()->open_folder(THEMES_PATH, true);
+        $rows = array_filter($rows, array($this, "admin_check"));
         tpl::o()->assign('rows', $rows);
         tpl::o()->register_modifier('get_style_conf', array(tpl::o(), 'init_cfg'));
         tpl::o()->display('admin/styles/index.tpl');
@@ -176,7 +188,7 @@ class styles_man {
      * @return null
      * @throws EngineException 
      */
-    protected function save($data) {
+    public function save($data) {
         $admin_file = globals::g('admin_file');
         $cols = array(
             'name' => 'id',
@@ -216,13 +228,14 @@ class styles_man_ajax {
     /**
      * Инициализация AJAX-части модуля
      * @return null
+     * @throws EngineException
      */
     public function init() {
         $POST = globals::g('POST');
         $act = $_GET['act'];
         $name = $_POST['id'];
         if (!validfolder($name, THEMES_PATH))
-            die();
+            throw new EngineException;
         switch ($act) {
             case "replace":
                 $_POST['search'] = $POST['search'];
@@ -242,7 +255,7 @@ class styles_man_ajax {
                 $this->bydefault($name);
                 break;
         }
-        die('OK!');
+        ok();
     }
 
     /**
@@ -251,7 +264,7 @@ class styles_man_ajax {
      * @param array $data данные поиска
      * @return null
      */
-    protected function replace($name, $data) {
+    public function replace($name, $data) {
         $cols = array(
             'what' => 'search',
             'with',
@@ -283,7 +296,7 @@ class styles_man_ajax {
      * @return null
      * @throws EngineException
      */
-    protected function delete_file($name, $f2d) {
+    public function delete_file($name, $f2d) {
         $f2d = validpath($f2d, false, styles_man::$spaths);
         if (preg_match('/^\/*(' . implode('|', array_map('mpc', styles_man::$spaths)) . ')\/*$/siu', trim($f2d)))
             throw new EngineException;
@@ -296,9 +309,9 @@ class styles_man_ajax {
      * @param string $name имя темы
      * @return null
      */
-    protected function delete($name) {
+    public function delete($name) {
         $rows = file::o()->open_folder(THEMES_PATH, true);
-        if (count($rows) < 2)
+        if (count($rows) < 3) // Стандартная + АЦ + удаляемая
             return;
         if (config::o()->v('default_style') == $name) {
             $i = array_search($name, $rows);
@@ -316,7 +329,7 @@ class styles_man_ajax {
      * @return null
      * @throws EngineException
      */
-    protected function copy($name, $newname) {
+    public function copy($name, $newname) {
         lang::o()->get('admin/styles');
         if (!validword($newname))
             throw new EngineException('styles_invalid_new_name');
@@ -329,7 +342,7 @@ class styles_man_ajax {
      * @param string $name имя темы
      * @return null
      */
-    protected function bydefault($name) {
+    public function bydefault($name) {
         if (config::o()->v('default_style') == $name)
             return;
         config::o()->set('default_style', $name);

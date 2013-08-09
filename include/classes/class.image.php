@@ -16,18 +16,6 @@ if (!defined('INSITE'))
 class image {
 
     /**
-     * Ширина превью
-     * @var int $preview_width
-     */
-    protected $preview_width = 0;
-
-    /**
-     * Высота превью
-     * @var int $preview_height
-     */
-    protected $preview_height = 0;
-
-    /**
      * Стандартный размер букв
      * @var int $size_def
      */
@@ -58,15 +46,32 @@ class image {
     protected $color_to = 0x333333;
 
     /**
-     * Установка размеров превьюшки
-     * @param int $width ширина
-     * @param int $height высота
-     * @return image $this
+     * Данные шрифта
+     * @var array $shrift_data
      */
-    public function set_preview_size($width, $height) {
-        $this->preview_height = (int) $height;
-        $this->preview_width = (int) $width;
-        return $this;
+    protected $shrift_data = null;
+
+    /**
+     * Позиции цветов, ближе к белому(вида rgb)
+     * @var array $white_colors
+     */
+    protected $white_colors = array(020, 021, 022, 111, 112, 120, 121, 122, 201, 202, 210, 211, 212, 220, 221, 222);
+
+    /**
+     * Функция для тестирования цветов
+     * @return null
+     */
+    public function test_colors() {
+        for ($r = 0; $r < 3; $r++) {
+            for ($g = 0; $g < 3; $g++) {
+                for ($b = 0; $b < 3; $b++) {
+                    $color = $this->rgb2hex($r * 128, $g * 128, $b * 128);
+                    print($r . $g . $b . ": <span style='background-color:" . $color . ";padding:0 5px;'><b>BLACK</b></span>
+                <span style='background-color:" . $color . ";padding:0 5px;color:white;'><b>WHITE</b></span>
+                <br>");
+                }
+            }
+        }
     }
 
     /**
@@ -125,10 +130,7 @@ class image {
         $r = longval($r);
         $g = longval($g);
         $b = longval($b);
-        // invert COLOR
-        $r = (255 - $r);
-        $g = (255 - $g);
-        $b = (255 - $b);
+
         $r = dechex($r < 0 ? 0 : ($r > 255 ? 255 : $r));
         $g = dechex($g < 0 ? 0 : ($g > 255 ? 255 : $g));
         $b = dechex($b < 0 ? 0 : ($b > 255 ? 255 : $b));
@@ -140,8 +142,88 @@ class image {
     }
 
     /**
+     * Вычисление положения текста
+     * @param resource $img ресурс изображения
+     * @param string $text накладываемый текст
+     * @param string $pos позиция, 2 символа(1-й l|r|c - лево,право,центр, 2-й t|b|c - верх,низ,центр)
+     * @param bool $random_size случайный размер букв
+     * @return array массив координат (x,y) положения текста и массива размеров ватермарка
+     */
+    protected function watermark_pos(&$img, $text, $pos, $random_size = false) {
+
+        list($shrift_weight, $shrift_rotate, $shrift_template) = $this->shrift_data;
+        if (!preg_match("/^[lrc][tbc]$/siu", $pos))
+            $pos = "rb";
+
+        $pos1 = $pos [0];
+        $pos2 = $pos [1];
+        $WIDTH = imagesx($img);
+        $HEIGHT = imagesy($img);
+        $bbox = imagettfbbox(($random_size ? $this->size_max : $shrift_weight), $shrift_rotate, $shrift_template, $text);
+        if ($pos1 == "r")
+            $watermark_x = $WIDTH - ($bbox [2] - $bbox [0]) - 5;
+        elseif ($pos1 == "c")
+            $watermark_x = ($WIDTH - ($bbox [2] - $bbox [0])) / 2;
+        else
+            $watermark_x = 5;
+        if ($pos2 == "t")
+            $watermark_y = ($bbox [1] - $bbox [7]);
+        elseif ($pos2 == "c")
+            $watermark_y = ($HEIGHT + ($bbox [1] - $bbox [7]) / 2) / 2;
+        else
+            $watermark_y = $HEIGHT - ($bbox [1] - $bbox [7]) / 4;
+        return array($watermark_x, $watermark_y, $bbox);
+    }
+
+    /**
+     * Вычисление положения цвета
+     * @param int $color цвет в RGB
+     * @return int его положение
+     */
+    protected function position_color($color) {
+        // если цвет ближе к 0, то 0
+        if ($color <= 64)
+            return 0;
+        // если ближе к 256, то 2
+        elseif ($color >= 192)
+            return 2;
+        // если ближе к 128, то 1
+        else
+            return 1;
+    }
+
+    /**
+     * Подборка наилучшего цвета для отображения на данном фоне
+     * @param string $color цвет
+     * @param resource $img ресурс изображения
+     * @param int $watermark_x положение ватермарка по x
+     * @param int $watermark_y положение ватермарка по y
+     * @param array $bbox массив размеров ватермарка
+     * @return null
+     */
+    protected function parse_color(&$color, &$img, $watermark_x, $watermark_y, $bbox) {
+        if ($color == "auto" || !preg_match('/^([0-9A-fa-f]){6}$/siu', $color)) {
+            // берём из середины текста
+            $watermark_x += ($bbox[2] - $bbox[0]) / 2;
+            $watermark_y += ($bbox[3] - $bbox[1]) / 2;
+            $totalcolor = imagecolorat($img, $watermark_x, $watermark_y);
+            $rgb = imagecolorsforindex($img, $totalcolor);
+            $r = $this->position_color($rgb ['red']);
+            $g = $this->position_color($rgb ['green']);
+            $b = $this->position_color($rgb ['blue']);
+            if (in_array($this->white_colors[$r . $g . $b]))
+                $color = '0x000000'; // чёрный
+            else
+                $color = '0xFFFFFF'; // белый
+        }
+        else
+            $color = '0x' . $color;
+    }
+
+    /**
      * Метода наложения текста на изображение
-     * @param string $image_path путь к изображению
+     * @param string|array $image_path путь к изображению
+     * если массив, то первый элемент - путь, второй - с типом изображения
      * @param string $text накладываемый текст
      * @param string $color цвет изображения
      * @param bool $rewrite перезаписывать ли изображение, иначе - выводится на экран
@@ -155,49 +237,43 @@ class image {
     public function watermark($image_path, $text, $color = 'auto', $rewrite = false, $font = "upload/fonts/watermark.ttf", $pos = "rb", $random_color = false, $random_size = false) {
         lang::o()->get('file');
         $font = ($font ? $font : "upload/fonts/watermark.ttf");
+        if (is_array($image_path)) {
+            list($image_path, $type) = $image_path;
+            $type = file::o()->get_filetype($type);
+        }
+        else
+            $type = file::o()->get_filetype($image_path);
+        if (!$text || !$image_path)
+            return;
+        if ($type == 'jpg')
+            $type = 'jpeg';
+        if (!$type)
+            throw new EngineException("file_false_name");
         $image_path = ROOT . $image_path;
-        if (!preg_match("/^[lrc][tbc]$/siu", $pos))
-            $pos = "rb";
-        $pos1 = $pos [0];
-        $pos2 = $pos [1];
-        if ($text && $image_path) {
-            $type = strtolower(file::o()->get_filetype($image_path));
-            $shrift_weight = $this->size_def;
-            $shrift_rotate = 0;
-            $shrift_template = ROOT . $font;
-            $template_file = $image_path;
-            if (!file_exists($shrift_template))
-                throw new EngineException("file_cannt_load_shrift");
-            if ($type == 'jpg')
-                $type = 'jpeg';
-            $str = 'imagecreatefrom' . $type;
-            $img = $str($template_file);
-            if (!$img)
-                throw new EngineException("file_cannt_load_gd");
-            //$img = imagecreatetruecolor ( 300, 60 );
-            $WIDTH = imagesx($img);
-            $HEIGHT = imagesy($img);
-            $bbox = imagettfbbox(($random_size ? $this->size_max : $shrift_weight), $shrift_rotate, $shrift_template, $text);
-            if ($pos1 == "r")
-                $watermark_x = $WIDTH - ($bbox [2] - $bbox [0]) - 5;
-            elseif ($pos1 == "c")
-                $watermark_x = ($WIDTH - ($bbox [2] - $bbox [0])) / 2;
-            else
-                $watermark_x = 5;
-            if ($pos2 == "t")
-                $watermark_y = ($bbox [1] - $bbox [7]);
-            elseif ($pos2 == "c")
-                $watermark_y = ($HEIGHT + ($bbox [1] - $bbox [7]) / 2) / 2;
-            else
-                $watermark_y = $HEIGHT - ($bbox [1] - $bbox [7]) / 4;
-            if (!$random_color) {
-                if ($color == "auto" || !preg_match('/^([0-9A-fa-f]){6}$/siu', $color)) {
-                    $totalcolor = imagecolorat($img, $watermark_x, $watermark_y);
-                    $rgb = imagecolorsforindex($img, $totalcolor);
-                    $color = $this->rgb2hex($rgb ['red'], $rgb ['green'], $rgb ['blue']);
-                } else
-                    $color = '0x' . $color;
-            }
+
+        $shrift_weight = $this->size_def;
+        $shrift_rotate = 0;
+        $shrift_template = ROOT . $font;
+        $this->shrift_data = array($shrift_weight, $shrift_rotate, $shrift_template);
+
+        $template_file = $image_path;
+        if (!file_exists($shrift_template))
+            throw new EngineException("file_cannt_load_shrift");
+        $str = 'imagecreatefrom' . $type;
+        $img = $str($template_file);
+        if (!$img)
+            throw new EngineException("file_cannt_load_gd");
+        //$img = imagecreatetruecolor ( 300, 60 );
+        try {
+            plugins::o()->pass_data(array('img' => &$img,
+                'text' => &$text,
+                'args' => func_get_args()), true)->run_hook('watermark_begin');
+
+            list($watermark_x, $watermark_y, $bbox) = $this->watermark_pos($img, $text, $pos, $random_size);
+
+            if (!$random_color)
+                $this->parse_color($color, $img, $watermark_x, $watermark_y, $bbox);
+
             if (!$random_color && !$random_size)
                 imagettftext($img, $shrift_weight, $shrift_rotate, $watermark_x, $watermark_y, $color, $shrift_template, $text);
             else {
@@ -210,68 +286,103 @@ class image {
                         $shrift_weight = $shrift_weight_2;
                 }
             }
-            if (!$rewrite)
-                header("Content-type: image/png");
-            if ($rewrite)
-                ob_start();
-            $str = 'image' . $type;
-            $str($img);
-            if ($rewrite) {
-                $image = ob_get_contents();
-                ob_end_clean();
-                $rfile = fopen($image_path, 'w');
-                fwrite($rfile, $image);
-                fclose($rfile);
-            }
-            imagedestroy($img);
-            if (!$rewrite)
-                die();
+
+            plugins::o()->run_hook('watermark_end');
+        } catch (PReturn $e) {
+            return $e->r();
         }
+        if (!$rewrite)
+            header("Content-type: image/png");
+        if ($rewrite)
+            ob_start();
+        $str = 'image' . $type;
+        $str($img);
+        if ($rewrite) {
+            $image = ob_get_contents();
+            ob_end_clean();
+            $rfile = fopen($image_path, 'w');
+            fwrite($rfile, $image);
+            fclose($rfile);
+        }
+        imagedestroy($img);
+        if (!$rewrite)
+            die();
     }
 
     /**
      * Функция для изменения размера изображения
-     * @param string $filepath путь к файлу
+     * @param string|array $filepath путь к файлу
+     * если массив, то первый элемент - путь, второй - с типом изображения
      * @param int $maxwidth макс. ширина изображения
      * @param int $maxheight макс. высота изображения
      * @param int $curwidth текущая ширина изображения
      * @param int $curheight текущая высота изображения
-     * @param string $tmp_name имя файла, если оно отличается от имени, указанном в пути к файлу
      * @param string $new_name путь, куда будет сохраняться уменьшенное изображение
+     * @param bool $cut обрезать до размеров превью? 
      * @return bool true, в случае успешного выполения функции
      * @throws EngineException 
      */
-    public function resize($filepath, $maxwidth = "", $maxheight = "", $curwidth = "", $curheight = "", $tmp_name = "", $new_name = "") {
+    public function resize($filepath, $maxwidth = "", $maxheight = "", $curwidth = "", $curheight = "", $new_name = "", $cut = false) {
         lang::o()->get('file');
+        if (is_array($filepath)) {
+            list($filepath, $type) = $filepath;
+            $type = file::o()->get_filetype($type);
+        }
+        else
+            $type = file::o()->get_filetype($filepath);
+        if ($type == "jpg")
+            $type = "jpeg";
+        if (!$type)
+            throw new EngineException("file_false_name");
         if (!$curwidth || !$curheight) {
             $wh = $this->is_image(ROOT . $filepath, true);
             $curwidth = $wh [0];
             $curheight = $wh [1];
         }
-        if (!$tmp_name)
-            $tmp_name = $filepath;
         if ((!$maxheight && !$maxwidth) || !(($curwidth > $maxwidth && $maxwidth) || ($curheight > $maxheight && $maxheight)))
-            throw new EngineException('file_too_big_wh', array(
-                ($maxwidth ? $maxwidth : unended),
-                ($maxheight ? $maxheight : unended)
+            throw new EngineException('file_unknown_resize', array(
+        ($maxwidth ? $maxwidth : unended),
+        ($maxheight ? $maxheight : unended)
             ));
-        if (!preg_match('/\.([a-zA-Z0-9]+)$/siu', $tmp_name, $matches))
-            throw new EngineException("file_false_name");
-        $type = $matches [1];
-        if ($type == "jpg")
-            $type = "jpeg";
         $imagecftype = 'imagecreatefrom' . $type;
         $imagetype = 'image' . $type;
+
         if (!function_exists($imagecftype) || !function_exists($imagetype))
             throw new EngineException(lang::o()->v('file_unknown_type') . lang::o()->v('file_ft_images'));
+
         $source = @$imagecftype($filepath);
         if (!$source)
             throw new EngineException(lang::o()->v('file_unknown_type') . lang::o()->v('file_ft_images'));
-        $new_w = (($maxwidth && $curwidth > $curheight) || !$maxheight ? $maxwidth : longval($maxheight * ($curwidth / $curheight)));
-        $new_h = (($maxheight && $curheight > $curwidth) || !$maxwidth ? $maxheight : longval($maxwidth * ($curheight / $curwidth)));
+
+        $source_x = $source_y = 0;
+
+        $ratio = $curwidth / $curheight;
+        $new_w = $maxwidth;
+        $new_h = $maxheight;
+        $ratio_n = $new_h ? $new_w / $new_h : 0;
+        if (!$maxheight || $ratio > $ratio_n)
+            $new_h = longval($new_w / $ratio);
+        else
+            $new_w = longval($new_h * $ratio);
+
+        if ($cut && $ratio_n && $ratio_n != $ratio) {
+            if ($new_w == $maxwidth) {
+                $delta = ($curheight * $ratio_n);
+                $source_x = longval(($curwidth - $delta) / 2);
+                $curwidth = longval($delta);
+            } else {
+                $delta = ($curwidth / $ratio_n);
+                $source_y = longval(($curheight - $delta) / 2);
+                $curheight = longval($delta);
+            }
+            $new_w = $maxwidth;
+            $new_h = $maxheight;
+        }
+
         $target = imagecreatetruecolor($new_w, $new_h);
-        @imagecopyresampled($target, $source, 0, 0, 0, 0, $new_w, $new_h, $curwidth, $curheight);
+        @imagecopyresampled($target, $source, 0, 0, $source_x, $source_y, $new_w, $new_h, $curwidth, $curheight);
         $ret = $imagetype($target, ROOT . (!$new_name ? $filepath : $new_name));
+
         @imagedestroy($target);
         @imagedestroy($source);
         if (!$ret)

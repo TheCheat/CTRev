@@ -21,6 +21,7 @@ $languages = array(
     'convert_wrong_db' => 'Невозможно найти данную БД(%s)',
     'convert_cfile_not_exists' => 'Невозможно найти такой файл конвертации(%s)',
     'convert_database_name' => 'Имя конвертируемой БД',
+    'convert_database_prefix' => 'Префикс конвертируемых таблиц',
     'convert_database_cfile' => 'Таблица конвертации',
     'convert_database_peronce' => 'Кол-во конвертируемых записей за раз',
     'convert_truncated_tables' => '%d таблиц CTRev <font color="green"><b>успешно</b></font> очищено<br>',

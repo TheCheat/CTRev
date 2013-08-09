@@ -19,9 +19,8 @@ $languages = array(
     'install_check_writable_part' => '<font color="red">частично</font>',
     'install_check_writable_no' => '<font color="red">не</font>',
     'install_check_templates' => '<span><abbr title="themes/{имя шаблона}/templates">Шаблоны</abbr></span> %s перезаписываемы(необх. для плагинов)',
-    'install_check_lang' => '<span><abbr title="languages/{имя пакета}">Языковые пакеты</abbr></span> %s перезаписываемы(необяз.)',
-    'install_check_notice' => '*Причмечание: Файл install/lock отсутсвует и не нужно его создавать. 
-        Если написано, что он неперезаписываем, то это означает, что невозможна запись в папку install',
+    'install_check_lang' => '<span><abbr title="languages/{имя пакета}">Языковые
+пакеты</abbr></span> %s перезаписываемы(необяз.)',
     'install_check_env' => 'Сервер',
     'install_check_upload_filesize' => '<abbr title="Поля upload_max_filesize и post_max_size 
         в конфигурации PHP(php.ini)">Макс. размер загружаемых файлов</abbr>',
@@ -32,10 +31,12 @@ $languages = array(
     'install_check_curl' => 'Поддержка CURL?(необяз.) ',
     'install_check_notice' => '<b>*Примечание: install/lock</b> - файл, который создаётся после инсталляции. <br>
         Если невозможно его записать, значит папка <b>install</b> не обладает необходимыми правами.',
+    'install_database_dbtype' => 'Тип БД: ',
     'install_database_dbhost' => 'Хост БД(:порт): ',
     'install_database_dbuser' => 'Пользователь БД: ',
     'install_database_dbpass' => 'Пароль БД: ',
     'install_database_dbname' => 'Имя БД: ',
+    'install_database_dbprefix' => 'Префикс таблиц: ',
     'install_database_charset' => 'Кодировка БД: ',
     'install_import_query' => 'Запрос на %s <b>%s</b> прошёл %s<br>',
     'install_import_query_typec' => 'добавление таблицы',

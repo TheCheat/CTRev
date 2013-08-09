@@ -9,12 +9,12 @@
         <script type="text/javascript">
             init_corners();
             current_page = -1;
-            max_page = <?= count($data['pages']) ?>-1;
+            max_page = <?= count($data['pages']) ?> - 1;
             pages = <?= JS_PAGES ?>;
             function onhovered_dd() {
                 jQuery(document).ready(function() {
                     jQuery("dl.info_text dd:not(.inited_onhover)")
-                    .addClass('inited_onhover').hover(function() {
+                            .addClass('inited_onhover').hover(function() {
                         jQuery(this).prev().removeClass("hovered");
                         jQuery(this).prev().addClass("hovered");
                     }, function() {
@@ -27,9 +27,9 @@
                 $si.empty();
                 $si.attr("class", "status_icon");
                 if (act) {
-                    $si.addClass("status_icon_"+act);
+                    $si.addClass("status_icon_" + act);
                     $si.show();
-                    $si.append(data?data:"");
+                    $si.append(data ? data : "");
                 } else
                     $si.hide();
             }
@@ -40,35 +40,35 @@
                     form = '';
                 status_icon('loading');
                 show_buttons(true); // disable until not loaded
-                jQuery.post('<?= INSTALL_FILE ?>.php?page='+pages[current_page]+'&check=1', form, function (data) {
-                    if (data=='OK!') {
+                jQuery.post('<?= INSTALL_FILE ?>.php?page=' + pages[current_page] + '&check=1', form, function(data) {
+                    if (data == '<?= OK_MESSAGE ?>') {
                         current_page++;
-                        jQuery.post('<?= INSTALL_FILE ?>.php?page='+pages[current_page], function (data) {
+                        jQuery.post('<?= INSTALL_FILE ?>.php?page=' + pages[current_page], function(data) {
                             status_icon('success');
-                            show_buttons();    
+                            show_buttons();
                             jQuery('#install_contents').empty().append(data);
                             init_corners();
                             onhovered_dd();
                         });
-                    } else {                        
+                    } else {
                         status_icon('error');
                         jQuery('#error_message').empty().append(data);
                         jQuery('#error_box').show();
                     }
                 });
             }
-            function confirm_back() {           
+            function confirm_back() {
                 status_icon('loading');
                 show_buttons(true); // disable until not loaded
-                current_page--; 
-                jQuery.post('<?= INSTALL_FILE ?>.php?page='+pages[current_page], function (data) {
-                    show_buttons();    
+                current_page--;
+                jQuery.post('<?= INSTALL_FILE ?>.php?page=' + pages[current_page], function(data) {
+                    show_buttons();
                     status_icon('success');
                     jQuery('#install_contents').empty().append(data);
                     init_corners();
                     onhovered_dd();
                 });
-                
+
             }
             function switch_buttons(disable) {
                 if (disable) {
@@ -84,26 +84,26 @@
                 e.replaceWith(e.html());
                 var cp = jQuery('div.left_column ul li').eq(current_page);
                 jQuery('#page_title').empty().append(cp.text());
-                cp.wrapInner('<span/>');                
+                cp.wrapInner('<span/>');
                 jQuery('#error_box').hide();
-                if (current_page>0)
+                if (current_page > 0)
                     jQuery('#button_back').removeAttr('disabled');
                 else
                     jQuery('#button_back').attr('disabled', 'disabled');
-                if (current_page<max_page)
+                if (current_page < max_page)
                     jQuery('#button_next').removeAttr('disabled');
                 else
                     jQuery('#button_next').attr('disabled', 'disabled');
-                var p = max_page?current_page/max_page:1;
-                var percent = parseInt(p*100)+'%';
+                var p = max_page ? current_page / max_page : 1;
+                var percent = parseInt(p * 100) + '%';
                 jQuery('div.progress_bar div.progress').css('width', percent);
                 jQuery('div.progress_bar div.percent').empty().append(percent);
             }
             function lang_selector() {
-                jQuery(document).ready(function () {
-                    jQuery('#lang_selector select').change(function (){
-                        window.location = '?install_lang='+jQuery(this).val();
-                    }); 
+                jQuery(document).ready(function() {
+                    jQuery('#lang_selector select').change(function() {
+                        window.location = '?install_lang=' + jQuery(this).val();
+                    });
                 });
             }
             lang_selector();
@@ -146,7 +146,7 @@
                                         </div>
                                     </div>
                                     <b><?= lang::o()->v('install_language_selector') ?>: </b>
-                                    <span id='lang_selector'><?= $data['input']->select_folder("lang", LANGUAGES_PATH, $data['clang']) ?></span><br><br>
+                                    <span id='lang_selector'><?= $data['input']->scurrent($data['clang'])->select_folder("lang", LANGUAGES_PATH) ?></span><br><br>
                                     <div class="cornerText progress_bar" align="left">
                                         <div class="progress" style="width: 0%;">
                                             <div class="percent">0%</div>
@@ -174,9 +174,9 @@
         This is the copyright of the product. Delete or modify it is strictly prohibited! -->
         <p class="copyright"><?= COPYRIGHT ?></p>
         <script type='text/javascript'>
-            $resizer = function () {
+            $resizer = function() {
                 jQuery('div.install_body').css('min-height', '100%');
-                jQuery('div.install_body').css('min-height', (jQuery(window).height()-150)+"px"); // Тут проще так, чем через CSS
+                jQuery('div.install_body').css('min-height', (jQuery(window).height() - 150) + "px"); // Тут проще так, чем через CSS
             }
             jQuery(document).ready($resizer).resize($resizer);
             confirm_next();

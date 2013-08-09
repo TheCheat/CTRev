@@ -1,5 +1,4 @@
 table comments/id?torrent>0 OR touid>0
-id
 poster_id: user
 text
 posted_time: UNIX_TIMESTAMP(added)
@@ -29,7 +28,7 @@ user_id: userid
 toid: torrentid
 type: 'torrents'
 
-table downloaded/id: snatched
+table content_downloaded/id: snatched
 tid: torrent
 uid: userid
 finished: IF(finished='yes', '1', '0')
@@ -44,27 +43,30 @@ user_id: userid
 to_userid: blockid
 type: 'b'
 
-table torrents/id
-id|function: tfile({$row})
-info_hash
+table content/id:torrents
 title: name
 content: descr
-size
-filelist|function: filelist({id})
 tags: keywords
-announce_list
 posted_time: UNIX_TIMESTAMP(added)
 poster_id: owner
-last_active: UNIX_TIMESTAMP(last_action)
+id|function: tfile({$row})
 comm_count|function: countrows('comments', 'toid={id} AND type="torrents"')
-downloaded: times_completed
-banned: IF(banned='yes', '1', '0')
 sticky: IF(sticky='yes', '1', '0')
 on_top: 1
-screenshots|function: screenshots({poster}, {screenshots})
 category_id|function: catid({category}, {incat})
 rate_count: ratingsum
 rnum_count: numratings
+
+table content_torrents/id:torrents
+cid
+info_hash
+size
+filelist|function: filelist({id})
+announce_list
+last_active: UNIX_TIMESTAMP(last_action)
+downloaded: times_completed
+banned: IF(banned='yes', '1', '0')
+screenshots|function: screenshots({poster}, {screenshots})
 
 table users/id
 id
@@ -84,5 +86,5 @@ gender: IF(gender='1', 'm', 'f')
 birthday: UNIX_TIMESTAMP(birthday)
 avatar|function: avatar({avatar}, {id})
 passkey|function: passkey({passkey})
-torrents_count|function: countrows('torrents', 'poster_id={id}')
+content_count|function: countrows('content', 'poster_id={id}')
 comm_count|function: countrows('comments', 'poster_id={id}')

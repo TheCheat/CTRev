@@ -9,6 +9,6 @@ $languages = array(
     'smilies_area_preview' => 'Превью',
     'smilies_area_image' => 'Изображение',
     'smilies_area_show_bbeditor' => 'В редакт.?',
-    'smilies_data_not_entered' => 'Не введен код, изображение или имя смайла. Ничего не введено.'
+    'smilies_empty_data' => 'Не введен код, изображение или имя смайла. Ничего не введено.'
 );
 ?>

@@ -4,4 +4,4 @@
     fk_ajax = '?[*fk ajax=1*]';
     polls_link = "[*gen_link slashes=true module='polls' act='view'*]";
 </script>
-<script type='text/javascript' src='[*$theme_path*]js/jquery.polls.js'></script>
+<script type='text/javascript' src='js/jquery.polls.js'></script>

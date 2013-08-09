@@ -36,7 +36,7 @@
                             </div>
                         </div>
                         <div class='torrent_element_name'>
-                            <a href='[*gen_link module='torrents' id=$row.id title=$row.title*]'>
+                            <a href='[*gen_link module='content' id=$row.id title=$row.title*]'>
                                 [*$row.name*]
                             </a>
                         </div>

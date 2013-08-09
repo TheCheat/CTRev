@@ -5,13 +5,13 @@
         var $post = $obj.serialize();
         var si = 'pm_status_icon';
         status_icon(si, 'loading_white');
-        jQuery.post("[*$baseurl|sl*]index.php?[*fk ajax=1*]module=messages&act=send_ok&from_ajax=1", $post, function (data) {
-            if (data != "OK!") {
+        jQuery.post("index.php?[*fk ajax=1*]module=messages&act=send_ok&from_ajax=1", $post, function (data) {
+            if (!is_ok(data)) {
                 status_icon(si, 'error');
                 alert(data);
             } else {
                 status_icon(si, 'success');
-                alert('[*'success'|lang|sl*]');
+                //alert('[*'success'|lang|sl*]');
             }
         });
     }</script>
@@ -23,7 +23,7 @@
                 <textarea cols="35" rows="3" name="to_usernames">[*$to_pm*]</textarea>
             </div>
             [*if 'masspm'|perm*]
-                <div class="receivers_right">[*select_groups multi=1 name="to_groups[]"*]</div>
+                <div class="receivers_right">[*select_groups size=4 null=true name="to_groups[]"*]</div>
             [*/if*]
             <div class="clear_both"><b><font size="1">[*'pm_receivers_notice'|lang*]</font></b></div>
         </div>

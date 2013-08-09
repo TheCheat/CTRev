@@ -19,7 +19,6 @@
     [*else*]
         [*assign var='stext' value='settings_'*]
     [*/if*]
-    [*assign var='dtext' value='_descr'*]
     [*foreach from=$parsed_settings key='k' item='s'*]
         [*assign var='langvar' value="$settings_langprefix$stext$k"*]
         <dt>[*$langvar|lang*]</dt>
@@ -48,7 +47,7 @@
                     </a>
                 </div>
             [*/if*]
-            <font size='1'>[*"$langvar$dtext"|lang:true*]</font>
+            <font size='1'>[*"`$langvar`_descr"|lang:true*]</font>
         </dd>
     [*/foreach*]
 </dl>

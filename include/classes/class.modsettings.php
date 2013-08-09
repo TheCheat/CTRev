@@ -246,8 +246,6 @@ final class modsettings {
         if (!$this->check_id($id))
             return;
         $type = $this->type;
-        if (!$type)
-            $type = 'block';
         $cached = false;
         if ($id !== self::nocache_id && config::o()->v('cache_on') && config::o()->v('cache_modsettings')) {
             $crc32 = crc32(serialize($object->settings));
@@ -332,7 +330,7 @@ final class modsettings {
                         $lv = lang::o()->v($langvar . '_' . $i, true);
                         $a[$i] = $lv ? $lv : $i;
                     }
-                    $html .= input::o()->simple_selector($namea, $a, true, $val);
+                    $html .= input::o()->scurrent($val)->skeyed()->simple_selector($namea, $a);
                 }
                 break;
         }
@@ -383,8 +381,6 @@ final class modsettings {
         if (isset($object->settings_lang) && $object->settings_lang)
             $lng = $object->settings_lang;
         $type = $this->type;
-        if (!$type)
-            $type = 'block';
         lang::o()->get($type . '/' . $lng);
         if (!$parsed)
             $parsed = $this->parse($id, $object, $settings);
@@ -408,8 +404,6 @@ final class modsettings {
      */
     public function save($id, $data) {
         $type = $this->type;
-        if (!$type)
-            $type = 'block';
         $keys = (array) $data["key"];
         $values = (array) $data['value'];
         $settings = array();
@@ -441,8 +435,6 @@ final class modsettings {
         if (!$this->check_id($id))
             return;
         $type = $this->type;
-        if (!$type)
-            $type = 'block';
         cache::o()->remove('modsettings/' . $type . '-id' . $id);
     }
 
@@ -456,11 +448,11 @@ final class modsettings {
             $t = array();
             foreach ($this->key_types as $type)
                 $t[$type] = lang::o()->v('modsettings_keytype_' . $type);
-            $this->key_types = input::o()->simple_selector('keytype[]', $t, true);
+            $this->key_types = input::o()->skeyed()->simple_selector('keytype[]', $t);
             $t = array();
             foreach ($this->val_types as $type)
                 $t[$type] = lang::o()->v('modsettings_valtype_' . $type);
-            $this->val_types = input::o()->simple_selector('valtype[]', $t, true);
+            $this->val_types = input::o()->skeyed()->simple_selector('valtype[]', $t);
             $this->tinited = true;
         }
         tpl::o()->assign('mkeytypes', $this->key_types);

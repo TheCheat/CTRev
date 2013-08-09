@@ -74,7 +74,7 @@ class messages_ajax {
                 $title = $_POST ['title'];
                 $descr = $_POST ['body'];
                 $this->confirm_send($to_unames, $to_groups, $title, $descr);
-                die("OK!");
+                ok();
                 break;
             case "send" :
                 $to = $_GET ['to'];
@@ -88,12 +88,12 @@ class messages_ajax {
             case "s_read" :
                 $ids = $_POST ['item'];
                 $this->read($ids);
-                die("OK!");
+                ok();
                 break;
             case "delete" :
                 $ids = $_POST ['item'];
                 $this->delete($ids);
-                die("OK!");
+                ok();
                 break;
             default :
                 $out = (bool) $_GET ['out'];
@@ -114,41 +114,41 @@ class messages_ajax {
      */
     protected function confirm_send($to_unames, $to_groups, $title, $body) {
         check_formkey();
+        /* @var $etc etc */
+        $etc = n("etc");
         if (users::o()->perm("pm_count")) {
-            $cofmessgs = db::o()->count_rows("pmessages", ('sender=' . users::o()->v('id') . ' AND deleted<>"1"'));
+            $cofmessgs = db::o()->p(users::o()->v('id'))->count_rows("pmessages", ('sender=? AND deleted<>"1"'));
             if ($cofmessgs > users::o()->perm("pm_count"))
                 throw new EngineException("pm_send_count_error");
         }
         $title = trim($title);
         $body = trim($body);
         $to_unames = trim($to_unames);
-        anti_flood('pmessages', 'deleted<>"1"', array('sender', 'time'));
+        $etc->anti_flood('pmessages', 'deleted<>"1"', array('sender', 'time'));
         if ((!$to_unames && (!is_array($to_groups) || !$to_groups)) || !$body || mb_strlen($body) < config::o()->v('min_message_symb') || mb_strlen($body) > config::o()->v('max_message_symb'))
             throw new EngineException('pm_all_areas_cant_be_empty', array(
-                config::o()->v('min_message_symb'),
-                config::o()->v('max_message_symb')));
+        config::o()->v('min_message_symb'),
+        config::o()->v('max_message_symb')));
         if ($to_unames) {
-            $to_unames = implode(", ", array_map('mb_strtolower', array_map(array(db::o(), 'esc'), explode(";", $to_unames))));
-            $where = 'username_lower IN(' . $to_unames . ') AND u.id>0';
+            $to_unames = array_map("mb_strtolower", explode(";", $to_unames));
+            $where = 'username_lower IN(@' . count($to_unames) . '?) AND u.id>0';
         }
         $rec = array();
         if ($to_groups && users::o()->perm('masspm')) {
-            $to_groups = array_map('intval', $to_groups);
-            $users_db = db::o()->query('SELECT id, email FROM users
-                    WHERE `group` IN(' . implode(", ", $to_groups) . ') AND id>0');
-            while ($user = db::o()->fetch_assoc($users_db)) {
+            $users_db = db::o()->p($to_groups)->query('SELECT id, email FROM users
+                    WHERE `group` IN(@' . count($to_groups) . '?) AND id>0');
+            while ($user = db::o()->fetch_assoc($users_db))
                 $rec [$user ["id"]] = $user ["email"];
-            }
         }
         if ($where) {
-            $res = db::o()->query('SELECT u.id, u.email, g.pm_count FROM users AS u
+            $res = db::o()->p($to_unames)->query('SELECT u.id, u.email, g.pm_count FROM users AS u
                     LEFT JOIN groups AS g ON g.id=u.group
                     WHERE ' . $where);
             while ($row = db::o()->fetch_assoc($res)) {
                 if ($row ["id"] == users::o()->v('id'))
                     continue;
                 if ($row ["pm_count"]) {
-                    $cofmessgs = db::o()->count_rows("pmessages", ('receiver = ' . $row ["id"] . ' AND deleted<>"2"'));
+                    $cofmessgs = db::o()->p($row ["id"])->count_rows("pmessages", 'receiver = ? AND deleted<>"2"');
                     if ($cofmessgs >= $row ["pm_count"])
                         continue;
                 }
@@ -166,8 +166,6 @@ class messages_ajax {
             return $e->r();
         }
 
-        /* @var $etc etc */
-        $etc = n("etc");
         foreach ($rec as $id => $email)
             $etc->send_message($title, $body, $id, $email);
     }
@@ -179,17 +177,17 @@ class messages_ajax {
      * @return null
      * @throws EngineException
      */
-    protected function show($out, $sended) {
+    public function show($out, $sended) {
         if (!$out) {
-            $where = 'p.receiver = ' . users::o()->v('id') . ' AND p.deleted<>"2"';
+            $where = 'p.receiver=? AND p.deleted<>"2"';
             $rez = "sender";
         } else {
-            $where = 'p.sender=' . users::o()->v('id') . ' AND p.deleted<>"1"';
+            $where = 'p.sender=? AND p.deleted<>"1"';
             if ($sended)
                 $where .= ' AND p.unread="0"';
             $rez = "receiver";
         }
-        $res = db::o()->query('SELECT p.*, u.group, u.username FROM pmessages AS p
+        $res = db::o()->p(users::o()->v('id'))->query('SELECT p.*, u.group, u.username FROM pmessages AS p
             LEFT JOIN users AS u ON u.id=p.' . $rez . '
             WHERE ' . $where . ' ORDER BY p.time');
         tpl::o()->assign("out", $out);
@@ -204,11 +202,13 @@ class messages_ajax {
      * @return null
      * @throws EngineException
      */
-    protected function show_simple($id) {
+    public function show_simple($id) {
         $id = (int) $id;
-        $res = db::o()->query('SELECT p.*, u.group, u.username FROM pmessages AS p
+        $res = db::o()->p(users::o()->v('id'), users::o()->v('id'), $id)->query('SELECT 
+            p.*, u.group, u.username FROM pmessages AS p
             LEFT JOIN users AS u ON p.sender=u.id WHERE
-            ((p.receiver=' . users::o()->v('id') . ' AND p.deleted<>"2") OR (p.sender=' . users::o()->v('id') . ' AND p.deleted<>"1")) AND p.id=' . longval($id) . " LIMIT 1");
+            ((p.receiver=? AND p.deleted<>"2") OR 
+                (p.sender=? AND p.deleted<>"1")) AND p.id=? LIMIT 1');
         $res = db::o()->fetch_assoc($res);
         tpl::o()->assign("row", $res);
         tpl::o()->display('messages/show_pm_single.tpl');
@@ -227,17 +227,19 @@ class messages_ajax {
     protected function send($to, $id = 0) {
         $id = (int) $id;
         if (users::o()->perm("pm_count")) {
-            $cofmessgs = db::o()->count_rows("pmessages", ('sender=' . users::o()->v('id') . ' AND deleted<>"1"'));
+            $cofmessgs = db::o()->p(users::o()->v('id'))->count_rows("pmessages", ('sender=? AND deleted<>"1"'));
             if ($cofmessgs > users::o()->perm("pm_count"))
                 throw new EngineException("pm_send_count_error");
         }
         if ($id) {
-            $res = db::o()->query('SELECT p.*, u.username FROM pmessages AS p
+            $res = db::o()->p(users::o()->v('id'), $id)->query('SELECT p.*, u.username FROM pmessages AS p
                 LEFT JOIN users AS u ON u.id=p.sender
-                WHERE p.receiver = ' . users::o()->v('id') . ' AND p.deleted<>"2" AND p.id=' . longval($id) . ' LIMIT 1');
+                WHERE p.receiver = ? AND p.deleted<>"2" 
+                    AND p.id=? LIMIT 1');
             $res = db::o()->fetch_assoc($res);
             $to .= ( $to ? ";" : "") . $res ["username"];
-        } else
+        }
+        else
             $res = array();
         tpl::o()->assign("to_pm", $to);
         tpl::o()->assign("row", $res);
@@ -251,9 +253,9 @@ class messages_ajax {
      * @throws EngineException
      */
     public function count() {
-        $inbox = db::o()->count_rows("pmessages", ('receiver = ' . users::o()->v('id') . ' AND deleted<>"2"'));
-        $outbox = db::o()->count_rows("pmessages", ('sender=' . users::o()->v('id')) . ' AND deleted<>"1"');
-        $unread = db::o()->count_rows("pmessages", ('unread="1" AND receiver = ' . users::o()->v('id') . ' AND deleted<>"2"'));
+        $inbox = db::o()->p(users::o()->v('id'))->count_rows("pmessages", 'receiver = ? AND deleted<>"2"');
+        $outbox = db::o()->p(users::o()->v('id'))->count_rows("pmessages", 'sender=? AND deleted<>"1"');
+        $unread = db::o()->p(users::o()->v('id'))->count_rows("pmessages", 'unread="1" AND receiver = ? AND deleted<>"2"');
         return array($inbox, $outbox, $unread);
     }
 
@@ -267,11 +269,12 @@ class messages_ajax {
     public function unread($time = 0, $after = false) {
         $time = (int) $time;
         $where = "";
-        if (longval($time))
-            $where = ' AND p.time' . (!$after ? "<" : ">") . $time;
-        $unread = db::o()->query('SELECT p.id,p.subject,p.text,p.time,u.username,u.group FROM pmessages AS p
+        if ($time)
+            $where = ' AND p.time' . (!$after ? "<" : ">") . '?';
+        $unread = db::o()->p(users::o()->v('id'), $time)->query('SELECT 
+            p.id,p.subject,p.text,p.time,u.username,u.group FROM pmessages AS p
             LEFT JOIN users AS u ON u.id=p.sender
-            WHERE p.unread="1" AND p.receiver = ' . users::o()->v('id') . $where . " AND p.deleted<>'2'
+            WHERE p.unread="1" AND p.deleted<>"2" AND p.receiver = ?' . $where . "
                 ORDER BY p.time " . (!$after ? "ASC" : "DESC") . '
                 LIMIT 1');
         return db::o()->fetch_assoc($unread);
@@ -287,9 +290,9 @@ class messages_ajax {
     public function unread_count($time, $after = false) {
         $time = (int) $time;
         $where = "";
-        if (longval($time))
-            $where = ' AND time' . (!$after ? "<" : ">") . $time;
-        $unreads = db::o()->count_rows("pmessages", ('unread="1" AND deleted<>"2" AND receiver = ' . users::o()->v('id') . $where));
+        if ($time)
+            $where = ' AND time' . (!$after ? "<" : ">") . "?";
+        $unreads = db::o()->p(users::o()->v('id'), $time)->count_rows("pmessages", 'unread="1" AND deleted<>"2" AND receiver = ?' . $where);
         return $unreads;
     }
 
@@ -306,7 +309,7 @@ class messages_ajax {
         if (!$id)
             db::o()->truncate_table('pmessages');
         else
-            db::o()->delete("pmessages", "WHERE sender = " . $id . " OR receiver=" . $id);
+            db::o()->p($id, $id)->delete("pmessages", "WHERE sender = ? OR receiver=?");
     }
 
     /**
@@ -317,23 +320,20 @@ class messages_ajax {
      */
     public function delete($ids) {
         check_formkey();
-        if (!is_array($ids)) {
-            $ids = longval($ids);
-            if (!$ids)
-                return;
-            $where = 'id=' . $ids;
-        } else {
-            $ids = implode(", ", array_map("intval", $ids));
-            $where = 'id IN(' . $ids . ')';
-        }
+        if (!$ids)
+            return;
+        if (!is_array($ids))
+            $where = 'id=?';
+        else
+            $where = 'id IN(@' . count($ids) . '?)';
         if (!users::o()->check_adminmode()) {
             $uid = users::o()->v('id');
             $uwhere = $where;
-            $where .= ' AND ((sender=' . $uid . ' AND deleted="2") OR (receiver=' . $uid . ' AND deleted="1"))';
-            $uwhere .= ' AND (sender=' . $uid . ' OR receiver=' . $uid . ') AND deleted="0"';
-            db::o()->update(array("_cb_deleted" => 'IF(sender=' . $uid . ',"1","2")'), "pmessages", 'WHERE ' . $uwhere);
+            $where .= ' AND ((sender=? AND deleted="2") OR (receiver=? AND deleted="1"))';
+            $uwhere .= ' AND (sender=? OR receiver=?) AND deleted="0"';
+            db::o()->p($ids, $uid, $uid)->update(array("_cb_deleted" => 'IF(sender=' . $uid . ',"1","2")'), "pmessages", 'WHERE ' . $uwhere);
         }
-        db::o()->delete("pmessages", 'WHERE ' . $where);
+        db::o()->p($ids, $uid, $uid)->delete("pmessages", 'WHERE ' . $where);
     }
 
     /**
@@ -342,18 +342,15 @@ class messages_ajax {
      * @return null
      * @throws EngineException
      */
-    protected function read($ids) {
-        if (!is_array($ids)) {
-            $ids = longval($ids);
-            if (!$ids)
-                return;
-            $where = 'id=' . $ids;
-        } else {
-            $ids = implode(", ", array_map("intval", $ids));
-            $where = 'id IN(' . $ids . ')';
-        }
-        db::o()->update(array("unread" => '0'), "pmessages", 'WHERE receiver=' . users::o()->v('id') . ' AND 
-            ' . $where);
+    public function read($ids) {
+        if (!$ids)
+            return;
+        if (!is_array($ids))
+            $where = 'id=?';
+        else
+            $where = 'id IN(@' . count($ids) . '?)';
+        db::o()->p(users::o()->v('id'), $ids)->update(array(
+            "unread" => '0'), "pmessages", 'WHERE receiver=? AND ' . $where);
     }
 
 }

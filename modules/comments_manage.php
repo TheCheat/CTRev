@@ -14,7 +14,7 @@ if (!defined('INSITE'))
     die("Remote access denied!");
 
 class comments_manage {
-    
+
     /**
      * Объект комментариев
      * @var comments $comments
@@ -35,12 +35,12 @@ class comments_manage {
                 break;
             case "add" :
             case "edit_save" :
-                $title = $_POST ['title'];
                 $content = $_POST ['body'];
                 $resid = longval($_POST ['resid']);
                 $type = $_POST ['type'];
                 $id = longval($_POST ['id']);
-                $this->save($title, $content, $resid, $type, $id);
+                $this->save($content, $resid, $type, $id);
+                ok();
                 break;
             case "show" :
                 $resid = longval($_POST ['resid']);
@@ -50,6 +50,7 @@ class comments_manage {
             case "del" :
                 $id = (int) $_POST ["id"];
                 $this->delete($id);
+                ok();
                 break;
             case "quote":
                 $id = (int) $_POST ["id"];
@@ -67,7 +68,7 @@ class comments_manage {
     protected function edit_form($id) {
         $id = (int) $id;
         lang::o()->get('comments');
-        $poster = db::o()->query('SELECT poster_id, subject, text FROM comments WHERE id=' . $id . ' LIMIT 1');
+        $poster = db::o()->p($id)->query('SELECT poster_id, text FROM comments WHERE id=? LIMIT 1');
         $poster = db::o()->fetch_assoc($poster);
         if (!$poster)
             return;
@@ -76,16 +77,14 @@ class comments_manage {
         else
             users::o()->check_perms('edit_comm', 2);
         $name = "comment_" . $id;
-        tpl::o()->assign("subject", $poster ['subject']);
         tpl::o()->assign("text", $poster ['text']);
         tpl::o()->assign("id", $id);
         tpl::o()->assign("name", $name);
-        $this->comments->add_form("", $name, $id);
+        $this->comments->add("", $name, $id);
     }
 
     /**
      * Метод сохранения комментария
-     * @param string $title заголовок
      * @param string $content текст
      * @param int $resid ID ресурса
      * @param string $type тип комментариев
@@ -93,14 +92,13 @@ class comments_manage {
      * @return null
      * @throws EngineException
      */
-    protected function save($title, $content, $resid, $type, $id) {
+    protected function save($content, $resid, $type, $id) {
         check_formkey();
         $id = (int) $id;
         $resid = (int) $resid;
-        $ret = $this->comments->change_type($type)->save($title, $content, $resid, $id);
+        $ret = $this->comments->change_type($type)->save($content, $resid, $id);
         if ($ret !== true)
-            die($ret);
-        die("OK!");
+            throw new EngineException($ret);
     }
 
     /**
@@ -128,7 +126,6 @@ class comments_manage {
         if (!$id)
             throw new EngineException;
         $this->comments->delete($id);
-        die("OK!");
     }
 
     /**
@@ -139,7 +136,6 @@ class comments_manage {
     protected function quote($id) {
         $id = (int) $id;
         print($this->comments->quote($id));
-        die();
     }
 
 }
