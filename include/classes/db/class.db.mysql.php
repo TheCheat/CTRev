@@ -23,11 +23,6 @@ abstract class db_core implements db_core_interface {
 
     /**
      * Коннект к БД
-     * @global string $dbhost
-     * @global string $dbuser
-     * @global string $dbpass
-     * @global string $dbname
-     * @global string $charset
      * @return null
      */
     public function connect() {

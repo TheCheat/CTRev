@@ -48,7 +48,7 @@ class input {
 
     /**
      * Общие параметры функций
-     * @var type 
+     * @var array $params
      */
     protected $params = array();
 

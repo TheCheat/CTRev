@@ -126,14 +126,12 @@ abstract class db_parse extends db_core {
 
     /**
      * Парсинг запроса выборки
-     * @param string $query запрос
-     * @return null
-     * @example из:
+     * @note преобразует из:
      * SELECT * FROM table 
      * JOIN `table2` ON n3=n1
      * WHERE n1=? AND n2 LIKE '@?' 
      * OR n3 IN(@5?)
-     * получаем:
+     * в:
      * SELECT * FROM prefix_table
      * JOIN `prefix_table2` ON n3=n1
      * WHERE n1='escaped\"value\"' AND n2 LIKE 'value\"escaped\_for\_search\%\"'
@@ -141,6 +139,8 @@ abstract class db_parse extends db_core {
      * @note Помимо таблиц после ключевых слов FROM и JOIN 
      * работает с таблицами после слова TABLE [IF [NOT] EXISTS]
      * @note НЕ РАБОТЕТ в "_cb_" значениях методов update/insert
+     * @param string $query запрос
+     * @return null
      * @throws EngineException
      */
     protected function parse_query(&$query) {

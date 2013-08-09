@@ -241,7 +241,7 @@ class uploader extends uploader_checker {
 
     /**
      * Дирректория превью
-     * @var string $preview
+     * @var string $preview_folder
      */
     protected $preview_folder = "";
 
@@ -329,8 +329,6 @@ class uploader extends uploader_checker {
      * @param string $type имя файлового типа
      * @param string $new_name новое имя файла
      * @param bool $na_type не добавлять тип файла в новое имя
-     * @param bool|string $preview - создание превью к изображению, после - имя файла для превью,
-     * в случае успешного создания
      * @return null
      * @throws EngineException 
      */

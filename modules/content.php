@@ -16,6 +16,12 @@ if (!defined('INSITE'))
 class content_add {
 
     /**
+     * Префикс в имени скриншота, хранимого на сервере
+     */
+
+    const image_prefix = "i";
+
+    /**
      * Заголовок модуля
      * @var string $title
      */
@@ -29,13 +35,13 @@ class content_add {
 
     /**
      * Макс. ширина для превью постера
-     * @var int $scr_width
+     * @var int $poster_width
      */
     protected $poster_width = 200;
 
     /**
      * Макс. высота для превью постера
-     * @var int $scr_height
+     * @var int $poster_height
      */
     protected $poster_height = 300;
 
@@ -50,12 +56,6 @@ class content_add {
      * @var int $scr_height
      */
     protected $scr_height = 150;
-
-    /**
-     * Префикс в имени скриншота, хранимого на сервере
-     */
-
-    const image_prefix = "i";
 
     /**
      * Включены ли торренты?
