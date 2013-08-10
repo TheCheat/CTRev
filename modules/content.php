@@ -14,7 +14,6 @@ if (!defined('INSITE'))
     die("Remote access denied!");
 
 class content_add {
-
     /**
      * Префикс в имени скриншота, хранимого на сервере
      */
@@ -687,7 +686,7 @@ class content extends content_add {
             case "new":
                 users::o()->check_perms();
                 $last_clean = stats::o()->read('last_clean_rc');
-                $lj = 'LEFT JOIN ' . db::table('content_readed') . ' AS rt ON rt.content_id=c.id AND rt.user_id=' . users::o()->v('id');
+                $lj = ' LEFT JOIN ' . db::table('content_readed') . ' AS rt ON rt.content_id=c.id AND rt.user_id=' . users::o()->v('id');
                 $where = '(rt.content_id IS NULL)';
                 if ($last_clean)
                     $where .= ' AND c.posted_time>' . $last_clean;
@@ -701,7 +700,7 @@ class content extends content_add {
         }
         if ($this->tstate) {
             $cols .= ", t.*";
-            $lj .= 'LEFT JOIN ' . db::table('content_torrents') . ' AS t ON t.cid=c.id';
+            $lj .= ' LEFT JOIN ' . db::table('content_torrents') . ' AS t ON t.cid=c.id';
         }
         if ($category) {
             $cid = $this->cats->get($category);
@@ -725,7 +724,7 @@ class content extends content_add {
         list ( $pages, $limit ) = display::o()->pages($count[0], $perpage, 'change_tpage', 'page', '', true);
 
         $rows = db::o()->no_parse()->query('SELECT c.*' . $cols . ', u.username, u.group FROM content AS c ' . $lj . '
-            LEFT JOIN ' . db::table('users').' AS u ON c.poster_id=u.id
+            LEFT JOIN ' . db::table('users') . ' AS u ON c.poster_id=u.id
             ' . $where . '
             ORDER BY ' . $orderby . '
             LIMIT ' . $limit);

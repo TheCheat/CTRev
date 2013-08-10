@@ -211,7 +211,7 @@ class image {
             $r = $this->position_color($rgb ['red']);
             $g = $this->position_color($rgb ['green']);
             $b = $this->position_color($rgb ['blue']);
-            if (in_array($this->white_colors[$r . $g . $b]))
+            if (in_array($r . $g . $b, $this->white_colors))
                 $color = '0x000000'; // чёрный
             else
                 $color = '0xFFFFFF'; // белый
