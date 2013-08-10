@@ -85,7 +85,7 @@ class content_add {
             $lj = $cols = "";
             if ($this->tstate) {
                 $cols = ", t.*";
-                $lj = "LEFT JOIN content_torrents AS t ON t.cid=c.id";
+                $lj = " LEFT JOIN content_torrents AS t ON t.cid=c.id";
             }
             $row = db::o()->p($id)->query('SELECT c.* ' . $cols . ' FROM content AS c ' . $lj . ' WHERE c.id=? LIMIT 1');
             $row = db::o()->fetch_assoc($row);
@@ -430,7 +430,7 @@ class content_add {
             $lj = $cols = "";
             if ($this->tstate) {
                 $cols = ", t.*";
-                $lj = "LEFT JOIN content_torrents AS t ON t.cid=c.id";
+                $lj = " LEFT JOIN content_torrents AS t ON t.cid=c.id";
             }
             $row = db::o()->p($id)->query('SELECT c.* ' . $cols . ' FROM content AS c ' . $lj . ' WHERE c.id=? LIMIT 1');
             $row = db::o()->fetch_assoc($row);
@@ -650,7 +650,7 @@ class content extends content_add {
             $where = "on_top='1'";
         $lj = $cols = "";
         if ($this->tstate) {
-            $lj = 'LEFT JOIN ' . db::table('content_torrents') . ' AS t ON t.cid=c.id';
+            $lj = ' LEFT JOIN ' . db::table('content_torrents') . ' AS t ON t.cid=c.id';
             $cols = ", t.screenshots";
         }
         $row = db::o()->no_parse()->query('SELECT c.title, c.posted_time, u.username,
@@ -1041,7 +1041,7 @@ class content extends content_add {
             if (!$full && !$fe) {
                 $slj = $lj;
                 //if ($this->tstate)
-                //    $lj = "LEFT JOIN content_torrents AS t ON t.cid=c.id";
+                //    $lj = " LEFT JOIN content_torrents AS t ON t.cid=c.id";
                 $crow = db::o()->no_parse()->query('SELECT COUNT(*) FROM ' . db::table('content') . ' AS c ' .
                         $slj . ($where ? ' WHERE ' . $where : ""));
                 $count = db::o()->fetch_row($crow);
@@ -1380,7 +1380,7 @@ class content_ajax extends torrents_simpleview {
         $lj = $cols = "";
         if ($this->tstate) {
             $cols = ", t.screenshots";
-            $lj = 'LEFT JOIN content_torrents AS t ON t.cid=c.id';
+            $lj = ' LEFT JOIN content_torrents AS t ON t.cid=c.id';
         }
         $row = db::o()->p($id)->query('SELECT c.poster_id, c.title, c.posted_time, 
             p.id AS poll_id ' . $cols . ' FROM content AS c ' . $lj . '
@@ -1435,7 +1435,7 @@ class content_ajax extends torrents_simpleview {
         $cols = $lj = $where = "";
         if ($this->tstate) {
             $cols = ', t.*';
-            $lj = 'LEFT JOIN content_torrents AS t ON t.cid=c.id';
+            $lj = ' LEFT JOIN content_torrents AS t ON t.cid=c.id';
             $where = " AND (t.banned <> '2' OR t.banned IS NULL)";
         }
         $row = db::o()->p($id)->query('SELECT c.* ' . $cols . ' FROM content AS c ' . $lj . '
