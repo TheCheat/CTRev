@@ -99,7 +99,7 @@ class config_man extends pluginable_object {
         if ($type == 'other') {
             $f = self::method_show_prefix . $name;
             return $this->call_method($f, $value);
-        } elseif ($type == 'radio' || $type == 'selected') {
+        } elseif ($type == 'radio' || $type == 'select') {
             $a = explode(";", $allowed);
             $allowed = array();
             $c = count($a);
@@ -210,7 +210,7 @@ class config_man_ajax {
             /* @var $o cofig_man */
             $o = plugins::o()->get_module('config', 1);
             return (bool) $o->check_field($name, $value);
-        } elseif ($type == 'radio' || $type == 'selected')
+        } elseif ($type == 'radio' || $type == 'select')
             $allowed = explode(";", $allowed);
         return input::o()->standart_types_check($type, $value, $allowed, config_man::config_prefix . $name);
     }

@@ -9,7 +9,7 @@ function reload_comment($resid, $type) {
         "resid":$resid,
         "type":$type
     }, function ($data) {
-        jQuery("#comments_"+comments_name).empty().append($data);
+        jQuery("#comments_"+comments_name).replaceWith($data);
         show_edit_buttons();
     //init_corners();
     //alert(success_text);
@@ -29,7 +29,7 @@ function del_comment(id_res,id) {
     }, function (data) {
         if (is_ok(data)) {
             jQuery("#"+id_res).fadeOut(1000,function () {
-                reload_comment(comments_resid, comments_type);
+                reload_comment(comments_toid, comments_type);
             });
         } else
             alert(error_text);
@@ -76,7 +76,7 @@ function edit_comment_save(id_res, id, name) {
         "id":id
     }, function (data) {
         if (is_ok(data)) {
-            reload_comment(comments_resid, comments_type);     
+            reload_comment(comments_toid, comments_type);     
             status_icon(si, 'success');
         } else {
             alert(error_text+": "+data);  
@@ -94,7 +94,7 @@ function change_page_comments($comments_page_s) {
         $comments_page_s = 1;
     }
     $comments_page = $comments_page_s;
-    reload_comment(comments_resid, comments_type);
+    reload_comment(comments_toid, comments_type);
 }
 /**
  * Отображение иконок редактирования/удаления/цитаты

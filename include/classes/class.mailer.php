@@ -188,7 +188,7 @@ class mailer extends pluginable_object {
             return true;
         $type = $this->type;
         $id = (int) $id;
-        $where = "m.last_check <= (" . time() . ($id ? " - interval" : "") . ")
+        $where = "m.last_check <= (" . time() . ($id ? " - m.interval" : "") . ")
             AND m.is_new='1'" . ($id ? "
                 AND m.interval=0
                 AND m.toid=?

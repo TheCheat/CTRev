@@ -1,16 +1,15 @@
-<script type="text/javascript">
-    //[*if !$from_ajax*]
-
-    $comments_page = 0;
-    $comments_pageurl = 'index.php?module=comments_manage&act=show&from_ajax=1&comments_page=';
-    comments_name = "[*$name|sl*]";
-    comments_resid = '[*$resid*]';
-    comments_type = '[*$type|sl*]';
-    fk_ajax = '?[*fk ajax=1*]';
-    are_you_sure_to_delete_this_comment = '[*'are_you_sure_to_delete_this_comment'|lang|sl*]';
-    //[*/if*]
-</script>
-<script type='text/javascript' src='js/jquery.comments.js'></script>
+[*if !$from_ajax*]
+    <script type="text/javascript">
+        $comments_page = 0;
+        $comments_pageurl = 'index.php?module=comments_manage&act=show&from_ajax=1&comments_page=';
+        comments_name = "[*$name|sl*]";
+        comments_toid = '[*$toid*]';
+        comments_type = '[*$type|sl*]';
+        fk_ajax = '?[*fk ajax=1*]';
+        are_you_sure_to_delete_this_comment = '[*'are_you_sure_to_delete_this_comment'|lang|sl*]';
+    </script>
+    <script type='text/javascript' src='js/jquery.comments.js'></script>
+[*/if*]
 <div id="comments_[*$name*]">
     <div class="white_color cornerText gray_border">
         <fieldset><legend>[*'comments_list'|lang*]</legend>
