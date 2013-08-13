@@ -1000,6 +1000,8 @@ class display_userfields extends pluginable_object {
         $var = self::var_prefix . $var;
         if ($this->data)
             return $this->data[$var];
+        if (!users::o()->v())
+            return "";
         return users::o()->v($var);
     }
 
