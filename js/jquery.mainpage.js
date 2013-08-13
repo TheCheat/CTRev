@@ -412,7 +412,7 @@ function set_rating(value, toid, type, element, refresh, stoid, stype, sname) {
                         "toid": toid,
                         "type": type
                     }, function($data) {
-                        if (parseFloat($data) != 'NaN')
+                        if ((parseFloat($text) + '') != 'NaN')
                             element(parseFloat($data), value, toid, type, sname);
                     });
                 } else {
@@ -420,6 +420,9 @@ function set_rating(value, toid, type, element, refresh, stoid, stype, sname) {
                 }
             } else if (jQuery(element).length) {
                 var $el = jQuery(element);
+                var $buttons = jQuery('.rating_button', $el.parent());
+                if ($buttons.length)
+                    $buttons.hide();
                 if (refresh) {
                     jQuery.post('index.php?module=rating_manage&act=get&from_ajax=true', {
                         "toid": toid,
@@ -430,7 +433,7 @@ function set_rating(value, toid, type, element, refresh, stoid, stype, sname) {
                     });
                 } else {
                     var $text = $el.text();
-                    if (parseFloat($text) != 'NaN') {
+                    if ((parseFloat($text) + '') != 'NaN') {
                         $el.empty();
                         $el.append(parseFloat($text) + parseFloat(value));
                     }

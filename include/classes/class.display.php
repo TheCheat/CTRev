@@ -126,6 +126,8 @@ class display_html {
             $page = 1;
         else
             $page = longval($_REQUEST [$var]);
+        if ($count <= $perpage)
+            return array("", "0, " . $perpage);
         if (($page - 1) * $perpage >= $count)
             $page = longval($count / $perpage) - ($count % $perpage == 0 ? 0 : 1);
         $start = ($page - 1) * $perpage;

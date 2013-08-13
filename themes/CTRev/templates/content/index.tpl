@@ -99,7 +99,7 @@
         <br>
     [*/foreach*]
     [*if !$from_edit*] 
-        [*if !$full_content*]
+        [*if !$full_content && $pages*]
             <div align="left" class="cornerText gray_color content_paginator">
                 <noscript>
                 [*if $page>1*]

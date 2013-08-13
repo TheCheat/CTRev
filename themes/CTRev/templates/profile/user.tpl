@@ -37,12 +37,14 @@
                                 <br>
                                 ([*'ip'|lang*][*$row.ip|l2ip*])
                             [*/if*]
-                            <hr class='gray_border2'>
-                            [*if 'pm'|perm*] 
-                                <b><a href="[*gen_link module='pm' to=$row.username*]">[*'users_send_pm'|lang*]</a></b><br>
-                                [*/if*] 
-                                [*if ($row.user_email || ('acp'|perm && $row.admin_email)) || 'not_allowed'|perm*] 
-                                <b><a href="mailto:[*$row.email*]">[*'users_send_email'|lang*]</a></b>
+                            [*if ''|user && 'id'|user!=$row.id*]
+                                <hr class='gray_border2'>
+                                [*if 'pm'|perm*] 
+                                    <b><a href="[*gen_link module='pm' to=$row.username*]">[*'users_send_pm'|lang*]</a></b><br>
+                                    [*/if*] 
+                                    [*if ($row.user_email || ('acp'|perm && $row.admin_email)) || 'not_allowed'|perm*] 
+                                    <b><a href="mailto:[*$row.email*]">[*'users_send_email'|lang*]</a></b>
+                                    [*/if*]
                                 [*/if*]
                         </div>
                     </div>
