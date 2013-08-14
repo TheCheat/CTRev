@@ -95,7 +95,7 @@
         <div class="modalbox_content">[*$unread_last.text|ft*]</div>
         <div class="modalbox_subcontent">
             <div class="float_left">
-                <nobr>
+                <div class="nobr">
                     [*'pm_sender'|lang*][*$unread_last.username|gcl:$unread_last.group*],
                     [*date time=$unread_last.time format="ymdhis"*]
                     <input type="image" id="before_button" onclick="move_message('[*$unread_last.time*]');"
@@ -104,7 +104,7 @@
                     <input type="image" id="after_button" onclick="move_message('[*$unread_last.time*]', 1);"
                            class='clickable [*if !$count_after && !$only_unread*]hidden[*/if*]'
                            src="[*$theme_path*]engine_images/arrow_right.png" alt="[*'next'|lang*]">
-                </nobr>
+                </div>
             </div>
             <div align="right"><input type="button" value="[*'pm_read'|lang*]"
                                       onclick="act_box('[*$unread_last.id*]', '[*$unread_last.time*]', 'read')">&nbsp;<input

@@ -37,17 +37,17 @@
 [*/if*]
 <div class="attachments_[*$postfix_att*]">
     <span class="attachment0 hidden">
-        <nobr>
+        <div class="nobr">
             <input type="hidden" name="attachments[]" value="0">
             <a href="javascript:void(0);" onclick="attach_delete(this);">
                 <img src="[*$theme_path*]engine_images/delete.png" height='12' alt="[*"delete"|lang*]">
             </a>
-        </nobr>
+        </div>
     </span>
     [*if $attachments*]
         [*foreach from=$attachments item=row key=num*] 
             <span class="attachlist">
-                <nobr>
+                <div class="nobr">
                     [*if $num*] 
                         <span>|</span> 
                     [*/if*] 
@@ -56,7 +56,7 @@
                     <a href="javascript:void(0);" onclick="attach_delete(this);">
                         <img src="[*$theme_path*]engine_images/delete.png" height='12' alt="[*"delete"|lang*]">
                     </a>
-                </nobr>
+                </div>
             </span>
         [*/foreach*]
     [*/if*]

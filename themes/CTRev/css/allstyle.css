@@ -14,6 +14,11 @@ div.br {
     margin: 3px;
 }
 
+div.nobr {
+    display: inline;
+    white-space: nowrap;
+}
+
 .cornerText {
     border: 2px solid lightgray;
     padding: 5px;

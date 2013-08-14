@@ -10,7 +10,7 @@
                 </div>
             [*/if*]
             <div class="middle_pos_attach">
-                <nobr>
+                <div class="nobr">
                     [*if $attach_row.ftimage*]
                         <img src="[*'ftypes_folder'|config*]/[*$attach_row.ftimage*]" alt="FType">
                     [*/if*]
@@ -21,7 +21,7 @@
                         [*$attach_row.filename*]
                     </a>
                     ([*$attach_row.size|cs*], [*$attach_row.downloaded*] [*'downloads'|lang*])
-                </nobr>
+                </div>
             </div>
         [*/foreach*]
     </fieldset>

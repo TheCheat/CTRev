@@ -27,25 +27,29 @@
         </select>
     </div>
 [*/if*]
-<span>
-    [*if !$content.status*]
-        <a href='javascript:void(0);'
-           onclick='set_status(this, "[*$content.id*]");'
-           title='[*'torrent_status_details_unchecked'|lang*]'>
-            [*'torrent_status_unchecked'|lang*]
-        </a>
-    [*else*]
-        [*assign var='status' value=$content.status*]
-        <a href='javascript:void(0);'
-           onclick='set_status(this, "[*$content.id*]");'
-           title='[*"torrent_status_details_$status"|lang*]'>[*"torrent_status_pre_$status"|lang*]
-            [*"torrent_status_$status"|lang*]&nbsp;-[*if !$statuses.$status*]
-                <span style="color: green;">[*'torrent_status_sub_ok'|lang*]</span>
-            [*elseif $statuses.$status==1*]
-                <span style="color: red;">[*'torrent_status_sub_banned'|lang*]</span>
-            [*else*]
-                <span style="color: red;">[*'torrent_status_sub_banned'|lang*][*'torrent_status_sub_noedit'|lang*]</span>
-            [*/if*]
-        </a>:&nbsp;[*$content.su|gcl:$content.sg*]
-    [*/if*]
-</span>
+<b>
+    <font size='3'>
+    <span>
+        [*if !$content.status*]
+            <a href='javascript:void(0);'
+               onclick='set_status(this, "[*$content.id*]");'
+               title='[*'torrent_status_details_unchecked'|lang*]'>
+                [*'torrent_status_unchecked'|lang*]
+            </a>
+        [*else*]
+            [*assign var='status' value=$content.status*]
+            <a href='javascript:void(0);'
+               onclick='set_status(this, "[*$content.id*]");'
+               title='[*"torrent_status_details_$status"|lang*]'>[*"torrent_status_pre_$status"|lang*]
+                [*"torrent_status_$status"|lang*]&nbsp;-[*if !$statuses.$status*]
+                    <span style="color: green;">[*'torrent_status_sub_ok'|lang*]</span>
+                [*elseif $statuses.$status==1*]
+                    <span style="color: red;">[*'torrent_status_sub_banned'|lang*]</span>
+                [*else*]
+                    <span style="color: red;">[*'torrent_status_sub_banned'|lang*][*'torrent_status_sub_noedit'|lang*]</span>
+                [*/if*]
+            </a>:&nbsp;[*$content.su|gcl:$content.sg*]
+        [*/if*]
+    </span>
+    </font>
+</b>

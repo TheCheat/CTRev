@@ -72,14 +72,14 @@
                                 [*assign var='k' value=''*]
                             [*/if*]
                             <div class='allowed_value'>
-                                <nobr>
+                                <div class="nobr">
                                     <input type='text' size='10' name='keys[]' value='[*$k*]'>
                                     =>
                                     <input type='text' size='25' name='values[]' value='[*$v*]'>
                                     <a href='javascript:void(0);' onclick='delete_allowed(this);' class='hidden'>
                                         <img src='[*$atheme_path*]engine_images/delete.png' alt='[*"delete"|lang*]'>
                                     </a>
-                                </nobr>
+                                </div>
                                 <div class='br'></div>
                             </div>
                         [*/foreach*]

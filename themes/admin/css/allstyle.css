@@ -14,6 +14,11 @@ div.br {
     margin: 3px;
 }
 
+div.nobr {
+    display: inline;
+    white-space: nowrap;
+}
+
 .cornerText {
     border: 2px solid lightgray;
     padding: 5px;
@@ -244,7 +249,7 @@ div.both_clear {
 
 div.grippie {
     background: #EEEEEE url(../images/grippie.png) no-repeat scroll
-center
+        center
         2px;
     border-color: #DDDDDD;
     border-style: solid;

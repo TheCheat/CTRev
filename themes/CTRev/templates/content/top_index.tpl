@@ -6,9 +6,7 @@
         <div class='cornerText gray_color2 gray_border2'>
             <fieldset><legend>[*'content_item'|lang*] "[*$content.title*]"</legend>
                 <center>
-                    <b><font size='3'>
-                        [*include file='content/status.tpl'*]
-                        </font></b>
+                    [*include file='content/status.tpl'*]
                 </center>
                 <dl class='info_text'>
                     [*if $curuser && 'content'|perm && !$content.banned*]

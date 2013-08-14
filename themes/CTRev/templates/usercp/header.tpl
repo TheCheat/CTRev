@@ -1,6 +1,6 @@
 <div class="cornerText gray_color">
     <fieldset><legend>
-            <nobr>
+            <div class="nobr">
                 [*assign var="be" value=0*]
                 [*foreach from=$menuacts item=menu*]
                     [*if $be*] 
@@ -11,6 +11,6 @@
                     </span>
                     [*assign var="be" value=1*]
                 [*/foreach*]
-            </nobr>
+            </div>
         </legend>
         <center>
