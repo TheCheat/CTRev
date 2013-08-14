@@ -194,7 +194,7 @@ class bittorrent extends announce_parser {
         try {
             users::o()->check_perms('content');
             $r = db::o()->p($id)->query('SELECT t.banned, c.poster_id, c.posted_time, t.price, d.uid FROM content AS c
-                LEFT JOIN content_torrent AS t ON t.cid=c.id
+                LEFT JOIN content_torrents AS t ON t.cid=c.id
                 LEFT JOIN content_downloaded AS d ON d.tid=c.id AND d.uid=' . users::o()->v('id') . '
             WHERE c.id=? LIMIT 1');
             list($banned, $poster_id, $posted_time, $price, $downloaded) = db::o()->fetch_row($r);

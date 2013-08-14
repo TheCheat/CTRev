@@ -36,7 +36,7 @@ db::o()->errhandler('db_errhandler');
 $bt = new fbenc();
 db::o()->connect();
 db::o()->no_reset();
-config::o(array('announce', 'other'));
+config::o(array('content', 'announce', 'other'));
 if (!config::o()->v('torrents_on'))
     die('Module turned off');
 ?>
