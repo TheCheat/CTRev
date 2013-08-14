@@ -100,7 +100,7 @@ final class cleanup extends pluginable_object {
      */
     protected function clear_bans() {
         $r = db::o()->query("SELECT id,uid FROM bans WHERE to_time <> 0 AND to_time <= " . time());
-        $ids = [];
+        $ids = array();
         while ($row = db::o()->fetch_assoc($r)) {
             $uid = $row["uid"];
             if ($uid)
