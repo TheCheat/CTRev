@@ -169,7 +169,7 @@ class content_add {
      */
     protected function screenshots_old(&$old, $purl, $surl, $sfile) {
         if (!$old)
-            return array();
+            return array(array(), 0);
         $r = array();
         $l = null;
         $old = @unserialize($old);
