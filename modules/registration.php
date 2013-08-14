@@ -230,7 +230,7 @@ class registration {
                 "email" => $email,
                 "confirmed" => longval($etc->confirm_user(0, 0)),
                 "group" => users::o()->find_group('default'),
-                "refered_by" => $refered_by,
+                "refered_by" => (int) $refered_by,
                 "confirm_key" => (config::o()->v('confirm_email') ? $etc->confirm_request($email, "confirm_register") : ""));
             if (config::o()->v('bonus_by_default'))
                 $update['bonus_count'] = config::o()->v('bonus_by_default');
