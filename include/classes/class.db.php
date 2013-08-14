@@ -71,15 +71,14 @@ abstract class db_parse extends db_core {
      * @return db $this
      */
     public function p($param, $_ = null) {
-        if (is_array($param))
-            $this->query_params = array_merge($this->query_params, array_values($param));
-        elseif (is_null($_))
-            $this->query_params[] = $param;
-        else {
+        if (!is_null($_)) {
             $c = func_num_args();
             for ($i = 0; $i < $c; $i++)
                 $this->p(func_get_arg($i));
-        }
+        } elseif (is_array($param))
+            $this->query_params = array_merge($this->query_params, array_values($param));
+        else
+            $this->query_params[] = $param;
         return $this;
     }
 
@@ -149,10 +148,14 @@ abstract class db_parse extends db_core {
             return;
         }
         $this->i = 0;
-        if ($this->query_params)
-            $query = preg_replace_callback('/(\@|\@(\d+))?\?/', array($this, "parse_var"), $query);
-        if (dbprefix && !$this->noprefix)
-            $query = preg_replace_callback('/\s+(from|join|table(?:\s+if\s+(?:not\s+)?exists)?)\s+`?(\w+)`?/i', array($this, "parse_table"), $query);
+        try {
+            if ($this->query_params)
+                $query = preg_replace_callback('/(\@|\@(\d+))?\?/', array($this, "parse_var"), $query);
+            if (dbprefix && !$this->noprefix)
+                $query = preg_replace_callback('/\s+(from|join|table(?:\s+if\s+(?:not\s+)?exists)?)\s+`?(\w+)`?/i', array($this, "parse_table"), $query);
+        } catch (EngineException $e) {
+            throw new EngineException($e->getMessage(), $query);
+        }
         $this->query_params = array();
         $this->noprefix = false;
     }
