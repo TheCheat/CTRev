@@ -103,7 +103,7 @@ class user {
         tpl::o()->assign("act", $act);
         tpl::o()->assign("menu", $this->menu);
         n("comments"); // для display_comments
-        n("display_userfields"); // для display_userfields
+        n("userfields"); // для display_userfields
         tpl::o()->display('profile/user.tpl');
     }
 

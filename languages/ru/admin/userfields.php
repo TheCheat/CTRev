@@ -16,7 +16,7 @@ $languages = array(
     'userfields_type_radio' => "Выборка(radio)",
     'userfields_type_select' => "Список",
     'userfields_type_checkbox' => "'Не будет отображаться в профиле'Галочка(checkbox)",
-    'userfields_type_other' => "'В имени поля нужно указать остаток именён методов класса display_userfields 
+    'userfields_type_other' => "'В имени поля нужно указать остаток именён методов класса userfields 
      для отображения и проверки'Другое",
     "userfields_allowed" => "Допустимые значения",
     "userfields_allowed_dont_need" => "Не нужны.",

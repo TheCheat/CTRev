@@ -104,7 +104,8 @@ final class allowed {
         "stats",
         "etc",
         "smtp",
-        "attachments");
+        "attachments",
+        "userfields");
 
     /**
      * Добавление модуля/класса/переменных в список разрешённых

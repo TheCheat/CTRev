@@ -54,8 +54,8 @@ class userfields_man {
         }
         if (!$values)
             $values = array('', '');
-        /* @var $uf display_userfields */
-        $uf = n("display_userfields");
+        /* @var $uf userfields */
+        $uf = n("userfields");
         tpl::o()->assign('types', array_keys($uf->get_var('types')));
         tpl::o()->assign('types_array', display::o()->array_export_to_js($uf->get_var('types')));
         tpl::o()->assign('values', $values);
@@ -111,8 +111,8 @@ class userfields_man {
             throw new EngineException('userfields_empty_field');
         if (!$data['name'])
             throw new EngineException('userfields_empty_name');
-        /* @var $uf display_userfields */
-        $uf = n("display_userfields");
+        /* @var $uf userfields */
+        $uf = n("userfields");
         $ct = $uf->get_var('types', $data['type']);
         if (is_null($ct))
             throw new EngineException('userfields_empty_type');

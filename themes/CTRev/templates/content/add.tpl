@@ -63,7 +63,7 @@
             <dl class="info_text">
                 [*if "torrents_on"|config && 'ct_price'|perm*]
                     <dt>[*'content_torrent_price'|lang*]</dt>
-                    <dd><input type="text" name="price" size="25" value='[*$nrow.price*]'></dd>
+                    <dd><input type="text" name="price" size="25" value='[*if isset($nrow.price)*][*$nrow.price*][*else*][*'default_torrent_price'|config*][*/if*]'></dd>
 
                 [*/if*]
                 [*if $id*]

@@ -181,8 +181,8 @@ class registration {
      */
     protected function step_by_step($step, $data) {
         $error = array();
-        /* @var $uf display_userfields */
-        $uf = n("display_userfields")->change_type('register'); // для input_userfields и метода save
+        /* @var $uf userfields */
+        $uf = n("userfields")->change_type('register'); // для input_userfields и метода save
         if ($data ['to_check'] && is_numeric($step)) {
             $this->check_steps($error, $step, $data);
             if ($step >= 3)

@@ -93,6 +93,7 @@ $languages = array(
     "config_field_max_sc_symb" => "Макс. кол-во символов в кратком содержании торрента",
     "config_field_max_search_symb" => "Макс. кол-во символов в содержании в поиске",
     "config_field_max_symb_after_word" => "Макс. кол-во символов после последнего слово для обрезания в поиске",
+    "config_field_default_torrent_price" => "Стандартная стоимость торрента",
     "config_field_max_torrent_price" => "Макс. стоимость торрента",
     "config_field_max_trylogin" => "Макс. кол-во попыток входа",
     "config_field_maxbonus" => "Макс. бонус сидирования",

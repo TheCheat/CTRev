@@ -107,7 +107,7 @@ class usercp {
         $dc = explode("|", $vars['display_colors']);
         tpl::o()->assign('allowed_colors', array_filter($ac, 'validword'));
         tpl::o()->assign('display_colors', $dc);
-        n("display_userfields"); // для input_userfields
+        n("userfields"); // для input_userfields
         tpl::o()->display("usercp/main.tpl");
     }
 
@@ -380,8 +380,8 @@ class usercp_ajax {
         $settings["hidden"] = users::o()->perm("behidden") || $inadmin ? (bool) $settings["hidden"] : 0;
         if (config::o()->v("torrents_on"))
             $settings['announce_pk'] = serialize($settings['announce_pk']);
-        /* @var $uf display_userfields */
-        $uf = n("display_userfields");
+        /* @var $uf userfields */
+        $uf = n("userfields");
         $settings = array_merge($settings, $uf->change_type('profile')->save($data));
 
         if ($inadmin) {

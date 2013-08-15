@@ -480,6 +480,8 @@ class content_add {
             if ($this->tstate) {
                 if (!is_null($price) && $price <= config::o()->v('max_torrent_price') && users::o()->perm('ct_price'))
                     $torrent['price'] = $price;
+                elseif (!$id)
+                    $torrent['price'] = config::o()->v('default_torrent_price');
                 $torrent['last_active'] = time();
                 /* @var $bt bittorrent */
                 $bt = n("bittorrent");
@@ -1333,7 +1335,7 @@ class content_ajax extends torrents_simpleview {
         if (!$infohash)
             throw new EngineException('content_are_not_exists');
         $hour = 3600;
-        $announce_stat = unserialize($announce_stat);
+        $announce_stat = (array) unserialize($announce_stat);
         if (config::o()->v('get_peers_interval') &&
                 $announce_stat['last_update'] <= time() - config::o()->v('get_peers_interval') * $hour)
             $announce_stat = n("getpeers")->get_peers($id, $announces, $infohash);

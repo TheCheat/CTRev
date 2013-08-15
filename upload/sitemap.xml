@@ -6,4 +6,10 @@
             <changefreq>monthly</changefreq>
             <priority></priority>
         </url>
+            <url>
+            <loc>http://localhost/CTRev/torrents/my_little_pony-id7.html</loc>
+            <lastmod>Wed, 14 Aug 2013 19:49:47 +0800</lastmod>
+            <changefreq>monthly</changefreq>
+            <priority></priority>
+        </url>
     </urlset>

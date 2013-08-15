@@ -96,10 +96,6 @@ class remote {
                     $port = 443;
                     $host = "ssl://" . $host;
                     break;
-                case "udp":
-                    $port = 13;
-                    $host = "udp://" . $host;
-                    break;
                 default:
                     $port = 80;
                     break;
@@ -108,7 +104,7 @@ class remote {
         $query = $p['query'];
         if ($post && is_array($post))
             $post = http_build_query($post);
-        $r = @fsockopen($host, $port, $errno, $errstr, $this->time_limit);
+        @$r = fsockopen($host, $port, $errno, $errstr, $this->time_limit);
         if (!$r)
             return;
         $query = ($post ? "POST" : "GET" ) . " " . $path . "?" . $query;
@@ -131,12 +127,33 @@ class remote {
         if ($post)
             $query .= $post;
         if (!@fwrite($r, $out))
-            return; // для UDP
+            return;
         $c = '';
         while (!feof($r))
             $c .= fgets($r, 1024);
         fclose($r);
         return $this->parse_headers($c);
+    }
+
+    /**
+     * Парсинг контента с "Transfer-Encoding: chunked"
+     * @param string $c контент
+     * @return string спарсенный контент
+     */
+    protected function parse_chunked($c) {
+        $r = '';
+        $nl = "\r\n";
+        $nll = strlen($nl);
+        do {
+            $p = strpos($c, $nl);
+            $clen = hexdec(substr($c, 0, $p));
+            $p += $nll;
+            $r .= substr($c, $p, $clen);
+            $c = substr($c, $p + $clen + 2); // + 2 ибо перевод на новую строку
+            if (!$clen)
+                break;
+        } while ($c);
+        return $r;
     }
 
     /**
@@ -149,21 +166,8 @@ class remote {
         $p = strpos($c, $hend);
         $h = substr($c, 0, $p);
         $c = trim(substr($c, $p + strlen($hend)));
-        if (preg_match('/Transfer-Encoding\:\s*chunked\r\n/siu', $h)) {
-            $r = '';
-            $nl = "\r\n";
-            $nll = strlen($nl);
-            do {
-                $p = strpos($c, $nl);
-                $clen = hexdec(substr($c, 0, $p));
-                $p += $nll;
-                $r .= substr($c, $p, $clen);
-                $c = substr($c, $p + $clen + 2); // + 2 ибо перевод на новую строку
-                if (!$clen)
-                    break;
-            } while ($c);
-            $c = $r;
-        }
+        if (preg_match('/Transfer-Encoding\:\s*chunked\r\n/siu', $h))
+            $c = $this->parse_chunked($c);
         return $c;
     }
 
