@@ -26,6 +26,7 @@ if (IN_DEVELOPMENT) {
 @ini_set('ignore_repeated_errors', '1');
 @ini_set('sybct.allow_persistent', '0');
 @ini_set('default_socket_timeout', DEFAULT_SOCKET_TIMEOUT);
+@ini_set('mbstring.func_overload', 0); // Не нужно.
 @ignore_user_abort(1);
 @set_time_limit(MAX_SCRIPT_EXECUTION_TIME);
 if (function_exists("set_magic_quotes_runtime"))
