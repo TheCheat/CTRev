@@ -172,7 +172,7 @@ class convert {
             if ($_GET['finish']) {
                 db::o()->update(array('value' => '1'), 'convert', 'WHERE field="converted" LIMIT 1');
                 stats::o()->remove(self::stfield);
-                $pname = sprintf(self::pname, $this->db);
+                $pname = sprintf(self::pname, $this->cfile);
                 plugins::o()->manager->delete($pname);
                 plugins::o()->manager->add($pname);
                 printf(lang::o()->v('convert_plugin_installed'));
