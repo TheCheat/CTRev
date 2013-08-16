@@ -1269,8 +1269,7 @@ class content_ajax extends torrents_simpleview {
      * @return null
      */
     public function check($id = "") {
-        if (!users::o()->check_perms('edit_content', '2'))
-            return;
+        users::o()->check_perms('edit_content', '2');
         $id = longval($id);
         if ($this->tstate) {
             db::o()->p($id)->update(array('status' => 'checked',
