@@ -725,7 +725,7 @@ class content extends content_add {
         $perpage = config::o()->v('table_content_perpage');
         list ( $pages, $limit ) = display::o()->pages($count[0], $perpage, 'change_tpage', 'page', '', true);
 
-        $rows = db::o()->no_parse()->query('SELECT c.*' . $cols . ', u.username, u.group FROM content AS c ' . $lj . '
+        $rows = db::o()->no_parse()->query('SELECT c.*' . $cols . ', u.username, u.group FROM ' . db::table('content') . ' AS c ' . $lj . '
             LEFT JOIN ' . db::table('users') . ' AS u ON c.poster_id=u.id
             ' . $where . '
             ORDER BY ' . $orderby . '
