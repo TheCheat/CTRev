@@ -248,7 +248,7 @@ class polls extends pluginable_object {
         $row ['answers'] = array(
             '',
             '');
-        if (!$poll_id && (!$toid || !$type)) {
+        if (!$poll_id && $full) {
             users::o()->check_perms('polls', 3);
         } else {
             try {
