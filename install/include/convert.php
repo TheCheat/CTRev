@@ -259,6 +259,7 @@ class convert {
         $loffset = (int) $loffset;
         if (!$toffset && !$loffset)
             $this->truncate_tables();
+        @mb_internal_encoding('UTF-8');
         $a = array();
         $finish = "<script type='text/javascript'>continue_convert(0, 0, true);</script>";
         $cachefile = 'convert/cparse-off' . $toffset;

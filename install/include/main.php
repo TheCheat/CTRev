@@ -389,6 +389,7 @@ define("charset", ' . var_export($charset, true) . ');
      * @return null
      */
     protected function create_admin($data, &$error) {
+        @mb_internal_encoding('UTF-8');
         $group = 6; // группа админа
         extract(rex($data, array('username',
             'password',
