@@ -904,9 +904,7 @@ class content extends content_add {
         if (!$id) {
             $cat = mb_strtolower(display::o()->strip_subpath($data ['cat']));
             $cat_rows = array();
-            if (!$cat)
-                $where [] = "c.on_top='1'";
-            elseif ($cwhere = $cats->condition($cat, $cat_rows))
+            if ($cat && ($cwhere = $cats->condition($cat, $cat_rows)))
                 $where [] = $cwhere;
             if ($cat_rows)
                 $this->title = $cat_rows [0];
@@ -935,6 +933,9 @@ class content extends content_add {
                 tpl::o()->assign("full_content", true);
             $full = true;
         }
+
+        if (!$where)
+            $where [] = "c.on_top='1'";
 
         plugins::o()->pass_data(array('full' => &$full,
             'cat' => &$cat,
