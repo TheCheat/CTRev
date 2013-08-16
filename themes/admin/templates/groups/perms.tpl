@@ -13,7 +13,7 @@
             <a class="accordion_header">[*"groups_type_$type"|lang*]</a>
             <div align='left'><dl class='info_text'>
                     [*foreach from=$perms.$type item='perm'*]
-                        [*assign var='rule' value="can_$pn"*]
+                        [*assign var='rule' value="can_`$perm.perm`"*]
                         <dt class='accordion_rdt'>[*"groups_rule_`$perm.perm`"|lang*]</dt>
                         <dd>[*$perm|@show_selector:$row.$rule*]</dd>
                     [*/foreach*]
