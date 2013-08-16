@@ -687,7 +687,7 @@ INSERT INTO `config` (`name`, `value`, `type`, `allowed`, `cat`, `sort`) VALUES
 ('allowed_screenshots', '3', 'select', '3;2;1', 'content', 3),
 ('max_screenshots', '5', 'int', '', 'content', 4),
 ('max_torrent_price', '50', 'int', '', 'content', 5),
-('default_torrent_price', '10', 'int', '', 'content', 6)
+('default_torrent_price', '10', 'int', '', 'content', 6),
 ('max_sc_symb', '500', 'int', '', 'content', 7),
 ('max_rss_items', '20', 'int', '', 'content', 8),
 ('content_perpage', '5', 'int', '', 'content', 9),

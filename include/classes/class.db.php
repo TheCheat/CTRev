@@ -13,7 +13,8 @@
 if (!defined('INSITE'))
     die('Remote access denied!');
 
-include_once ROOT . 'include/dbconn.php';
+if (file_exists(ROOT . 'include/dbconn.php'))
+    include_once ROOT . 'include/dbconn.php';
 include_once ROOT . 'include/classes/db/interface.db_core.php';
 if (!defined("dbtype"))
     define("dbtype", "mysql");

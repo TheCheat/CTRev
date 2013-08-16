@@ -1,15 +1,3 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-            <url>
-            <loc>http://localhost/CTRev/torrents/testing_fucking_torrent-id3.html</loc>
-            <lastmod>Sun, 04 Aug 2013 00:00:50 +0800</lastmod>
-            <changefreq>monthly</changefreq>
-            <priority></priority>
-        </url>
-            <url>
-            <loc>http://localhost/CTRev/torrents/my_little_pony-id7.html</loc>
-            <lastmod>Wed, 14 Aug 2013 19:49:47 +0800</lastmod>
-            <changefreq>monthly</changefreq>
-            <priority></priority>
-        </url>
     </urlset>
