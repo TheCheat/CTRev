@@ -55,6 +55,7 @@ $r = db::o()->p($torrent)->query('SELECT peer_id, ip, port, uid, uploaded, time 
 $was = false;
 $seeders = 0;
 $leechers = 0;
+$uploaded = (float) $uploaded; // На всякий случай.
 if ($event != 'stopped') {
     $plist = $compact ? '' : array();
     while ($peer = db::o()->fetch_assoc($r)) {
