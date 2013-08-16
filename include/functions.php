@@ -623,9 +623,9 @@ function ok($print = false) {
  */
 function utf8_preg_offset($string, $offset, $backwards = false) {
     if ($backwards)
-        return strlen(mb_substr($string, 0, $offset));
+        return mb_strlen(mb_substr($string, 0, $offset), "ISO-8859-1");
     else
-        return mb_strlen(substr($string, 0, $offset));
+        return mb_strlen(mb_substr($string, 0, $offset, "ISO-8859-1"));
 }
 
 if (!function_exists('class_alias')) {
