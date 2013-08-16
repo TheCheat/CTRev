@@ -94,17 +94,18 @@ class main {
         // файл не должен содержать комментариев
         $matches = array();
         $dump = $this->get_dump();
-        if ($offset < strlen($dump)) {
+        @mb_internal_encoding('UTF-8');
+        if ($offset < mb_strlen($dump)) {
             // При выполнении регулярки ниже у меня апач вешался на относительно большой строке(вставка config)
             // Sad, but true
             /* preg_match('/((?:[^\'";]+(?:([\'"]).*?(?<!\\\)\\2)?)+)(;)/s', $dump, $matches, PREG_OFFSET_CAPTURE, $offset);
              * $query = $matches[1][0];
              * $offset = $matches[3][1] + 1;
              */
-            $dump = substr($dump, $offset);
-            preg_match('/(?:^|\n)(.*?)(;)(?:\n|$)/s', $dump, $matches, PREG_OFFSET_CAPTURE);
+            $dump = mb_substr($dump, $offset);
+            preg_match('/(?:^|\n)(.*?)(;)(?:\n|$)/su', $dump, $matches, PREG_OFFSET_CAPTURE);
+            $offset = utf8_preg_offset($dump, $matches[2][1]) + $offset + 1;
             $query = $matches[1][0];
-            $offset = $matches[2][1] + $offset + 1;
         }
         if (!$matches) {
             print('<script type="text/javascript">
@@ -112,17 +113,17 @@ class main {
             </script>');
             return;
         }
-        $query = preg_replace('/^--.*$/m', '', $query);
+        $query = preg_replace('/^--.*$/mu', '', $query);
         $query = trim($query);
         if ($query) {
 
-            $pattern = '/^((?:CREATE|ALTER)\s+TABLE(?:\s+IF\s+(?:NOT\s+)?EXISTS)?|UPDATE|(?:REPLACE|INSERT)(?:\s+IGNORE)?(?:\s+INTO)?)\s+`?(\w+)`?/i';
+            $pattern = '/^((?:CREATE|ALTER)\s+TABLE(?:\s+IF\s+(?:NOT\s+)?EXISTS)?|UPDATE|(?:REPLACE|INSERT)(?:\s+IGNORE)?(?:\s+INTO)?)\s+`?(\w+)`?/iu';
             $query = preg_replace_callback($pattern, array($this, "get_tname"), $query);
             db::o()->no_parse()->query($query);
-            $qtype = strtolower($this->query[0]);
+            $qtype = mb_strtolower($this->query[0]);
             $qtype = 'install_import_query_type' . $qtype;
             if (lang::o()->visset($qtype)) {
-                $table = strtolower($this->query[1]);
+                $table = mb_strtolower($this->query[1]);
                 if (db::o()->errno())
                     $status = sprintf(lang::o()->v('install_import_query_error'), db::o()->errno());
                 else

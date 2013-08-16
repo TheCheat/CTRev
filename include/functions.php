@@ -611,6 +611,23 @@ function ok($print = false) {
         die(OK_MESSAGE);
 }
 
+/**
+ * Получение "настоящей" позиции для строки UTF-8
+ * https://bugs.php.net/bug.php?id=37391
+ * Т.е. грубо говоря, preg_match возвращает позицию в байтах,
+ * а нам надо в символах, и наоборот.
+ * @param string $string строка
+ * @param int $offset позиция
+ * @param bool $backwards получение кол-ва байт? тобишь наоборот
+ * @return int позиция для UTF8
+ */
+function utf8_preg_offset($string, $offset, $backwards = false) {
+    if ($backwards)
+        return strlen(mb_substr($string, 0, $offset));
+    else
+        return mb_strlen(substr($string, 0, $offset));
+}
+
 if (!function_exists('class_alias')) {
 
     /**

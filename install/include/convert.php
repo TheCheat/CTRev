@@ -264,7 +264,8 @@ class convert {
         $cachefile = 'convert/cparse-off' . $toffset;
         if (!($a = cache::o()->read($cachefile))) {
             $content = $this->convert_tables();
-            $c = preg_match_all('/(^)\s*?(\@?)table\s+(\w+)\/([\w\s,]+?)(?:\s*?\:\s*?(\w+))?(?:\s*?\?(.*?))?\s*?($)/miu', $content, $matches, PREG_OFFSET_CAPTURE, $toffset);
+            $tpos = utf8_preg_offset($content, $toffset, true);
+            $c = preg_match_all('/(^)\s*?(\@?)table\s+(\w+)\/([\w\s,]+?)(?:\s*?\:\s*?(\w+))?(?:\s*?\?(.*?))?\s*?($)/miu', $content, $matches, PREG_OFFSET_CAPTURE, $tpos);
             $i = 0;
             if (!$matches)
                 die($finish);
@@ -275,10 +276,10 @@ class convert {
             if (!$ftable)
                 $ftable = $table;
             $cond = trim($matches[6][$i][0]);
-            $pos = $matches[7][$i][1];
+            $pos = utf8_preg_offset($content, $matches[7][$i][1]);
             $i++;
             if ($matches[1][$i]) {
-                $ntoffset = $matches[1][$i][1];
+                $ntoffset = utf8_preg_offset($content, $matches[1][$i][1]);
                 $len = $ntoffset - $pos;
             }
             $data = trim($len ? mb_substr($content, $pos, $len) : mb_substr($content, $pos));
