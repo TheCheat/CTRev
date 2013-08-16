@@ -42,6 +42,7 @@ $languages = array("config_field_content_perpage" => "Кол-во торрент
 <div align="right">С ув., Администрация $site_title.</div>',
     "content_close" => "Закрыть торрент",
     "links_content" => "Торренты",
+    "links_unchecked_content" => "Непроверенные",
     "links_loginbox_mycontent" => "Мои торренты",
     "links_loginbox_newcontent" => "Новые торренты",
     "links_loginbox_addcontent" => "Добавить торрент",

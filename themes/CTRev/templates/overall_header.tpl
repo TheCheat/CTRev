@@ -118,6 +118,10 @@
                                 [*if 'content'|perm*]
                             <li><a href="[*gen_link module='content'*]"><img
                                         src="[*$theme_path*]images/menu/content.png" alt="[*'links_content'|lang*]">&nbsp;[*'links_content'|lang*]</a></li>
+                                    [*if 'edit_content'|perm:2*]
+                                <li><a href="[*gen_link module='content' act='unchecked'*]"><img
+                                            src="[*$theme_path*]images/menu/unchecked_content.png" alt="[*'links_unchecked_content'|lang*]">&nbsp;[*'links_unchecked_content'|lang*]</a></li>
+                                    [*/if*] 
                             <li><a href="[*gen_link module='content' act='rss'*]"><img
                                         src="[*$theme_path*]engine_images/rss-feed.png"
                                         alt="[*'links_rss_content'|lang*]">&nbsp;[*'links_rss_content'|lang*]</a></li>

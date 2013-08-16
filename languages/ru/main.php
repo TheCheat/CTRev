@@ -84,6 +84,7 @@ $languages = array_merge($languages, array(
     "links_admincp" => "Админ-Центр",
     "links_rss_content" => "RSS",
     "links_content" => "Статьи",
+    "links_unchecked_content" => "Непроверенные",
     "links_register" => "Регистрация",
     "links_login" => "Вход",
     "links_users" => "Пользователи",
