@@ -25,6 +25,7 @@ class chat {
         switch ($_GET["act"]) {
             case "text":
                 $this->get_text($id);
+                die();
                 break;
             case "delete":
                 $this->delete($id);
