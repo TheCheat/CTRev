@@ -2,11 +2,14 @@
 чтобы каждый раз записывать все выполняемые мною запросы,
 посему проще просто скопировать/конвертировать весь контент.
 
-Адрес форума "поддержки": http://ctrev.cyber-tm.ru
+Адрес форума поддержки: http://ctrev.cyber-tm.ru
 Страница скачивания: http://ctrev.cyber-tm.ru/thread-2.html
-Так же Вы там можете найти много полезной информации и вообще...
+Так же Вы там можете найти много полезной(?) информации и вообще...
 
 Быдлокодер: The Cheat(aka PHPDog)
 
-Запрос: INSERT INTO `ctrev_config` (`name` ,`value` ,`type` ,`allowed` ,`cat` ,`sort`)
+Запросы:
+-- Обновление от 15.08.2013 --
+INSERT INTO `ctrev_config` (`name` ,`value` ,`type` ,`allowed` ,`cat` ,`sort`)
 VALUES ('default_torrent_price', '10', 'int', '', 'content', '5');
+-- Конец. --
