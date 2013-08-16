@@ -24,9 +24,6 @@
                 });
             }
             function delete_this(id) {
-            [*if $ract=='check'*]
-                return;
-            [*/if*]
                 jQuery('#content_table_id' + id).children("td").each(function() {
                     jQuery(this).fadeOut(1000, function() {
                         jQuery(this).parent().remove();
