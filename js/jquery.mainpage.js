@@ -16,6 +16,7 @@ to_transl = ["a", "b", "v", "g", "d", "e", "e", "zh", "z", "i", "y", "k", "l", "
  * @returns {bool} true, если успешно
  */
 function is_ok(data, substr) {
+    data = trim(data); // На всякий случай
     if ((substr ? data.substr(0, ok_message.length) : data + "") === ok_message)
         return true;
     return false;
