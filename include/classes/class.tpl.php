@@ -101,6 +101,15 @@ final class tpl extends Smarty {
     }
 
     /**
+     * Получение пути к шаблону
+     * @param bool $real настоящий? (не АЦ)
+     * @return string
+     */
+    public function get_template_dir($real = true) {
+        return ($real && $this->tmp ? $this->tmp : $this->template_dir);
+    }
+
+    /**
      * В онке?
      * @param string $resource_name имя шаблона
      * @return null

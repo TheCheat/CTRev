@@ -58,7 +58,7 @@ class blocks_man {
             case "tpl":
                 // Разрешим пустой блок
                 //$allblock = '|' . mpc(blocks::allblock);
-                $path = cut_path(tpl::o()->template_dir) . blocks::blocks_path;
+                $path = cut_path(tpl::o()->get_template_dir()) . blocks::blocks_path;
                 $regexp = '(?(?=(?:(?:' . implode('|', array_map('mpc', self::$types)) . ')' .
                         mpc(blocks::block_standart) . ')' . $allblock . ')\/|(\w+))\.tpl';
                 $empty = true;
