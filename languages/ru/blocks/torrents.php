@@ -15,6 +15,6 @@ $languages = array(
     'btorrents_author' => 'Автор:',
     'btorrents_added' => 'Добавлено:',
     'btorrents_pattern_name' => '(?:\[[biu]\])?\s*(?:название|имя|name|title)\s*(?:\[\/[biu]\])?\s*\:\s*(?:\[\/[biu]\])?',
-    'btorrents_pattern_orig_name' => '(?:\[[biu]\])?\s*(?:(?:ориг|orig)[\wа-яА-Я\s\.]*(?:название|имя|name|title))\s*(?:\[\/[biu]\])?\s*\:\s*(?:\[\/[biu]\])?',
-    'btorrents_pattern_year' => '(?:\[[biu]\])?\s*(?:год|year)[\wа-яА-Я\s]*(?:\[\/[biu]\])?\s*\:\s*(?:\[\/[biu]\])?');
+    'btorrents_pattern_orig_name' => '(?:\[[biu]\])?\s*(?:(?:ориг|orig)[\wа-я\s\.]*(?:название|имя|name|title))\s*(?:\[\/[biu]\])?\s*\:\s*(?:\[\/[biu]\])?',
+    'btorrents_pattern_year' => '(?:\[[biu]\])?\s*(?:год|year)[\wа-я\s]*(?:\[\/[biu]\])?\s*\:\s*(?:\[\/[biu]\])?');
 ?>
