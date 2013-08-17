@@ -165,7 +165,7 @@ class mailer extends pluginable_object {
         if (!$this->state)
             return true;
         $type = $this->type;
-        users::o()->check_perms();
+        //users::o()->check_perms();
         if (!$id)
             return;
         if (is_array($id))
