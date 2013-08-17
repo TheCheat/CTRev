@@ -13,5 +13,8 @@ $languages = array(
     'btorrents_seeders' => 'Сидеров:',
     'btorrents_leechers' => 'Личеров:',
     'btorrents_author' => 'Автор:',
-    'btorrents_added' => 'Добавлено:');
+    'btorrents_added' => 'Добавлено:',
+    'btorrents_pattern_name' => '(?:\[[biu]\])?\s*(?:название|имя|name|title)\s*(?:\[\/[biu]\])?\s*\:',
+    'btorrents_pattern_orig_name' => '(?:\[[biu]\])?\s*(?:(?:ориг|orig)[\w\s\.]*(?:название|имя|name|title))\s*(?:\[\/[biu]\])?\s*\:',
+    'btorrents_pattern_year' => '(?:\[[biu]\])?\s*(?:год|year)[\w\s]*(?:\[\/[biu]\])?\s*\:');
 ?>
