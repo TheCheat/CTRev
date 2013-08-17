@@ -284,7 +284,7 @@ class search {
     /**
      * Создание условия полнотекстового поиска и выделение слов для подсветки
      * @param string $value искомые слова
-     * @param string|array $columns столбец\столбцы
+     * @param string|array $columns столбец/столбцы
      * @param array $regexp рег. выражение для подсветки текста
      * Если изначально переменной присвоено значение true, 
      * то будут вычислены рег. выражения, иначе - нет
@@ -312,7 +312,7 @@ class search {
     /**
      * Функция поиска значений в данной таблице
      * @param string $table таблица
-     * @param string|array $columns искомый столбец\столбцы
+     * @param string|array $columns искомый столбец/столбцы
      * @param string $value значение
      * @param int $limit лимит поиска
      * @param string $id_col столбец ID

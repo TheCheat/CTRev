@@ -1113,7 +1113,7 @@ class torrents_simpleview {
 
     /**
      * Список полей
-     * @var array $paterns
+     * @var array $patterns
      */
     protected $patterns = array('name', 'orig_name', 'year');
 

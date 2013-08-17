@@ -156,7 +156,7 @@ abstract class db_core implements db_core_interface {
     /**
      * Создание условия для полнотекстового поиска
      * @param string $value искомые слова
-     * @param string|array $columns столбец\столбцы
+     * @param string|array $columns столбец/столбцы
      * @param bool $boolean поиск в логическом режиме
      * @return string условие
      */

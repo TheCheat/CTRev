@@ -11,7 +11,7 @@
  * Type:     modifier<br>
  * Name:     nl2br<br>
  * Date:     Feb 26, 2003
- * Purpose:  convert \r\n, \r or \n to <<br>>
+ * Purpose:  convert \\r\\n, \\r or \\n to <<br>>
  * Input:<br>
  *         - contents = contents to replace
  *         - preceed_test = if true, includes preceeding break tags

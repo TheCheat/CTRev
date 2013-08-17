@@ -516,8 +516,8 @@ class usercp_ajax {
     }
 
     /**
-     * Удаление друга\врага
-     * @param int $id ID записи друга\врага
+     * Удаление друга/врага
+     * @param int $id ID записи друга/врага
      * @return null
      */
     public function delete_friend($id) {
@@ -526,8 +526,8 @@ class usercp_ajax {
     }
 
     /**
-     * Смена типа друга\врага
-     * @param int $id ID записи друга\врага
+     * Смена типа друга/врага
+     * @param int $id ID записи друга/врага
      * @return null
      */
     public function change_type_friend($id) {

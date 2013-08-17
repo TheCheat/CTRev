@@ -135,7 +135,7 @@ class comments extends pluginable_object {
     }
 
     /**
-     * Форма добавления\редактирования комментария
+     * Форма добавления/редактирования комментария
      * @param int $resid ID ресурса
      * @param string $name название формы добавления
      * @param int $id ID комментария

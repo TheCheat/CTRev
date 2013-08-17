@@ -98,11 +98,11 @@ class mailer extends pluginable_object {
     }
 
     /**
-     * Создание\обновление подписки
+     * Создание/обновление подписки
      * @param int $id ID ресурса
      * @param int $interval интервал посылок
      * @param bool $updt обновить?
-     * @return bool|int статус создания\обновления
+     * @return bool|int статус создания/обновления
      * @throws EngineException 
      */
     public function make($id, $interval = null, $updt = false) {

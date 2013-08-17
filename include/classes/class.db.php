@@ -134,7 +134,7 @@ abstract class db_parse extends db_core {
      * в:
      * SELECT * FROM prefix_table
      * JOIN `prefix_table2` ON n3=n1
-     * WHERE n1='escaped\"value\"' AND n2 LIKE 'value\"escaped\_for\_search\%\"'
+     * WHERE n1='escaped\\\"value\\\"' AND n2 LIKE 'value\\\"escaped\\_for\\_search\\%\\\"'
      * OR n3 IN('v1','v2','v3','v4','v5')
      * @note Помимо таблиц после ключевых слов FROM и JOIN 
      * работает с таблицами после слова TABLE [IF [NOT] EXISTS]

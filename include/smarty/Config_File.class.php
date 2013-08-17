@@ -58,7 +58,7 @@ class Config_File {
 	
 	/**
 	 * Controls whether or not to fix mac or dos formatted newlines.
-	 * If set to true, \r or \r\n will be changed to \n.
+	 * If set to true, \\r or \\r\\n will be changed to \\n.
 	 */
 	var $fix_newlines = true;
 	/**#@-*/

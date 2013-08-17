@@ -363,7 +363,7 @@ class Smarty {
 
     /**
      * This tells whether or not automatically fix newlines in config files.
-     * It basically converts \r (mac) or \r\n (dos) to \n
+     * It basically converts \\r (mac) or \\r\\n (dos) to \\n
      */
     var $config_fix_newlines = true;
     /**#@-*/

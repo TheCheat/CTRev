@@ -135,7 +135,7 @@ class rating extends pluginable_object {
 
     /**
      * Проверка невозможности голосовать
-     * @param int $owner владелец ресурса(ч\с создатель торрента)
+     * @param int $owner владелец ресурса(ч/с создатель торрента)
      * @param int $toid ID ресурса
      * @param int $stoid доп. ID ресурса(только для проверки на то, голосовал ли)
      * @return bool true, если голосование отключено
@@ -162,7 +162,7 @@ class rating extends pluginable_object {
     /**
      * Инициализация рейтинга звёздами
      * @param int $toid ID ресурса
-     * @param int $owner владелец ресурса(ч\с создатель торрента)
+     * @param int $owner владелец ресурса(ч/с создатель торрента)
      * @param array $res массив ресурса
      * @param int $stoid доп. ID ресурса(только для проверки на то, голосовал ли)
      * @return null
@@ -341,7 +341,7 @@ class rating extends pluginable_object {
     }
 
     /**
-     * Получение суммы рейтинга(ч\с для кармы)
+     * Получение суммы рейтинга(ч/с для кармы)
      * @param int $toid ID ресурса
      * @return int|float значение рейтинга
      */

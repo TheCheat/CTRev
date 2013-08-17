@@ -19,7 +19,7 @@
  * Params:   style: string (email)
  *           indent: integer (0)
  *           wrap: integer (80)
- *           wrap_char string ("\n")
+ *           wrap_char string ("\\n")
  *           indent_char: string (" ")
  *           wrap_boundary: boolean (true)
  * </pre>
