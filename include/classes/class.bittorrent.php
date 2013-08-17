@@ -221,7 +221,7 @@ class bittorrent extends announce_parser {
             if (!$downloaded) {
                 if ($price)
                     $etc->add_res('bonus', -$price);
-                db::o()->insert(array('tid' => $id, 'uid' => users::o()->v('id')), 'downloaded');
+                db::o()->insert(array('tid' => $id, 'uid' => users::o()->v('id')), 'content_downloaded');
             }
 
             $dict = $this->prepare_dict($id, $posted_time, $poster_id);
