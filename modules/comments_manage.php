@@ -55,6 +55,7 @@ class comments_manage {
             case "quote":
                 $id = (int) $_POST ["id"];
                 $this->quote($id);
+                die();
             default :
                 break;
         }
