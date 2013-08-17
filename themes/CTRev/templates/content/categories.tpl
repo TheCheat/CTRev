@@ -46,7 +46,7 @@
                 [*if $cat_rows*]
                     <div class='cat_content_descr'>
                         [*if $cat_rows[1]*]
-                            [*$cat_rows[1]*]
+                            [*$cat_rows[1]|ft*]
                         [*elseif !$content_cats*]
                             [*'content_categories_no_descr_yet'|lang*]
                         [*/if*]

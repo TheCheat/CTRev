@@ -27,7 +27,7 @@
                     <dd>[*$pattern_selector*]</dd>
                 [*/if*]
                 <dt>[*'cats_area_descr'|lang*]</dt>
-                <dd><textarea name="descr" rows='10' cols='50'>[*$row.descr*]</textarea></dd>
+                <dd>[*input_form name='descr' text=$row.descr*]</dd>
                 <dt>[*'cats_area_post_allow'|lang*]</dt>
                 <dd><input type='checkbox' value='1' name='post_allow'
                     [*if $row.post_allow || !$row.id*] checked='checked'[*/if*]></dd>
