@@ -974,7 +974,7 @@ function save_pattern(id, form) {
             data = cut_ok(data);
             jQuery(document).append('<script type="text/javascript">pattern_fdata = ' + data + ';</script>');
             for (var key in pattern_fdata) {
-                v = pattern_fdata[key];
+                v = html_decode(pattern_fdata[key]); // сохраняется всё-равно без HTML, а мы получаем результат закодированный
                 jQuery('input[name="' + key + '"]', obj).val(v.replace(regexpe, ''));
                 jQuery('textarea[name="' + key + '"]', obj).val(v.replace(regexpe, "\n"));
             }
