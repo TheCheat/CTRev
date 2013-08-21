@@ -100,6 +100,7 @@ RewriteRule ^attach/id([0-9]+)\.([A-Za-z0-9\_\-]+)$                             
 RewriteRule ^announce/p([a-z0-9]+)$                                             ./announce.php?passkey=$1 [NC,L,QSA]
 RewriteRule ^scrape/p([a-z0-9]+)$                                               ./scrape.php [NC,L,QSA]
 
-RewriteRule ^sitemap.xml$                                                       ./upload/sitemap.xml [NC,L,QSA]
+# Для поисковиков, на всякий случай.
+RewriteRule ^sitemap.xml$                                                       ./upload/sitemap.xml [NC,L]
 </IfModule>
 # Кон.
