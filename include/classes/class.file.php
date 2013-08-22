@@ -166,7 +166,9 @@ final class file {
         if (function_exists('mime_content_type')) {
             return @mime_content_type($filepath);
         } elseif (function_exists("finfo_open") && function_exists("finfo_file")) {
-            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $finfo = @finfo_open(FILEINFO_MIME_TYPE);
+            if (!$finfo)
+                return null;
             $ret = finfo_file($finfo, $filepath);
             finfo_close($finfo);
             return $ret;
