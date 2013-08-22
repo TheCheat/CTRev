@@ -285,7 +285,8 @@ class comments extends pluginable_object {
         $upd["text"] = $content;
 
         try {
-            plugins::o()->pass_data(array('update' => &$upd), true)->run_hook('comments_save');
+            plugins::o()->pass_data(array('update' => &$upd,
+                "id" => $id), true)->run_hook('comments_save');
         } catch (PReturn $e) {
             return $e->r();
         }

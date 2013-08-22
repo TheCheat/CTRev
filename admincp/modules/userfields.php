@@ -104,20 +104,20 @@ class userfields_man {
             'type',
             'show_register',
             'show_profile');
-        $data = rex($data, $cols);
-        $data['show_register'] = (bool) $data['show_register'];
-        $data['show_profile'] = (bool) $data['show_profile'];
-        if (!validword($data['field']))
+        $update = rex($data, $cols);
+        $update['show_register'] = (bool) $update['show_register'];
+        $update['show_profile'] = (bool) $update['show_profile'];
+        if (!validword($update['field']))
             throw new EngineException('userfields_empty_field');
-        if (!$data['name'])
+        if (!$update['name'])
             throw new EngineException('userfields_empty_name');
         /* @var $uf userfields */
         $uf = n("userfields");
-        $ct = $uf->get_var('types', $data['type']);
+        $ct = $uf->get_var('types', $update['type']);
         if (is_null($ct))
             throw new EngineException('userfields_empty_type');
         if ($ct) {
-            $allowed = &$data['allowed'];
+            $allowed = &$update['allowed'];
             if ($ct == 2) {
                 $allowed = array();
                 $cv = count($values);
@@ -138,15 +138,16 @@ class userfields_man {
                 throw new EngineException('userfields_empty_allowed');
         }
         try {
-            plugins::o()->pass_data(array('data' => &$data), true)->run_hook('admin_userfields_save');
+            plugins::o()->pass_data(array('update' => &$update,
+                'oname' => $oname), true)->run_hook('admin_userfields_save');
         } catch (PReturn $e) {
             return $e->r();
         }
         if ($oname)
-            db::o()->p($oname)->update($data, 'users_fields', 'WHERE field=? LIMIT 1');
+            db::o()->p($oname)->update($update, 'users_fields', 'WHERE field=? LIMIT 1');
         else {
-            db::o()->insert($data, 'users_fields');
-            log_add('added_userfield', 'admin', $data['field']);
+            db::o()->insert($update, 'users_fields');
+            log_add('added_userfield', 'admin', $update['field']);
         }
         cache::o()->remove('userfields');
         furl::o()->location($admin_file);

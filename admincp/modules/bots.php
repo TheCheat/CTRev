@@ -91,6 +91,12 @@ class bots_man {
             'firstip' => $firstip,
             'lastip' => $lastip,
             'agent' => $agent);
+        try {
+            plugins::o()->pass_data(array("update" => &$update,
+                "id" => $id), true)->run_hook('admin_bots_save');
+        } catch (PReturn $e) {
+            return $e->r();
+        }
         if (!$id) {
             db::o()->insert($update, 'bots');
             log_add('added_bot', 'admin');

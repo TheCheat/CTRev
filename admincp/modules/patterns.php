@@ -167,7 +167,15 @@ class patterns_man {
         $update = array();
         $update['name'] = $data['pattern_name'];
         $pattern = rex($data, $cols);
-        $update['pattern'] = serialize($this->build_pattern($pattern));
+        $pattern = $this->build_pattern($pattern);
+        try {
+            plugins::o()->pass_data(array("update" => &$update,
+                "pattern" => &$pattern,
+                "id" => $id), true)->run_hook('admin_patterns_save');
+        } catch (PReturn $e) {
+            return $e->r();
+        }
+        $update['pattern'] = serialize($pattern);
         if ($id) {
             db::o()->p($id)->update($update, 'patterns', 'WHERE id=? LIMIT 1');
             cache::o()->remove('patterns/pattern-id' . $id);

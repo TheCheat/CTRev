@@ -120,6 +120,12 @@ class mailer extends pluginable_object {
             "type" => $type
         );
         $upd = array("interval" => (!is_null($interval) ? $interval : users::o()->v('mailer_interval')));
+        try {
+            plugins::o()->pass_data(array("where" => &$where,
+                "update" => &$upd), true)->run_hook('mailer_make');
+        } catch (PReturn $e) {
+            return $e->r();
+        }
         if (!$updt) {
             db::o()->no_error();
             db::o()->insert(array_merge($upd, $where), "mailer");

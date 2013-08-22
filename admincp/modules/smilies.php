@@ -152,6 +152,14 @@ class smilies_man {
                 'name' => $iname,
                 'image' => $iimage,
                 'show_bbeditor' => $isb);
+            try {
+                plugins::o()->pass_data(array("update" => &$update,
+                    "id" => $id), true)->run_hook('admin_smilies_save');
+            } catch (PReturn $e) {
+                if (!$e->r())
+                    continue;
+                return $e->r();
+            }
             if (!$id)
                 db::o()->insert($update, 'smilies', true);
             else

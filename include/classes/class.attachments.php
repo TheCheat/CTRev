@@ -167,15 +167,21 @@ class attachments extends pluginable_object {
         $uploader->upload_preview(config::o()->v("attachpreview_folder"), "", true);
         $uploader->upload($_FILES [$files_var], config::o()->v("attachments_folder"), $filetype, $new_name, true);
         $preview = $uploader->get_preview();
-        $id = db::o()->insert(array(
-            "filename" => display::o()->html_encode($_FILES [$files_var] ['name']),
+        $insert = array(
+            "filename" => display::o()->html_encode($_FILES [$files_var] ['name']), // Автоматически не экранируется
             'preview' => $preview,
             "size" => $filesize,
             "time" => $time,
             "ftype" => $filetype,
             "toid" => $toid,
             "type" => $type,
-            "user" => $user), "attachments");
+            "user" => $user);
+        try {
+            plugins::o()->pass_data(array("insert" => &$insert), true)->run_hook('attachments_upload');
+        } catch (PReturn $e) {
+            return $e->r();
+        }
+        $id = db::o()->insert($insert, "attachments");
         return $id;
     }
 
@@ -223,6 +229,13 @@ class attachments extends pluginable_object {
         while ($row = db::o()->fetch_assoc($rows)) {
             $type = $row['type'];
             if (($row ["user"] == users::o()->v("id") && users::o()->perm('edit_' . $type)) || users::o()->perm('edit_' . $type, 2)) {
+                try {
+                    plugins::o()->pass_data(array("row" => &$row), true)->run_hook('attachments_delete');
+                } catch (PReturn $e) {
+                    if (!$e->r())
+                        continue;
+                    return $e->r();
+                }
                 $ids [] = $row ["id"];
                 @unlink($uf . default_filename($row['time'], $row['user']));
                 @unlink($ufp . $row ["preview"]);
@@ -267,6 +280,11 @@ class attachments extends pluginable_object {
         if (!$row)
             throw new EngineException('file_not_exists');
         $file = config::o()->v("attachments_folder") . "/" . self::attach_prefix . default_filename($row['time'], $row['user']);
+        try {
+            plugins::o()->pass_data(array("row" => &$row))->run_hook('attachments_download');
+        } catch (PReturn $e) {
+            return $e->r();
+        }
         db::o()->p($id)->update(array(
             "_cb_downloaded" => 'downloaded+1'), "attachments", 'WHERE id = ? LIMIT 1');
         /* @var $uploader uploader */

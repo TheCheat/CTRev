@@ -335,9 +335,14 @@ abstract class bbcode_formatter extends formatter_callbacks {
     protected function patterns_prepare(&$patterns) {
         $q = mpc(display::o()->html_encode('"'));
         $sq = mpc(display::o()->html_encode("'"));
+        try {
+            plugins::o()->pass_data(array("patterns" => &$patterns), true)->run_hook('bbcodes_patterns_prepare');
+        } catch (PReturn $e) {
+            return $e->r();
+        }
         $patterns = str_replace("%URL_PATTERN;", display::url_pattern, $patterns);
-        $patterns = str_replace('"', $q, $patterns);
-        $patterns = str_replace("'", $sq, $patterns);
+        $patterns = str_replace('"', $q, $patterns); // Ибо экранировано
+        $patterns = str_replace("'", $sq, $patterns); // Ибо экранировано
         $patterns = str_replace("%Q;", '(?:' . $q . '|' . $sq . ')?', $patterns);
     }
 
@@ -477,9 +482,9 @@ abstract class bbcode_formatter extends formatter_callbacks {
                     $image = $smilie ['image'];
                     $name = $smilie ['name'];
                     // preg_replace с модификатором i намного быстрее str_ireplace
-                    $input = preg_replace('/' . mpc($code) . '/i', "<img src=\"" . config::o()->v('smilies_folder') . "/" . $image . "\" 
+                    $input = preg_replace('/(\s|^)' . mpc($code) . '(\s|$)/i', " <img src=\"" . config::o()->v('smilies_folder') . "/" . $image . "\" 
                                 alt=\"" . $name . "\" 
-                                title=\"" . $name . "\">", $input);
+                                title=\"" . $name . "\"> ", $input);
                 }
         }
     }
@@ -682,7 +687,7 @@ final class bbcodes extends bbcode_formatter {
      */
     protected function plugin_construct() {
         if (!self::$singletoned)
-            die("To get an object use furl::o()");
+            die("To get an object use bbcodes::o()");
         $this->access_var('bb_patterns', PVAR_ADD | PVAR_MOD);
         $this->access_var('bb_replacement', PVAR_ADD | PVAR_MOD);
         $this->access_var('spec_patterns', PVAR_ADD | PVAR_MOD);

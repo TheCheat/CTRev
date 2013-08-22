@@ -169,6 +169,12 @@ class cats_man {
         else
             $update['parent_id'] = (int) $update['parent_id'];
         $update['post_allow'] = (bool) $update['post_allow'];
+        try {
+            plugins::o()->pass_data(array("update" => &$update,
+                "id" => $id), true)->run_hook('admin_cats_save');
+        } catch (PReturn $e) {
+            return $e->r();
+        }
         if ($id) {
             db::o()->p($id)->update($update, 'categories', 'WHERE id=? LIMIT 1');
             log_add('changed_cat', 'admin', $id);

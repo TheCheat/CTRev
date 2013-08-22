@@ -18,16 +18,17 @@ class announce_parser extends fbenc {
     /**
      * Проверка URL-а аннонсера и возвращение частей URL-а
      * @param string $url URL аннонсера
-     * @return array Matches из preg_match
+     * @return array|bool Matches из preg_match
      * 2 - протокол
      * 3 - домен
      * 4 - порт
      * 5 - оставшаяся часть
+     * false, если неправильный аннонсер
      */
     protected function check_announce($url) {
         preg_match('/^' . display::url_pattern . '$/siu', $url, $m);
         if ($m[2] == "ftp" || $m[3] == "retracker.local")
-            return;
+            return false;
         return $m;
     }
 

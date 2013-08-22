@@ -108,6 +108,11 @@ final class blocks {
             return;
         if (!$row)
             return;
+        try {
+            plugins::o()->pass_data(array("row" => &$row), true)->run_hook('blocks_show_single');
+        } catch (PReturn $e) {
+            return $e->r();
+        }
         $file = $row ['file'];
         $title = $row['title'];
         $id = $row['id'];

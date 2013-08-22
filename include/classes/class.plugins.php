@@ -75,6 +75,12 @@ abstract class pluginable_object {
     private $_pvars = array();
 
     /**
+     * Оригинальная функция
+     * @var callback $_original
+     */
+    private $_original = null;
+
+    /**
      * Массив допустимых действий в конструкторе
      * @var array $_actions
      */
@@ -122,7 +128,21 @@ abstract class pluginable_object {
     }
 
     /**
+     * Вызов оригинальной функции, даже если она объявлена protected
+     * @note Про func_get_args() знаю, но он не воспринимает аргументы по ссылке
+     * @param mixed $params массив параметров/единственный параметр не массив
+     * @return mixed возвращаемое значение функции
+     */
+    final public function call_original($params = null) {
+        if (!$this->_original)
+            return;
+        return call_user_func_array($this->_original, $params);
+    }
+
+    /**
      * Вызов метода
+     * @note Последний параметр для переопределяемого метода всегда callback
+     * оригинальной функции
      * @param string $method имя метода
      * @param mixed $params массив параметров/единственный параметр не массив
      * @param bool $redefine разрешить переопределять стандартные методы
@@ -132,11 +152,15 @@ abstract class pluginable_object {
         $params = (array) $params;
         $cb = array($this, $method);
         $c = is_callable($cb);
-        if ($c)
-            $params[] = $cb; // возможность вызвать ориг. метод
-        if ((!$c || $redefine) && isset($this->_methods[$method]))
-            return call_user_func_array($this->_methods[$method], $params);
-        elseif ($c)
+        if ((!$c || $redefine) && isset($this->_methods[$method])) {
+            if ($c) {
+                $params[] = array($this, "call_original"); // возможность вызвать ориг. метод
+                $this->_original = $cb;
+            }
+            $return = call_user_func_array($this->_methods[$method], $params);
+            $this->_original = null;
+            return $return;
+        } elseif ($c)
             return call_user_func_array($cb, $params);
     }
 

@@ -105,6 +105,7 @@ $languages = array(
     "config_field_minbonus" => "Мин. бонус сидирования(за время обновления аннонсера)",
     "config_field_multitracker_on" => "Включить мультитрекер?",
     "config_field_my_meta" => "Собственные META-теги",
+    "config_descr_field_my_meta" => "необходимо прописать непосредственно сами HTML теги. Подробнее: <a href='http://htmlbook.ru/html/meta'>http://htmlbook.ru/html/meta</a>",
     "config_field_disabled_modules" => 'Отключенные модули',
     "config_field_mailer_on" => 'Разрешить подписки?',
     "config_field_plugins_on" => 'Включить плагиновую систему?',

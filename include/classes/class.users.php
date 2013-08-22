@@ -426,7 +426,6 @@ class users_checker {
             return false;
         }
 
-        // проще переопределением, но добавлю хук, в кач. исключения.
         try {
             plugins::o()->pass_data(array('login' => $login,
                 'password' => $password,
@@ -884,7 +883,7 @@ class users extends users_modifier {
         try {
 
             plugins::o()->pass_data(array('login' => $login,
-                'password' => $password), true)->run_hook('users_init_begin');
+                'password' => $password), true)->run_hook('users_init_middle');
 
             if (!$login && !$password && $this->catch_bot())
                 return;
@@ -968,7 +967,7 @@ class users extends users_modifier {
 
         try {
             plugins::o()->pass_data(array('update_sess' => &$updateset,
-                'update_user' => &$users_updateset), true)->run_hook('users_sessions_init');
+                'update_user' => &$users_updateset), true)->run_hook('users_sessions');
         } catch (PReturn $e) {
             return $e->r();
         }
@@ -1036,7 +1035,6 @@ class users extends users_modifier {
     public function groups_autoupdate() {
         $a = $k = array();
 
-        // ради одного поля не стоит наследовать этот класс от pluginable_object
         try {
             plugins::o()->pass_data(array(
                 'update_columns' => &$this->update_columns), true)->run_hook('users_groups_autoupdate');

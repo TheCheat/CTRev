@@ -217,7 +217,8 @@ class etc {
             $columns["period"] = $period;
         }
         try {
-            plugins::o()->pass_data(array('update' => &$columns), true)->run_hook('users_ban');
+            plugins::o()->pass_data(array('update' => &$columns,
+                "id" => $id), true)->run_hook('users_ban');
         } catch (PReturn $e) {
             return $e->r();
         }
@@ -302,7 +303,8 @@ class etc {
             }
         }
         try {
-            plugins::o()->pass_data(array('update' => &$columns), true)->run_hook('users_warn');
+            plugins::o()->pass_data(array('update' => &$columns,
+                "id" => $id), true)->run_hook('users_warn');
         } catch (PReturn $e) {
             return $e->r();
         }

@@ -106,7 +106,16 @@ class users_man_ajax {
         $error = array();
         /* @var $etc etc */
         $etc = n("etc");
-        foreach ($items as $uid)
+        foreach ($items as $uid) {
+            try {
+                plugins::o()->pass_data(array("data" => &$data,
+                    "mode" => &$mode,
+                    "uid" => $uid), true)->run_hook('admin_users_massact');
+            } catch (PReturn $e) {
+                if (!$e->r())
+                    continue;
+                return $e->r();
+            }
             switch ($mode) {
                 case "confirm":
                     $etc->confirm_user(3, 0, $uid);
@@ -131,6 +140,7 @@ class users_man_ajax {
                         $error[] = sprintf(lang::o()->v('useract_cant_delete_user'), $uid);
                     break;
             }
+        }
         if ($error)
             throw new EngineException(implode("; ", $error));
     }

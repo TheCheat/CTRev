@@ -353,7 +353,8 @@ class polls extends pluginable_object {
             'max_votes' => $max_votes);
 
         try {
-            plugins::o()->pass_data(array('update' => &$update), true)->run_hook('polls_save');
+            plugins::o()->pass_data(array('update' => &$update,
+                "id" => $poll_id), true)->run_hook('polls_save');
         } catch (PReturn $e) {
             return $e->r();
         }
@@ -433,8 +434,7 @@ class polls extends pluginable_object {
         $user_id = (int) users::o()->v('id');
         $user_ip = users::o()->get_ip();
         $day = 60 * 60 * 24;
-        $row = db::o()->p($user_id ? $user_id : $user_ip, $poll_id)->query('SELECT p.change_votes, 
-            p.max_votes, p.posted_time, p.poll_ends,
+        $row = db::o()->p($user_id ? $user_id : $user_ip, $poll_id)->query('SELECT p.*,
             pv.question_id, pv.user_ip, pv.user_id FROM polls AS p
             LEFT JOIN poll_votes AS pv ON pv.question_id=p.id AND ' .
                 ($user_id ? 'pv.user_id = ?' : 'pv.user_id=0 AND pv.user_ip = ?') . '
@@ -449,15 +449,21 @@ class polls extends pluginable_object {
         if ($row ["poll_ends"])
             if (time() - $row ["posted_time"] > $row ["poll_ends"] * $day)
                 throw new EngineException('polls_already_ends');
-        if (!$row ['question_id'])
-            db::o()->insert(array(
-                'user_id' => $user_id,
-                'answers_id' => serialize($answers),
-                'question_id' => $poll_id,
-                'user_ip' => $user_ip), 'poll_votes');
+        $update = array(
+            'answers_id' => serialize($answers));
+        try {
+            plugins::o()->pass_data(array("row" => &$row), true)->run_hook('polls_vote');
+        } catch (PReturn $e) {
+            return $e->r();
+        }
+        if (!$row ['question_id']) {
+            $update['user_id'] = $user_id;
+            $update['question_id'] = $poll_id;
+            $update['user_ip'] = $user_ip;
+            db::o()->insert($update, 'poll_votes');
+        }
         else
-            db::o()->p($row["user_id"], $row["user_ip"], $row ['question_id'])->update(array(
-                'answers_id' => serialize($answers)), 'poll_votes', 'WHERE user_id = ?
+            db::o()->p($row["user_id"], $row["user_ip"], $row ['question_id'])->update($update, 'poll_votes', 'WHERE user_id = ?
                     AND user_ip = ? AND question_id=? LIMIT 1');
         $this->uncache($poll_id, true);
         return true;

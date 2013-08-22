@@ -145,6 +145,12 @@ class blocks_man {
         if (!$update['title'] || !$update['file'] || !in_array($update['type'], self::$types))
             throw new EngineException('blocks_invalid_input');
         $update['settings'] = serialize(modsettings::o()->change_type('blocks')->save($id, $data));
+        try {
+            plugins::o()->pass_data(array("update" => &$update,
+                "id" => $id), true)->run_hook('admin_blocks_save');
+        } catch (PReturn $e) {
+            return $e->r();
+        }
         if ($id) {
             db::o()->p($id)->update($update, 'blocks', 'WHERE id=? LIMIT 1');
             log_add('changed_block', 'admin', $id);

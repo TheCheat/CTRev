@@ -91,6 +91,12 @@ class spages_man {
         }
         if (!$update['content'])
             throw new EngineException('static_empty_content');
+        try {
+            plugins::o()->pass_data(array("update" => &$update,
+                "id" => $id), true)->run_hook('admin_static_save');
+        } catch (PReturn $e) {
+            return $e->r();
+        }
         if (!$id) {
             db::o()->insert($update, 'static');
             log_add('added_static', 'admin', $data['url']);

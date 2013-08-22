@@ -4,7 +4,6 @@
  * Project:            	CTRev
  * @file                include/system/core.php 
  * 
- * @todo                Расставить побольше хуков, в т.ч. и в АЦ
  * @todo                Блоки HTML
  * @todo                Права для категорий
  * @todo                Форма для обратной связи

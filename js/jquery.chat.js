@@ -1,6 +1,7 @@
 cint = null;
 last_ctime = 0;
 cur_cedit = 0;
+last_cinterval = 15;
 setInterval('chat_server_time++;', 1000);
 /**
  * Скроллинг чата вниз
@@ -18,12 +19,14 @@ function chat_say() {
     if (!text)
         return;
     chat_clear();
-    jQuery.post('index.php'+fk_ajax+'module=chat&from_ajax=1&act=save&id='+cur_cedit, {
-        'text':text
-    }, function () {
-        if (cur_cedit)
-            jQuery('#chat_mess'+cur_cedit).removeClass('chat_message_editing');
-        cur_cedit = 0;
+    jQuery.post('index.php' + fk_ajax + 'module=chat&from_ajax=1&act=save&id=' + cur_cedit, {
+        'text': text
+    }, function() {
+        if (cur_cedit) {
+            jQuery('#chat_mess' + cur_cedit).removeClass('chat_message_editing');
+            cur_cedit = 0;
+            chat_interval(last_cinterval);
+        }
         chat_update(true);
     });
 }
@@ -33,14 +36,14 @@ function chat_say() {
  * @returns {null}
  */
 function chat_clear(value) {
-    jQuery('#chat_textarea').val(value?value:'');
+    jQuery('#chat_textarea').val(value ? value : '');
 }
 /**
  * Очистить чат
  * @returns {null}
  */
 function chat_truncate() {
-    jQuery.post('index.php'+fk_ajax+'module=chat&from_ajax=1&act=truncate', function (data) {
+    jQuery.post('index.php' + fk_ajax + 'module=chat&from_ajax=1&act=truncate', function(data) {
         jQuery('#chat_area').empty().append(data);
     });
     chat_lctime();
@@ -52,7 +55,7 @@ function chat_truncate() {
 function chat_prev() {
     prehide_ls();
     var pid = parseInt(jQuery('#chat_area div.chat_message:first').attr('id').replace('chat_mess', ''));
-    jQuery.post('index.php?module=chat&from_ajax=1&time='+pid+'&prev=1', function (data) {
+    jQuery.post('index.php?module=chat&from_ajax=1&time=' + pid + '&prev=1', function(data) {
         chat_clear_nm();
         jQuery('#chat_area').prepend(data);
     });
@@ -61,12 +64,16 @@ function chat_prev() {
 /**
  * Интервал обновления чата
  * @param {int} time интервал
+ * @param {bool} только очистить?
  * @returns {null}
  */
-function chat_interval(time) {
+function chat_interval(time, clear) {
     if (cint)
         clearInterval(cint);
-    cint = setInterval('chat_update();', time*1000);
+    if (!clear) {
+        cint = setInterval('chat_update();', time * 1000);
+        last_cinterval = time;
+    }
 }
 
 /**
@@ -76,16 +83,16 @@ function chat_interval(time) {
 function chat_lctime() {
     jQuery('#chat_loader').hide();
     jQuery('#chat_area a.profile_link').unbind('click');
-    jQuery('#chat_area a.profile_link').bind('click', function (e) {
+    jQuery('#chat_area a.profile_link').bind('click', function(e) {
         e.preventDefault();
-        var t = '[b]'+jQuery(this).text()+'[/b],';
+        var t = '[b]' + jQuery(this).text() + '[/b],';
         var v = jQuery('#chat_textarea').val();
-        var nv = v.replace(new RegExp('^'+regex_quote(t)+'\\s*', 'g'), '');
+        var nv = v.replace(new RegExp('^' + regex_quote(t) + '\\s*', 'g'), '');
         if (nv == v)
-            chat_clear(t+' '+v);
+            chat_clear(t + ' ' + v);
         else
             chat_clear(nv);
-    }) 
+    })
     last_ctime = chat_server_time;
 }
 
@@ -108,7 +115,7 @@ function chat_update(scrollme) {
     if (!last_ctime)
         jQuery('#chat_area').empty();
     prehide_ls();
-    jQuery.post('index.php?module=chat&from_ajax=1&time='+last_ctime, function (data) {
+    jQuery.post('index.php?module=chat&from_ajax=1&time=' + last_ctime, function(data) {
         if (!last_ctime) {
             jQuery('#chat_area').append(data);
             add_chat_event();
@@ -118,10 +125,10 @@ function chat_update(scrollme) {
         } else
             jQuery('#chat_no_mess').remove();
         chat_clear_nm();
-        jQuery('body').append('<div id="temporary_chat" class="hidden">'+data+'</div>');
+        jQuery('body').append('<div id="temporary_chat" class="hidden">' + data + '</div>');
         var o = jQuery('#temporary_chat');
-        jQuery('div.chat_message', o).each(function () {
-            var so = jQuery('#chat_area #'+jQuery(this).attr('id'));
+        jQuery('div.chat_message', o).each(function() {
+            var so = jQuery('#chat_area #' + jQuery(this).attr('id'));
             if (!so.length)
                 jQuery('#chat_area').append(jQuery(this).wrap('<div>').parent().html());
             else {
@@ -136,7 +143,7 @@ function chat_update(scrollme) {
                 var n = parseInt(d[i]);
                 if (!n)
                     jQuery('#chat_area').empty();
-                jQuery('#chat_area #chat_mess'+n).remove();
+                jQuery('#chat_area #chat_mess' + n).remove();
             }
         }
         o.remove();
@@ -154,14 +161,14 @@ function chat_update(scrollme) {
  */
 function add_chat_event() {
     jQuery('.chat_message').unbind('mouseenter mouseleave').bind(
-    {
-        'mouseenter': function () {
-            jQuery('span.chat_edit_row', this).removeClass('hidden');
-        },
-        'mouseleave': function () {
-            jQuery('span.chat_edit_row', this).addClass('hidden');
-        }
-    });
+            {
+                'mouseenter': function() {
+                    jQuery('span.chat_edit_row', this).removeClass('hidden');
+                },
+                'mouseleave': function() {
+                    jQuery('span.chat_edit_row', this).addClass('hidden');
+                }
+            });
 }
 /**
  * Удаление сообщения чата
@@ -169,8 +176,8 @@ function add_chat_event() {
  * @returns {null}
  */
 function chat_delete(id) {
-    jQuery.post('index.php'+fk_ajax+'module=chat&from_ajax=1&act=delete&id='+id, function (data) {
-        jQuery('#chat_mess'+id).remove();
+    jQuery.post('index.php' + fk_ajax + 'module=chat&from_ajax=1&act=delete&id=' + id, function(data) {
+        jQuery('#chat_mess' + id).remove();
     });
 }
 /**
@@ -180,19 +187,20 @@ function chat_delete(id) {
  */
 function chat_edit(id) {
     if (cur_cedit)
-        jQuery('#chat_mess'+cur_cedit).removeClass('chat_message_editing');
-    jQuery.post('index.php?module=chat&from_ajax=1&act=text&id='+id, function (data) {
+        jQuery('#chat_mess' + cur_cedit).removeClass('chat_message_editing');
+    jQuery.post('index.php?module=chat&from_ajax=1&act=text&id=' + id, function(data) {
         cur_cedit = id;
-        jQuery('#chat_mess'+cur_cedit).addClass('chat_message_editing');
-        chat_clear(data);
+        jQuery('#chat_mess' + cur_cedit).addClass('chat_message_editing');
+        chat_clear(html_decode(data));
+        chat_interval(null, true);
     });
 }
 
-jQuery(document).ready(function () {
-    jQuery('#chat_textarea').keypress(function (event) {
-        if (event.which==13)
+jQuery(document).ready(function() {
+    jQuery('#chat_textarea').keypress(function(event) {
+        if (event.which == 13)
             chat_say();
     });
     chat_update();
-    chat_interval(15);
+    chat_interval(last_cinterval);
 });

@@ -99,23 +99,29 @@ class allowedft_man {
             'max_height',
             'makes_preview',
             'allowed');
-        $data = rex($data, $cols);
-        $data['makes_preview'] = (bool) $data['makes_preview'];
-        $data['allowed'] = (bool) $data['allowed'];
-        $data['max_filesize'] = (int) $data['max_filesize'];
-        $data['max_width'] = (int) $data['max_width'];
-        $data['max_height'] = (int) $data['max_height'];
-        if (!validword($data['name']))
+        $update = rex($data, $cols);
+        $update['makes_preview'] = (bool) $update['makes_preview'];
+        $update['allowed'] = (bool) $update['allowed'];
+        $update['max_filesize'] = (int) $update['max_filesize'];
+        $update['max_width'] = (int) $update['max_width'];
+        $update['max_height'] = (int) $update['max_height'];
+        if (!validword($update['name']))
             throw new EngineException('allowedft_invalid_name');
-        if (!$data['max_filesize'])
+        if (!$update['max_filesize'])
             throw new EngineException('allowedft_invalid_filesize');
-        if (!$data['types'])
+        if (!$update['types'])
             throw new EngineException('allowedft_invalid_types');
+        try {
+            plugins::o()->pass_data(array("update" => &$update,
+                "oname" => $oname), true)->run_hook('admin_allowedft_save');
+        } catch (PReturn $e) {
+            return $e->r();
+        }
         if ($oname)
-            db::o()->p($oname)->update($data, 'allowed_ft', 'WHERE name=? LIMIT 1');
+            db::o()->p($oname)->update($update, 'allowed_ft', 'WHERE name=? LIMIT 1');
         else {
-            db::o()->insert($data, 'allowed_ft');
-            log_add('added_filetype', 'admin', $data['name']);
+            db::o()->insert($update, 'allowed_ft');
+            log_add('added_filetype', 'admin', $update['name']);
         }
         furl::o()->location($admin_file);
     }

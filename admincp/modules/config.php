@@ -183,6 +183,12 @@ class config_man_ajax {
         }
         if (!$keys)
             return;
+        try {
+            plugins::o()->pass_data(array("newcfg" => &$newcfg,
+                "sort" => &$sort), true)->run_hook('admin_config_save');
+        } catch (PReturn $e) {
+            return $e->r();
+        }
         $r = db::o()->p($keys)->query('SELECT name,type,allowed FROM config WHERE name IN(@' . count($keys) . '?)');
         $c = 0;
         while (list($name, $type, $allowed) = db::o()->fetch_row($r)) {

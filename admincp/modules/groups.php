@@ -142,6 +142,12 @@ class groups_man {
             return $perms;
         $update['perms'] = $perms;
         $update['acp_modules'] = implode(';', array_map('trim', (array) $update['acp_modules']));
+        try {
+            plugins::o()->pass_data(array("update" => &$update,
+                "id" => $id), true)->run_hook('admin_groups_save');
+        } catch (PReturn $e) {
+            return $e->r();
+        }
         if ($id) {
             db::o()->p($id)->update($update, 'groups', 'WHERE id=? LIMIT 1');
             log_add('changed_group', 'admin', $id);
