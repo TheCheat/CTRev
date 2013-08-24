@@ -142,9 +142,7 @@ final class cleanup extends pluginable_object {
      * @return null
      */
     protected function clear_peers() {
-        if (!config::o()->v('clean_peers_interval'))
-            return;
-        if (!config::o()->v('torrents_on'))
+        if (!config::o()->v('clean_peers_interval') || !config::o()->v('torrents_on'))
             return;
         $hour = 3600; // Секунд в часу
         $when = time() - config::o()->v('clean_peers_interval') * $hour;
@@ -191,7 +189,7 @@ final class cleanup extends pluginable_object {
      * @return null
      */
     protected function clear_torrents() {
-        if (!config::o()->v('del_oldtorrents'))
+        if (!config::o()->v('del_oldtorrents') || !config::o()->v('torrents_on'))
             return;
         $day = 86400; // Секунд в день
         $when = time() - config::o()->v('del_oldtorrents') * $day;

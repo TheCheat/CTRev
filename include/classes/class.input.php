@@ -37,7 +37,7 @@ class input {
      * Доступные периоды
      * @var array $periods
      */
-    protected static $periods = array(
+    protected $periods = array(
         1 => "hour",
         6 => "six_hours",
         12 => "twelve_hours",
@@ -45,6 +45,15 @@ class input {
         168 => "week",
         720 => "month",
         0 => "unended");
+
+    /**
+     * Типы обратной связи
+     * @var array $feedback_types
+     */
+    public $feedback_types = array(
+        "error",
+        "suggest",
+        "main");
 
     /**
      * Общие параметры функций
@@ -61,10 +70,11 @@ class input {
     /**
      * Установка текста для пустой опции
      * @param string $value строка
-     * @return null
+     * @return input $this
      */
     public function set_null_text($value) {
         $this->null_text = $value;
+        return $this;
     }
 
     /**
@@ -74,7 +84,7 @@ class input {
     protected function get_null_text() {
         if (!$this->null_text)
             return empty_option;
-        $r = "<option value='0'>" . $this->null_text . '</option>';
+        $r = "<option value='0'>" . lang::o()->if_exists($this->null_text) . '</option>';
         $this->null_text = "";
         return $r;
     }
@@ -155,6 +165,22 @@ class input {
         $name = array_merge($this->params, array('name' => $name), $add);
         $this->params = array();
         return $this;
+    }
+
+    /**
+     * Селектор типа обратной связи
+     * Параметры: current, null
+     * @return string HTML код селектора
+     */
+    public function select_feedback($name = 'type') {
+        if (!is_array($name))
+            $this->join_params($name);
+        $null = $name ['null'];
+        $current = $name ['current'];
+        $name = $name ['name'];
+        if (!$name)
+            $name = "type";
+        return input::o()->skeyed("feedback_type_")->set_null_text('all')->snull($null)->scurrent($current)->simple_selector($name, $this->feedback_types);
     }
 
     /**
@@ -516,7 +542,7 @@ multiple='multiple") . "'
         $c = $name . time();
         $sel = "<select name='sel_" . $name . "' onchange='period_selector(this);'>";
         $selected = !is_null($current) ? false : null;
-        foreach (self::$periods as $time => $period) {
+        foreach ($this->periods as $time => $period) {
             if ((is_null($selected) || $current == $time) && !$selected) {
                 $current = $time;
                 $s = " selected='selected'";

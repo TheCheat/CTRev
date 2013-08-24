@@ -160,6 +160,9 @@ function init_opacity() {
  */
 function init_popup(id, color) {
     jQuery(document).ready(function() {
+        if (isinited_popup(id))
+            return;
+        close_popup();
         if ($popup_id == 'loading_container')
             close_popup();
         else if ($popup_id && id == 'loading_container')
@@ -222,6 +225,8 @@ function isinited_popup($cur) {
  */
 function init_modalbox_close($onclose) {
     if (typeof ($popup_id) == "undefined")
+        return;
+    if (jQuery("#" + $popup_id + " .modalbox_close").length)
         return;
     jQuery("#" + $popup_id + " .modalbox_title").append('<div class="modalbox_close">x</div>');
     jQuery("#" + $popup_id + " .modalbox_close").bind("click", function() {
@@ -1112,16 +1117,34 @@ function setcookie(key, value) {
 /**
  * Обратная связь
  * @param {object} form объект формы
- * @returns bool результат отправки
+ * @returns {bool} результат отправки
  */
 function send_feedback(form) {
+    prehide_ls();
+    status_icon('feedback_status_icon', 'loading');
     jQuery.post('index.php?module=ajax_index&from_ajax=1&act=feedback', jQuery(form).serialize(), function(data) {
         if (is_ok(data)) {
-            alert(success_text);
+            status_icon('feedback_status_icon', 'success');
+            var to = function() {
+                close_popup();
+                status_icon('feedback_status_icon');
+                jQuery('input,textarea,select', '#feedback_container dl').val('');
+            };
+            setTimeout(to, 1000);
             return true;
         } else {
-            alert(data);
+            status_icon('feedback_status_icon', 'error');
+            alert(error_text + ": " + data);
             return false;
         }
     });
+}
+
+/**
+ * Открытие формы обратной связи
+ * @returns {null}
+ */
+function show_feedback() {
+    init_popup('feedback_container', 'gray_color js_notop');
+    init_modalbox_close();
 }

@@ -52,7 +52,7 @@ class feedback_man {
      * @param string $type тип
      * @return null
      */
-    protected function show($sort = null, $type = 'main') {
+    protected function show($sort = null, $type = '') {
         $orderby = '';
         if ($sort) {
             $sort = explode(",", $sort);
@@ -66,13 +66,12 @@ class feedback_man {
         }
         if (!$orderby)
             $orderby = 'f.`time` DESC';
-        if (!$type)
-            $type = 'main';
-        $count = db::o()->p($type)->count_rows("feedback", 'type=?');
+        $where = $type ? 'f.type=?' : "";
+        $count = db::o()->p($type)->as_table('f')->count_rows("feedback", $where);
         list($pages, $limit) = display::o()->pages($count, config::o()->v('table_perpage'), 'switch_feedback_page', 'page', 5, true);
         $r = db::o()->p($type)->query('SELECT f.*, u.username, u.group
             FROM feedback AS f LEFT JOIN users AS u ON u.id=f.uid
-            WHERE f.type=?
+            ' . ($where ? ' WHERE ' . $where : "") . '
             ' . ($orderby ? ' ORDER BY ' . $orderby : "") . '
             ' . ($limit ? ' LIMIT ' . $limit : ""));
         tpl::o()->assign('res', db::o()->fetch2array($r));
@@ -116,10 +115,8 @@ class feedback_man_ajax {
      * @param string $type тип
      * @return null
      */
-    public function clear($type = 'main') {
-        if (!$type)
-            $type = 'main';
-        db::o()->p($type)->delete('feedback', 'WHERE type=?');
+    public function clear($type = '') {
+        db::o()->p($type)->delete('feedback', $type ? 'WHERE type=?' : "");
         log_add('cleared_feedback', 'admin');
     }
 

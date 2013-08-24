@@ -22,12 +22,6 @@ class ajax_index {
     protected $pattern_filled = true;
 
     /**
-     * Типы обратной связи
-     * @var array $feedback_types
-     */
-    protected $feedback_types = array("main");
-
-    /**
      * Функция инициализации Ajax функций для главной страницы
      * @return null
      */
@@ -89,11 +83,14 @@ class ajax_index {
         $type = $data['type'];
         if (!$subject || !$content)
             throw new EngineException('nothing_entered');
-        n("captcha")->check($error);
-        if ($error)
-            throw new EngineException($error[0]);
-        if (!in_array($type, $this->feedback_types))
-            $type = reset($this->feedback_types);
+        if (!users::o()->v()) {
+            n("captcha")->check($error);
+            if ($error)
+                throw new EngineException($error[0]);
+        }
+        $ft = input::o()->feedback_types;
+        if (!in_array($type, $ft))
+            $type = end($ft);
         $insert = array('subject' => $subject,
             'content' => $content,
             'type' => $type,

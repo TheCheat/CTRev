@@ -10,11 +10,7 @@
             [*if $unread_time < $unread_last.time*]
             <script type="text/javascript">
                 function start_up_unreadbox() {
-                    var pid = 'message_container';
-                    if (isinited_popup(pid))
-                        return;
-                    close_popup();
-                    init_popup(pid, 'lgray_color js_notop');
+                    init_popup('message_container', 'lgray_color js_notop');
                     message_closer();
                 }
                 function message_closer() {

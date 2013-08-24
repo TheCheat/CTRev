@@ -242,14 +242,14 @@ CREATE TABLE IF NOT EXISTS `countries` (
 
 CREATE TABLE IF NOT EXISTS `feedback` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
-  `type` enum('main') NOT NULL DEFAULT 'main',
+  `type` varchar(100) NOT NULL DEFAULT 'main',
   `ip` int(12) NOT NULL,
   `uid` int(10) NOT NULL,
   `time` int(12) NOT NULL,
   `subject` varchar(250) NOT NULL,
   `content` text NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `groups` (
   `id` tinyint(3) unsigned NOT NULL AUTO_INCREMENT,

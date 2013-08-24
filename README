@@ -13,3 +13,6 @@
 INSERT INTO `ctrev_config` (`name` ,`value` ,`type` ,`allowed` ,`cat` ,`sort`)
 VALUES ('default_torrent_price', '10', 'int', '', 'content', '5');
 -- Конец. --
+-- Обновление от 24.08.2013 --
+ALTER TABLE `ctrev_feedback` CHANGE `type` `type` VARCHAR( 100 ) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT 'main'
+-- Конец. --

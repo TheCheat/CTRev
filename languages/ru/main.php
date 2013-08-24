@@ -18,7 +18,9 @@ $languages = array(
     "total" => "Всего: ",
     'submit' => "OK",
     "run" => "Выполнить",
+    'all' => "Все",
     "add" => "Добавить",
+    "send" => "Отправить",
     "insert" => "Вставить",
     "other" => "Другие",
     "prev" => "Пред.",
@@ -191,4 +193,14 @@ $languages = array_merge($languages, array(
     "period_unended" => "Бесконечно",
     "period_other" => "Другое",
     "period_notice_in_hours" => "В часах, бесконечно - 0"));
+$languages = array_merge($languages, array(
+    $this->splitter('FEEDBACK'),
+    "feedback_type_error" => "Сообщение об ошибке",
+    "feedback_type_suggest" => "Пожелания и предложения",
+    "feedback_type_main" => "Другое",
+    "feedback_title" => "Обратная связь",
+    "feedback_subject" => "Заголовок",
+    "feedback_content" => "Содержание",
+    "feedback_type" => "Тип сообщения",
+    "feedback_captcha" => "Код подтверждения"));
 ?>

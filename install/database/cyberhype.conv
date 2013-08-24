@@ -63,7 +63,7 @@ info_hash
 size
 filelist|function: filelist({id})
 announce_list
-last_active: UNIX_TIMESTAMP(last_action)
+last_active: UNIX_TIMESTAMP()
 downloaded: times_completed
 banned: IF(banned='yes', '1', '0')
 screenshots|function: screenshots({poster}, {screenshots})
@@ -78,7 +78,7 @@ salt: secret
 ip|function: ip({ip})
 email
 registered: UNIX_TIMESTAMP(added)
-last_visited: UNIX_TIMESTAMP(last_access)
+last_visited: UNIX_TIMESTAMP()
 admin_email: 1
 group|function: group({`group`})
 bonus_count: 300+bonus

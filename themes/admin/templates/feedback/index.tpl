@@ -1,5 +1,7 @@
 [*if !$res*]
-    [*message lang_var='feedback_no_one' type='info' die=1*]
+    <div id='feedbacktable'>
+        [*message lang_var='feedback_no_one' type='info' die=1*]
+    </div>
 [*/if*]
 [*if !$from_ajax*]
     <script type='text/javascript'>
@@ -44,6 +46,13 @@
             obj.prevAll('span').hide();
             obj.prevAll('div.hidden').show();
         }
+        jQuery(document).ready(function() {
+            jQuery('#feedback_selector select').change(function() {
+                var type = jQuery(this).val();
+                admin_feedback_type = '&type=' + type;
+                switch_feedback_page(0);
+            });
+        });
     </script>
 [*/if*]
 [*if !$from_ajax*]
@@ -51,18 +60,19 @@
         <fieldset><legend>
                 [*'feedback_title'|lang*]
             </legend>
-            <table class="tablesorter">
-                <thead>
-                    <tr>
-                        <th class='js_remote'>[*'feedback_area_subject'|lang*]</th>
-                        <th class='js_remote'>[*'feedback_area_time'|lang*]</th>
-                        <th class='js_remote'>[*'feedback_area_uid'|lang*]</th>
-                        <th class='js_remote'>[*'feedback_area_ip'|lang*]</th>
-                        <th class='js_remote js_nosort'>[*'feedback_area_content'|lang*]</th>
-                    </tr>
-                </thead>
+            <div align='center' id='feedback_selector'>[*select_feedback name='type' null=true current=$type*]<br></div>
             [*/if*]
-            <tbody id='feedbacktable'>
+        <table class="tablesorter" id='feedbacktable'>
+            <thead>
+                <tr>
+                    <th class='js_remote'>[*'feedback_area_subject'|lang*]</th>
+                    <th class='js_remote'>[*'feedback_area_time'|lang*]</th>
+                    <th class='js_remote'>[*'feedback_area_uid'|lang*]</th>
+                    <th class='js_remote'>[*'feedback_area_ip'|lang*]</th>
+                    <th class='js_remote js_nosort'>[*'feedback_area_content'|lang*]</th>
+                </tr>
+            </thead>
+            <tbody>
                 [*foreach from=$res item=row*]
                     <tr>
                         <td>[*$row.subject*]
@@ -92,8 +102,8 @@
                     </tr>
                 [*/foreach*]
             </tbody>
-            [*if !$from_ajax*]
-            </table>
+        </table>
+        [*if !$from_ajax*]
             <div align='right'>
                 <input type='button' onclick="clear_feedback(this.value);" value='[*'feedback_clear'|lang*]'>
             </div>

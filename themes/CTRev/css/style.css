@@ -479,11 +479,11 @@ div.footer_center {
 div.footer_rcenter {
     position: relative;
     background: url(../images/footer_rcenter.png) repeat-x;
-    height: 36px;
+    height: 38px;
     margin-bottom: -66px;
     margin-left: 597px;
     margin-right: 85px;
-    padding-top: 30px;
+    padding-top: 28px;
     color: white;
     font-weight: bold;
     font-size: 10px;

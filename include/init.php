@@ -272,6 +272,16 @@ tpl::o()->register_function("select_periods", array(
     $input,
     'select_periods'));
 /**
+ * @note Поле выбора типа обратной связи(select_feedback)
+ * params:
+ * string name имя поля
+ * int current текущее значение
+ * bool null пустое значение?
+ */
+tpl::o()->register_function("select_feedback", array(
+    $input,
+    'select_feedback'));
+/**
  * @note Генератор пароля(passgen)
  * params:
  * string pname имя поля пароля
