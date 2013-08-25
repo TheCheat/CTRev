@@ -4,7 +4,6 @@
  * Project:            	CTRev
  * @file                include/system/core.php 
  * 
- * @todo                Блоки HTML
  * @todo                Права для категорий
  * @todo                Описанное ниже возможно когда-то будет реализовано:
  * @todo                Массовая рассылка почты

@@ -20,5 +20,10 @@ $languages = array(
     "blocks_simple_block_settings_par6_test" => 'Тест',
     "blocks_simple_block_settings_par6_tests" => 'Тесты',
     "blocks_simple_block_settings_par6_testers" => 'Тестеры',
+    "blocks_html_settings_content" => "Содержание",
+    "blocks_html_settings_type" => "HTML или BBCode?",
+    "blocks_html_settings_type_html" => "HTML",
+    "blocks_html_settings_type_bbcode" => "BBCode",
+    "blocks_html_settings_type_descr" => "*Примечание: при выборе HTML не будут преобразовываться любые BB-коды, потому там WYSIWYG бесполезен.",
 );
 ?>
