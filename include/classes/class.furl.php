@@ -575,7 +575,7 @@ final class furl extends pluginable_object {
             $surl = $ourl . $surl;
         $add = '';
         if (config::o()->v('furl')) {
-            if (!$no_end && !$page && (!$params || !$b || $url [mb_strlen($url) - 1] == '/'))
+            if (!$no_end && !$page && (!$params || !$b || preg_match('/\/$/siu', $url)))
                 $add .= "index";
             if (!$no_end)
                 $add .= $filetype;
