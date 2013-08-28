@@ -30,9 +30,11 @@
                 <dd>[*input_form name='descr' text=$row.descr*]</dd>
                 <dt>[*'cats_area_post_allow'|lang*]</dt>
                 <dd><input type='checkbox' value='1' name='post_allow'
-                    [*if $row.post_allow || !$row.id*] checked='checked'[*/if*]></dd>
-        </dl>
-        <div align='center'><input type='submit' value='[*'save'|lang*]'></div>
-    </fieldset>
-</div>
+                           [*if $row.post_allow || !$row.id*] 
+                               checked='checked'
+                           [*/if*]></dd>
+            </dl>
+            <div align='center'><input type='submit' value='[*'save'|lang*]'></div>
+        </fieldset>
+    </div>
 </form>

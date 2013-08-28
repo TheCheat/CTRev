@@ -97,7 +97,7 @@ class attachments extends pluginable_object {
             $toid = $toid['toid'];
         }
         try {
-            users::o()->perm_exception()->check_perms('attach');
+            users::o()->perm_exception()->check_perms('attach', 2);
         } catch (EngineException $e) {
             n("message")->stype('error')->info($e->getEMessage());
             return;
@@ -129,7 +129,7 @@ class attachments extends pluginable_object {
     public function define_toid($data, $toid) {
         if (!$this->state)
             return;
-        if (!users::o()->perm('attach') || !users::o()->v())
+        if (!users::o()->perm('attach', 2) || !users::o()->v())
             return;
         $id = $data ["attachments"];
         if (!$id)
@@ -152,7 +152,7 @@ class attachments extends pluginable_object {
     public function upload($toid = null, $files_var = "Filedata") {
         if (!$this->state)
             return;
-        users::o()->check_perms('attach');
+        users::o()->check_perms('attach', 2);
         lang::o()->get("file");
         if (!$files_var)
             $files_var = "Filedata";
@@ -198,7 +198,7 @@ class attachments extends pluginable_object {
                 $this->change_type($toid["type"]);
             $toid = $toid["toid"];
         }
-        if (!users::o()->perm('download_attach'))
+        if (!users::o()->perm('attach', 1, 2))
             return;
         $type = $this->type;
         $toid = (int) $toid;
@@ -218,7 +218,7 @@ class attachments extends pluginable_object {
     public function delete($id) {
         if (!$this->state)
             return;
-        users::o()->check_perms('attach');
+        users::o()->check_perms('attach', 2);
         if (!$id)
             return;
         $where = (!is_array($id) ? 'id = ?' : 'id IN(@' . count($id) . '?)');
@@ -272,7 +272,7 @@ class attachments extends pluginable_object {
     public function download($id) {
         if (!$this->state)
             return;
-        users::o()->check_perms('download_attach', 1, 2);
+        users::o()->check_perms('attach', 1, 2);
 
         $id = (int) $id;
         $q = db::o()->p($id)->query("SELECT * FROM attachments WHERE id=? LIMIT 1");

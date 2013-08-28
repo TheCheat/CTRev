@@ -871,7 +871,7 @@ INSERT INTO `countries` (`id`, `name`, `image`) VALUES
 (17, 'Япония', 'japan.gif');
 
 INSERT INTO `groups` (`id`, `default`, `acp_modules`, `pm_count`, `notdeleted`, `system`, `guest`, `bot`, `name`, `color`, `perms`, `sort`, `content_count`, `karma_count`, `bonus_count`) VALUES
-(1, '0', '', 50, '1', '0', '1', '0', 'group_guest', '#707070', '33:0;32:0;7:0;6:0;17:0;4:0;3:0;2:1;24:0;25:0;23:0;21:0;15:0;10:0;9:0;36:0;37:0', 0, 0, 0, 0),
+(1, '0', '', 50, '1', '0', '1', '0', 'group_guest', '#707070', '33:0;32:0;7:0;6:0;17:0;4:0;3:0;2:1;24:0;25:0;23:0;21:0;15:0;10:0;9:0;36:0', 0, 0, 0, 0),
 (7, '1', '', 50, '1', '0', '0', '0', 'group_user', '#000000', '', 1, 0, 0, 0),
 (2, '0', NULL, 50, '0', '0', '0', '0', 'group_uploader', '#6600ff', '27:1', 2, 10, 0, 0),
 (3, '0', NULL, 50, '0', '0', '0', '0', 'group_silver', '#5c5c5c', '27:1;26:1', 3, 0, 0, 0),
@@ -914,8 +914,7 @@ INSERT INTO `groups_perm` (`id`, `perm`, `dvalue`, `allowed`, `cat`) VALUES
 (8, 'polls', 1, '3', 'voting'),
 (13, 'vote', 1, '1', 'voting'),
 (14, 'votersview', 1, '1', 'voting'),
-(36, 'attach', 1, '1', 'content'),
-(37, 'download_attach', 1, '1', 'content');
+(36, 'attach', 2, '2', 'content');
 
 INSERT INTO `patterns` (`id`, `name`, `pattern`) VALUES
 (1, 'Общий', 'a:4:{i:0;a:5:{s:4:"name";s:17:"*Название";s:5:"rname";s:4:"name";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:79:"{form.title}{this.$value}\r\n{form.content}[b]Название: [/b]{this.$value}";}i:1;a:5:{s:4:"name";s:42:"*Оригинальное название";s:5:"rname";s:5:"rname";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:107:"{form.title} / {this.$value}\r\n{form.content}[b]Оригинальное название: [/b]{this.$value}";}i:2;a:6:{s:4:"name";s:7:"*Год";s:5:"rname";s:4:"year";s:4:"type";s:5:"input";s:5:"descr";s:0:"";s:8:"formdata";s:72:"{form.title} ({this.$value})\r\n{form.content}[b]Год: [/b]{this.$value}";s:4:"size";i:5;}i:3;a:5:{s:4:"name";s:17:"*Описание";s:5:"rname";s:5:"descr";s:4:"type";s:8:"textarea";s:5:"descr";s:37:"Тест. Вместе с <b>HTML</b>";s:8:"formdata";s:54:"{form.content}[b]Описание: [/b]\r\n{this.$value}";}}'),

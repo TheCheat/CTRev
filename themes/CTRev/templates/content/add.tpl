@@ -50,7 +50,7 @@
                         <a class="accordion_header">[*'content_torrent_screenshots'|lang*]</a>
                         <div align='left'>[*include file='content/screenshots.tpl'*]</div>
                     [*/if*]
-                    [*if 'attach'|perm && 'attach_manage'|mstate*]
+                    [*if 'attach'|perm:2 && 'attach_manage'|mstate*]
                         <a class="accordion_header">[*'attachments'|lang*]</a>
                         <div>[*add_attachments type='content' toid=$id*]</div>
                     [*/if*]

@@ -98,7 +98,7 @@ class config_man extends pluginable_object {
         $value = display::o()->html_encode($row['value']);
         if ($type == 'other') {
             $f = self::method_show_prefix . $name;
-            return $this->call_method($f, $value);
+            return $this->call_method($f, array($value));
         } elseif ($type == 'radio' || $type == 'select') {
             $a = explode(";", $allowed);
             $allowed = array();

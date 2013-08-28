@@ -161,7 +161,7 @@ class bittorrent extends announce_parser {
         $fname = default_filename($posted_time, $poster_id);
         $dict = $this->bdec(ROOT . config::o()->v('torrents_folder') . '/' . self::torrent_prefix . $fname . ".torrent", true);
 
-        $dict ['comment'] = sprintf(lang::o()->v('torrents_from_site'), config::o()->v('site_title'), furl::o()->construct("download", array(
+        $dict ['comment'] = sprintf(lang::o()->v('content_torrent_from_site'), config::o()->v('site_title'), furl::o()->construct("download", array(
                     "id" => $id,
                     'noencode' => true)));
 

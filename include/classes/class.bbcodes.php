@@ -516,7 +516,7 @@ abstract class bbcode_formatter extends formatter_callbacks {
             "auto_url",
             "img",
             "hide"));
-        $out = $this->call_method("decode_img", $out);
+        $out = $this->call_method("decode_img", array($out));
         $out = $this->call_method("decode_hide", array($out, true));
         $out = preg_replace($this->bb_patterns ["url"], '<a href="\1">\1</a>', $out);
         $out = preg_replace($this->bb_patterns ["url="], '<a href="\1">\6</a>', $out);
@@ -563,7 +563,7 @@ abstract class bbcode_formatter extends formatter_callbacks {
         $this->smilies_replace($out);
         foreach ($this->spec_patterns as $key => $pattern) {
             $funct = 'decode_' . $key;
-            $out = $this->call_method($funct, $out);
+            $out = $this->call_method($funct, array($out));
         }
         foreach ($this->bb_patterns as $key => $pattern)
             $out = preg_replace($pattern, $this->bb_replacement [$key], $out);

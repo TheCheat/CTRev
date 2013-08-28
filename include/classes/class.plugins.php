@@ -130,7 +130,7 @@ abstract class pluginable_object {
     /**
      * Вызов оригинальной функции, даже если она объявлена protected
      * @note Про func_get_args() знаю, но он не воспринимает аргументы по ссылке
-     * @param mixed $params массив параметров/единственный параметр не массив
+     * @param array $params массив параметров
      * @return mixed возвращаемое значение функции
      */
     final public function call_original($params = null) {
@@ -144,7 +144,7 @@ abstract class pluginable_object {
      * @note Последний параметр для переопределяемого метода всегда callback
      * оригинальной функции
      * @param string $method имя метода
-     * @param mixed $params массив параметров/единственный параметр не массив
+     * @param array $params массив параметров
      * @param bool $redefine разрешить переопределять стандартные методы
      * @return mixed возвращаемое значение функции
      */

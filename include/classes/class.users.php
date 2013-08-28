@@ -21,6 +21,9 @@ class users_checker {
      * @note protected, ибо предполагается, что неизменно в процессе работы. 
      * Ибо это данные из БД и для изменения юзать соотв. функции {@link db}.
      * Если необходимо какое-то доп. поле, его можно получить через groups
+     * Если необходимо временно переопределить, юзаем set_tmpperms
+     * @see set_tmpperms()
+     * @see remove_tmpperms()
      */
     protected $perms = array();
 
@@ -31,6 +34,7 @@ class users_checker {
      * Ибо это данные из БД и для изменения юзать соотв. функции {@link db}.
      * Если необходимо временно переопределить, юзаем set_tmpvars
      * @see set_tmpvars()
+     * @see remove_tmpvars()
      */
     protected $vars = array();
 
@@ -53,12 +57,6 @@ class users_checker {
      * @var array $update_columns
      */
     protected $update_columns = array("content", "karma", "bonus");
-
-    /**
-     * Целочисленные настройки пользователя
-     * @var array $isettings
-     */
-    protected $isettings = array("icq", "country", "show_age");
 
     /**
      * "Права" пользователя, возвращающие значения(без префикса can_)
@@ -603,6 +601,12 @@ class users_modifier extends users_getter {
     protected $tmp_vars = null;
 
     /**
+     * Временные права пользователя
+     * @var array $tmp_perms
+     */
+    protected $tmp_perms = null;
+
+    /**
      * Декодирование строки с правами типа ID1:значение1,ID2:значение2,...
      * @param string $perms строка с правами
      * @param array $r массив, куда пишем
@@ -650,14 +654,15 @@ class users_modifier extends users_getter {
 
     /**
      * Установка временных переменных пользователя
-     * !Использовать только в случае крайней необходимости, ибо:
-     * подразумевается, что изменение переменных не нужно.
-     * @param array $what массив переменны
+     * @param array $what массив переменных
+     * @param bool $merge объединить?
      * @return users_modifier $this
      */
-    public function set_tmpvars($what) {
+    public function set_tmpvars($what, $merge = false) {
+        if ($this->tmp_vars)
+            $this->remove_tmpvars();
         $this->tmp_vars = $this->vars;
-        $this->vars = $what;
+        $this->vars = $merge ? array_merge($this->vars, $what) : $what;
         return $this;
     }
 
@@ -669,6 +674,31 @@ class users_modifier extends users_getter {
         if (!$this->tmp_vars)
             return;
         $this->vars = $this->tmp_vars;
+        return $this;
+    }
+
+    /**
+     * Установка временных прав пользователя
+     * @param array $what массив переменных
+     * @param bool $merge объединить?
+     * @return users_modifier $this
+     */
+    public function set_tmpperms($what, $merge = false) {
+        if ($this->tmp_perms)
+            $this->remove_tmpperms();
+        $this->tmp_perms = $this->perms;
+        $this->perms = $merge ? array_merge($this->perms, $what) : $what;
+        return $this;
+    }
+
+    /**
+     * Удаление временных прав пользователя
+     * @return users_modifier $this
+     */
+    public function remove_tmpperms() {
+        if (!$this->tmp_perms)
+            return;
+        $this->perms = $this->tmp_perms;
         return $this;
     }
 

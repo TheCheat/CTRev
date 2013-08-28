@@ -236,7 +236,7 @@ class mailer extends pluginable_object {
         $type = $this->type;
         $method = "get_vars_" . $type;
         $id = (int) $id;
-        return $this->call_method($method, $id);
+        return $this->call_method($method, array($id));
     }
 
     /**

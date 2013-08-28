@@ -76,7 +76,7 @@
                                 [*$content.screenshots|show_image:true*]
                             [*/if*]
                             [*$content.content|ft:false:true*]
-                            [*if "download_attach"|perm && $full_content*]
+                            [*if "attach"|perm:1:2 && $full_content*]
                                 [*display_attachments toid=$content.id type='content'*]
                             [*/if*]
                             [*if "torrents_on"|config && $content.screenshots*]

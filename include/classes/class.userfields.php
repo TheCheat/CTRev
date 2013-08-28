@@ -165,7 +165,7 @@ class userfields extends pluginable_object {
             $allowed = $row['allowed'];
             $m = self::method_show_prefix . $name;
             if ($this->is_callable($m))
-                $value = $this->call_method($m, $value);
+                $value = $this->call_method($m, array($value));
             else {
                 if ($type == 'other')
                     $type = 'string';
@@ -231,7 +231,7 @@ class userfields extends pluginable_object {
             $allowed = $row['allowed'];
             $value = $this->get_data($name);
             if ($type == 'other')
-                $field = $this->call_method(self::method_input_prefix . $name, $value);
+                $field = $this->call_method(self::method_input_prefix . $name, array($value));
             else
                 $field = input::o()->stype($type)->scurrent($value)->skeyed()->standart_types(self::var_prefix . $name, $allowed);
             if (!$field)
