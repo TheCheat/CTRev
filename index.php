@@ -16,17 +16,19 @@ if (!file_exists('install/lock') && file_exists('install/')) {
 }
 define('DELAYED_UINIT', true); // отложенная инициализация юзерей...
 include_once "./include/include.php";
-if (($current = stats::o()->read(DATABASE_STATS)) != DATABASE_VERSION) {
-    /* @var $m message */
-    $m = n("message");
-    $m->error('need_to_upgrade_database', array(DATABASE_VERSION, $current ? $current : "unknown"));
-}
 $module = $_GET ['module'];
 blocks::set_module($module ? $module : "index");
 $this_file = globals::g('baseurl') . "index.php?module=" . $module;
 tpl::o()->assign("this_file", $this_file);
 $ajax = (bool) ($_REQUEST ['from_ajax']); // Из AJAX
 $nno = (bool) ($_REQUEST ['nno']); // Стандартный класс(без постфикса '_ajax')
+
+if (!$ajax && ($current = stats::o()->read(DATABASE_STATS)) != DATABASE_VERSION) {
+    /* @var $m message */
+    $m = n("message");
+    $m->error('need_to_upgrade_database', array(DATABASE_VERSION, $current ? $current : "unknown"));
+}
+
 globals::s('ajax', $ajax);
 tpl::o()->assign('from_ajax', $ajax);
 tpl::o()->assign('module_loaded', $module);
