@@ -40,6 +40,8 @@ final class stats {
      * @return null
      */
     public function write($name, $value) {
+        if ($name == DATABASE_STATS && !defined('ININSTALL'))
+            return;
         if (!isset($this->res[$name])) {
             $this->res[$name] = $value;
             $r = db::o()->insert(array("name" => $name, "value" => $value), "stats");
@@ -55,6 +57,8 @@ final class stats {
      * @return null
      */
     public function remove($name) {
+        if ($name == DATABASE_STATS && !defined('ININSTALL'))
+            return;
         if (!isset($this->res[$name]))
             return;
         unset($this->res[$name]);

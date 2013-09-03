@@ -17,7 +17,6 @@ require_once ROOT . 'include/classes/class.cache.php';
 require_once ROOT . 'include/classes/class.modsettings.php';
 require_once ROOT . 'include/classes/class.plugins.php';
 require_once ROOT . 'include/classes/class.config.php';
-require_once ROOT . 'include/classes/class.stats.php';
 
 db::o()->connect();
 
