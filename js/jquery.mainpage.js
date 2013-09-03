@@ -972,7 +972,7 @@ function save_pattern(id, form) {
     var to = 'adding_form';
     var obj = jQuery('form[name="' + to + '"]', window.opener.document);
     var v = null;
-    var regexpe = new RegExp('(\\\\[nr])+', 'g');
+    var regexpe = new RegExp('(\\\\r)?(\\\\n)(\\\\r)?', 'g');
     jQuery.post('index.php?module=ajax_index&from_ajax=1&act=check_pattern&id=' + id,
             jQuery(form).serialize(), function(data) {
         if (is_ok(data, true)) {
