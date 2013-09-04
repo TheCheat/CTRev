@@ -1172,7 +1172,7 @@ class torrents_simpleview {
      */
     protected function show_row($content, &$row, $max_title_symb) {
         $row['screenshots'] = $content->show_image($row['screenshots'], true, false, "center");
-        if (preg_match('/^(.+?)(\?:\/(.+?))?\(([0-9]+)\).*?$/siu', $row['title'], $matches)) {
+        if (preg_match('/^(.+?)(?:\/(.+?))?\(([0-9]+)\).*?$/siu', $row['title'], $matches)) {
             $row['name'] = display::o()->cut_text($matches[1], $max_title_symb);
             $row['orig_name'] = display::o()->cut_text($matches[2], $max_title_symb);
             $row['year'] = $matches[3];
