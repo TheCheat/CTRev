@@ -36,6 +36,7 @@ lang::o()->change_folder(config::o()->v('default_lang'));
 init_spaths();
 
 tpl::o()->register_modifier('lang', array(lang::o(), 'v')); // языковая переменная
+tpl::o()->register_modifier('getlang', array(lang::o(), 'get')); // подключение языка прямо в шаблоне
 tpl::o()->register_modifier('islang', array(lang::o(), 'visset')); // языковая переменная
 tpl::o()->register_modifier('config', array(config::o(), 'v')); // конфиг. переменная
 tpl::o()->register_modifier('mstate', array(config::o(), 'mstate')); // разрешён ли модуль
