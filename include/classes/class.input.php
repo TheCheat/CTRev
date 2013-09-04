@@ -268,7 +268,7 @@ class input {
                     simple_selector($name . "_day", $values);
         }
         if ($bemonth) {
-            $values = $this->date_values(($fromnull ? 0 : 1), 12);
+            $values = $this->date_values(($fromnull ? 0 : 1), 12, true);
             $tdate[] = $this->scurrent((int) date("m", $time))->skeyed()->
                     simple_selector($name . "_month", $values);
         }
