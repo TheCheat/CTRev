@@ -171,12 +171,11 @@ tpl::o()->register_function("input_form", array(
  * bool no_end нужно ли в конец добавлять .html/index.html?
  * bool nobaseurl не добавлять в начало $baseurl
  * bool slashes экранирует результат для JavaScript, иначе & заменяется на &amp;
+ * string _filetype тип файла(вместо html)
+ * string assign передать значение функции в переменную с именем assign?
  * mixed параметры ссылки
  */
 tpl::o()->register_function("gen_link", array(
-    furl::o(),
-    'construct'));
-tpl::o()->register_modifier("genlink", array(
     furl::o(),
     'construct'));
 /**

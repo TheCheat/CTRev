@@ -507,16 +507,16 @@ final class furl extends pluginable_object {
     public function construct($module, $params = array(), $page = false, $no_end = false, $nobaseurl = false) {
         $baseurl = globals::g('baseurl');
         $burl = true;
+        $assign = false;
         if (is_array($module)) {
             $module_t = $module ['module'];
-            if ($module ['no_end']) {
+            if ($module ['no_end'])
                 $no_end = $module ['no_end'];
-                //unset ( $module ['no_end'] );
-            }
+            if ($module['assign'])
+                $assign = (string) $module['assign'];
             if (!$module_t && $module ['page']) {
                 $module = $module ['page'];
                 $page = true;
-                //unset ( $module ['page'] );
             } elseif (!$module_t)
                 return;
             else {
@@ -526,10 +526,7 @@ final class furl extends pluginable_object {
             }
         } elseif ($nobaseurl)
             $burl = false;
-        /*
-          if (!is_array($params) && $params)
-          $params = (array) display::o()->parse_smarty_array($params);
-          else */
+
         if (!is_array($params))
             $params = array();
         if ($params ["_filetype"])
@@ -586,7 +583,10 @@ final class furl extends pluginable_object {
         $this->forlocation = array($surl, $url);
         if ($slashes)
             $url = slashes_smarty($url);
-        return $url;
+        if ($assign)
+            tpl::o()->assign($assign, $url);
+        else
+            return $url;
     }
 
     /**

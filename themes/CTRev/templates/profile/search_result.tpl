@@ -87,8 +87,8 @@
             </fieldset>
         [*/if*] 
     [*else*]
-        [*assign var="params" expr='a{act=users}'*]
-        [*message type='info' vars='search'|genlink:$params lang_var='search_nothing_found'*] 
+        [*gen_link module='search' act='users' assign='link'*]
+        [*message type='info' vars=$link lang_var='search_nothing_found'*] 
     [*/if*]
     [*if !$subupdate*]
     </div>

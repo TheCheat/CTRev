@@ -10,7 +10,7 @@
             });
         }
     </script>
-    [*assign var="link" value="search"|genlink*]
+    [*gen_link module='search' assign='link'*]
     <div class="cornerText white_color gray_border">
         [*if $rows*]
             <i>[*'search_result'|lang*]</i><br>
@@ -26,34 +26,34 @@
                         </a>
                         <hr class="short">
                         <div class="content">
-			    [*if "torrents_on"|config*]
-				[*$row.screenshots|show_image:true*]
+                            [*if "torrents_on"|config*]
+                                [*$row.screenshots|show_image:true*]
                             [*/if*]
                             [*$row.content|ft:false:true*]
                         </div>
                         <hr class="short">
                         <b>[*'search_tauthor'|lang*]</b> [*$row.username|gcl:$row.group*], <b>[*'search_added'|lang*]</b>
                         [*date time=$row.posted_time*], <b>[*'search_comments'|lang*]</b> [*$row.comm_count*][*if "torrents_on"|config*],
-                        <b>[*'search_seedleech'|lang*]</b> [*$row.seeders*]&nbsp;/&nbsp;[*$row.leechers*][*/if*]
-                        <div class="float_right">
-                            <a href="[*gen_link module='content' title=$row.otitle id=$row.id*]">[*'search_go_to_content'|lang*]</a>
+                            <b>[*'search_seedleech'|lang*]</b> [*$row.seeders*]&nbsp;/&nbsp;[*$row.leechers*][*/if*]
+                            <div class="float_right">
+                                <a href="[*gen_link module='content' title=$row.otitle id=$row.id*]">[*'search_go_to_content'|lang*]</a>
+                            </div>
                         </div>
-                    </div>
-                [*/foreach*]
-                <br>
-                [*$pages*]
-                <br>
-                <hr class="short">
-                <b><i>[*'search_not_this'|pf:$link*]</i></b>
-            </div>
-        [*else*]
-            [*message lang_var="search_nothing_found" type="info" vars=$link*]
-        [*/if*]
-    </div>
-</div>    
-[*if $from_ajax*]
-    <script type='text/javascript'>
-        if (typeof init_sexylightbox != "undefined")
-            init_sexylightbox();
-    </script>
-[*/if*]
+                        [*/foreach*]
+                            <br>
+                            [*$pages*]
+                            <br>
+                            <hr class="short">
+                            <b><i>[*'search_not_this'|pf:$link*]</i></b>
+                        </div>
+                        [*else*]
+                            [*message lang_var="search_nothing_found" type="info" vars=$link*]
+                            [*/if*]
+                            </div>
+                        </div>    
+                        [*if $from_ajax*]
+                            <script type='text/javascript'>
+                                if (typeof init_sexylightbox != "undefined")
+                                    init_sexylightbox();
+                            </script>
+                        [*/if*]

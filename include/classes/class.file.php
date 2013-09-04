@@ -34,9 +34,20 @@ final class file {
     private $cached = null;
 
     /**
-     * Кеш-файл
+     * Проверять служебные файлы? 
+     * @var bool $check_htaccess
+     */
+    private $check_htaccess = false;
+
+    /**
+     * Паттерн служебных файлов
      */
 
+    const htaccess_pattern = '\.(htaccess|gitignore)';
+
+    /**
+     * Кеш-файл
+     */
     const cachefile = 'writable';
 
     /**
@@ -113,6 +124,18 @@ final class file {
     }
 
     /**
+     * Проверять служебные файлы(.htaccess/.gitignore) в данном is_writable?
+     * @note по-умолчанию не проверяются, автоматически отключается, если
+     * проверяется папка
+     * @param bool $state true, если проверять
+     * @return file $this
+     */
+    public function check_htaccess($state = true) {
+        $this->check_htaccess = (bool) $state;
+        return $this;
+    }
+
+    /**
      * Записываемый ли файл(папка)?
      * @param string $filename путь к файлу(папке)
      * @param bool $chmod пытаться установить права на запись?
@@ -135,12 +158,15 @@ final class file {
                 @chmod($rfilename, 0777);
             $n = !$y = is_writable($filename);
             for ($i = 0; $i < $c; $i++) {
+                if (!$this->check_htaccess && preg_match('/^' . self::htaccess_pattern . '$/siu', $files[$i]))
+                    continue;
                 $r = $this->is_writable($filename . '/' . $files[$i], $chmod, 'inrec');
                 $y = $y || $r === true || $r === 2;
                 $n = $n || !$r || $r === 1;
             }
             $r = $y + !$n;
             if ($recursive !== 'inrec') {
+                $this->check_htaccess = false;
                 $this->recache = true;
                 $this->cached[$filename] = $r;
             }

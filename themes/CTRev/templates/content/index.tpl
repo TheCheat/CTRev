@@ -32,6 +32,8 @@
             [*/if*]
 
             [*assign var="title" value=$content.title*]
+            [*gen_link module='content' id=$content.id title=$title assign='link'*]
+            [*assign var="title" value="<a href='$link' class='white_link'>$title</a>"*]
             [*assign var='langnew' value='new'|lang*]
             [*assign var='langtsticky' value='content_sticky'|lang*]
             [*if !$content.readed && !$full_content && $curuser && $content.posted_time>$last_clean_rc*]
