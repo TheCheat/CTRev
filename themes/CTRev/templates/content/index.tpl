@@ -83,9 +83,13 @@
                             [*/if*]
                             [*if "torrents_on"|config && $content.screenshots*]
                                 [*assign var='tscreen' value=$content.screenshots|show_image:false*]
-                                [*if $full_content && $tscreen*]<fieldset class='dscreenshots'>
-                                        <legend>[*'content_torrent_screenshots'|lang*]</legend>
-                                        <div align='center'>[*$tscreen*]</div>
+                                [*if $full_content && $tscreen*]
+                                    <fieldset class='dscreenshots'>
+                                        <legend>                                            
+                                            <a href="javascript:void(0);" onclick="open_spoiler(this, jQuery('.spoiler_content', jQuery(this).parents('fieldset.dscreenshots')));" class="spoiler_icon"></a>
+                                            &nbsp;[*'content_torrent_screenshots'|lang*]
+                                        </legend>
+                                        <div class='hidden spoiler_content' align='center'>[*$tscreen*]</div>
                                     </fieldset>
                                 [*/if*]
                             [*/if*]

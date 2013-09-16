@@ -952,11 +952,15 @@ function passgen(name, name2) {
 /**
  * Открытие спойлера
  * @param {object} obj объект кнопки спойлера
+ * @param {object} curobj открываемый объект
  * @returns {null}
  */
-function open_spoiler(obj) {
+function open_spoiler(obj, curobj) {
     var obj = jQuery(obj);
-    var curobj = obj.nextAll('div.spoiler_content');
+    if (!curobj)
+        curobj = obj.nextAll('div.spoiler_content');
+    else
+        curobj = jQuery(curobj);
     if (curobj)
         spoiler_pic(obj, curobj);
 }

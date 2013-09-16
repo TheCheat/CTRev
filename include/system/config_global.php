@@ -24,7 +24,7 @@ define('DATABASE_VERSION', '1.00');
 /**
  * Стадия разработки
  */
-define('ENGINE_STAGE', 'Release');
+define('ENGINE_STAGE', '');
 
 
 
