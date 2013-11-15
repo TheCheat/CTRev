@@ -21,7 +21,7 @@
                             [*/if*]
                             [*assign var='bcount' value='bonus_count'|user*]
                             [*'content_torrent_price_descr'|pf:$content.price:$gfree:$bcount*]<br><br>
-                            [*assign var='link' value='usercp'|genlink*]
+                            [*gen_link module='usercp' assign='link'*]
                             <font size='1'>[*'content_torrent_pk'|pf:$link*]</font>
                         </dd>
                     [*/if*]

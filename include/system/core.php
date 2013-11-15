@@ -4,10 +4,17 @@
  * Project:            	CTRev
  * @file                include/system/core.php 
  * 
+ * @todo                Сделать в качестве примеров(именно в таком порядке):
+ * @todo                Рип какой-нибудь темы. Возможно сделаю опрос на сайте.
+ * @todo                Модуль: магазин бонусов
+ * @todo                Плагины: анонимное скачивание торрентов, 
+ *                      права/модераторы для категорий,
+ *                      рейтинг с imdb/кинопоиска,
+ *                      интегрировать api akismet,
+ *                      интегрировать с MyBB
+ * 
  * @todo                Описанное ниже возможно когда-то будет реализовано:
- * @todo                Права для категорий
  * @todo                Массовая рассылка почты
- * @todo                Магазин бонусов
  * @todo                Управление странами
  * @todo                Магазин плагинов
  *
@@ -36,6 +43,7 @@ lang::o()->change_folder(config::o()->v('default_lang'));
 init_spaths();
 
 tpl::o()->register_modifier('lang', array(lang::o(), 'v')); // языковая переменная
+tpl::o()->register_modifier('getlang', array(lang::o(), 'get')); // подключение языка прямо в шаблоне
 tpl::o()->register_modifier('islang', array(lang::o(), 'visset')); // языковая переменная
 tpl::o()->register_modifier('config', array(config::o(), 'v')); // конфиг. переменная
 tpl::o()->register_modifier('mstate', array(config::o(), 'mstate')); // разрешён ли модуль

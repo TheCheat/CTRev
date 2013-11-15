@@ -339,7 +339,7 @@ class image {
             $curwidth = $wh [0];
             $curheight = $wh [1];
         }
-        if ((!$maxheight && !$maxwidth) || !(($curwidth > $maxwidth && $maxwidth) || ($curheight > $maxheight && $maxheight)))
+        if ((!$maxheight && !$maxwidth) || !(($curwidth >= $maxwidth && $maxwidth) || ($curheight >= $maxheight && $maxheight)))
             throw new EngineException('file_unknown_resize', array(
         ($maxwidth ? $maxwidth : unended),
         ($maxheight ? $maxheight : unended)

@@ -20,6 +20,7 @@ include "include/system/php_config.php";
 include "include/classes/class.file.php";
 include "include/classes/class.db.php";
 include "include/classes/class.lang.php";
+include 'include/classes/class.stats.php';
 include "install/include/class.tpl.php";
 
 define('ILOCK_FILE', 'install/lock');

@@ -32,6 +32,8 @@
             [*/if*]
 
             [*assign var="title" value=$content.title*]
+            [*gen_link module='content' id=$content.id title=$title assign='link'*]
+            [*assign var="title" value="<a href='$link' class='white_link'>$title</a>"*]
             [*assign var='langnew' value='new'|lang*]
             [*assign var='langtsticky' value='content_sticky'|lang*]
             [*if !$content.readed && !$full_content && $curuser && $content.posted_time>$last_clean_rc*]
@@ -81,9 +83,13 @@
                             [*/if*]
                             [*if "torrents_on"|config && $content.screenshots*]
                                 [*assign var='tscreen' value=$content.screenshots|show_image:false*]
-                                [*if $full_content && $tscreen*]<fieldset class='dscreenshots'>
-                                        <legend>[*'content_torrent_screenshots'|lang*]</legend>
-                                        <div align='center'>[*$tscreen*]</div>
+                                [*if $full_content && $tscreen*]
+                                    <fieldset class='dscreenshots'>
+                                        <legend>                                            
+                                            <a href="javascript:void(0);" onclick="open_spoiler(this, jQuery('.spoiler_content', jQuery(this).parents('fieldset.dscreenshots')));" class="spoiler_icon"></a>
+                                            &nbsp;[*'content_torrent_screenshots'|lang*]
+                                        </legend>
+                                        <div class='hidden spoiler_content' align='center'>[*$tscreen*]</div>
                                     </fieldset>
                                 [*/if*]
                             [*/if*]

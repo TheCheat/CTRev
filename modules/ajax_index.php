@@ -330,6 +330,7 @@ class ajax_index {
                 $oval = $val = rtrim($val);
                 if ($oval == ($val = preg_replace('/^\{nobr\}/siu', '', $val)) && $arr[$key] && $key != 'title') // в заголовки заранее не пишем
                     $val = "\n" . $val;
+                $val = preg_replace('/\{br\}/siu', "\n", $val);
                 $arr[$key] .= $val;
             }
         ok(true);

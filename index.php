@@ -22,6 +22,13 @@ $this_file = globals::g('baseurl') . "index.php?module=" . $module;
 tpl::o()->assign("this_file", $this_file);
 $ajax = (bool) ($_REQUEST ['from_ajax']); // Из AJAX
 $nno = (bool) ($_REQUEST ['nno']); // Стандартный класс(без постфикса '_ajax')
+
+if (!$ajax && ($current = stats::o()->read(DATABASE_STATS)) != DATABASE_VERSION) {
+    /* @var $m message */
+    $m = n("message");
+    $m->error('need_to_upgrade_database', array(DATABASE_VERSION, $current ? $current : "unknown"));
+}
+
 globals::s('ajax', $ajax);
 tpl::o()->assign('from_ajax', $ajax);
 tpl::o()->assign('module_loaded', $module);

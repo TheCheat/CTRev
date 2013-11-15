@@ -207,7 +207,7 @@ class display_html {
         $av_allowed = str_replace(";", "|", $aft ['types']);
         if (preg_match('/^' . display::url_pattern . '\.(' . $av_allowed . ')$/siu', $avatar_path))
             $url = $avatar_path;
-        elseif (preg_match('/^' . self::avatar_prefix . users::o()->v('id') . '\.(' . $av_allowed . ')$/siu', $avatar_path))
+        elseif (preg_match('/^' . self::avatar_prefix . '([0-9]+)\.(' . $av_allowed . ')$/siu', $avatar_path))
             $url = config::o()->v('avatars_folder') . '/' . $avatar_path;
         else
             $url = $theme_path . 'images/' . $color_path . 'default_avatar.png';

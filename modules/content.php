@@ -1172,14 +1172,14 @@ class torrents_simpleview {
      */
     protected function show_row($content, &$row, $max_title_symb) {
         $row['screenshots'] = $content->show_image($row['screenshots'], true, false, "center");
-        /* if (preg_match('/^(.*)\/(.*?)\(([0-9]+)\).*?$/siu', $row['title'], $matches)) {
-          $row['name'] = display::o()->cut_text($matches[1], $max_title_symb);
-          $row['orig_name'] = display::o()->cut_text($matches[2], $max_title_symb);
-          $row['year'] = $matches[3];
-          } */
+        if (preg_match('/^(.+?)(?:\/(.+?))?\(([0-9]+)\).*?$/siu', $row['title'], $matches)) {
+            $row['name'] = display::o()->cut_text($matches[1], $max_title_symb);
+            $row['orig_name'] = display::o()->cut_text($matches[2], $max_title_symb);
+            $row['year'] = $matches[3];
+        }
         foreach ($this->patterns as $patt) {
             $lv = 'btorrents_pattern_' . $patt;
-            if ($row[$patt] || !lang::o()->visset($lv))
+            if (/* $row[$patt] || */!lang::o()->visset($lv))
                 continue;
             @preg_match(sprintf($this->patterns_pattern, lang::o()->v($lv)), $row['content'], $matches);
             if (!$matches)
@@ -1188,6 +1188,8 @@ class torrents_simpleview {
         }
         if (!$row['name'])
             $row['name'] = display::o()->cut_text($row['title'], $max_title_symb);
+        if (!$row['orig_name'])
+            $row['orig_name'] = $row['name'];
     }
 
     /**

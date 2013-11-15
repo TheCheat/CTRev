@@ -422,6 +422,7 @@ define("charset", ' . var_export($charset, true) . ');
             'passkey' => $salt2);
         users::o()->write_cookies($username, $passhash);
         db::o()->insert($insert, "users");
+        stats::o()->write(DATABASE_STATS, DATABASE_VERSION);
     }
 
     /**

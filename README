@@ -7,8 +7,3 @@
 Так же Вы там можете найти много полезной(?) информации и вообще...
 
 Быдлокодер: The Cheat(aka PHPDog)
-
-Запросы:
-DELETE FROM `ctrev_groups_perm` WHERE `id` = 37;
-UPDATE `ctrev_groups_perm` SET `dvalue` = '2', `allowed` = '2' WHERE `id` =36;
-UPDATE `ctrev_groups` SET `perms` = '33:0;32:0;7:0;6:0;17:0;4:0;3:0;2:1;24:0;25:0;23:0;21:0;15:0;10:0;9:0;36:0' WHERE `id` =1;

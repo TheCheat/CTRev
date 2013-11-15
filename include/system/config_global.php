@@ -18,9 +18,13 @@ if (!defined('INSITE'))
  */
 define('ENGINE_VERSION', '1.00');
 /**
+ * Версия БД движка
+ */
+define('DATABASE_VERSION', '1.00');
+/**
  * Стадия разработки
  */
-define('ENGINE_STAGE', 'Beta');
+define('ENGINE_STAGE', '');
 
 
 
@@ -36,6 +40,10 @@ define('MAX_SCRIPT_EXECUTION_TIME', 30);
 
 
 
+/**
+ * Поле статистики для версии БД
+ */
+define('DATABASE_STATS', 'db_version');
 /**
  * Путь к модулям, относительно корня системы
  */
