@@ -928,9 +928,12 @@ class users extends users_modifier {
             $res = db::o()->p(mb_strtolower($login))->query("SELECT u.*, b.reason FROM users AS u
                 LEFT JOIN bans AS b ON b.uid=u.id
                 WHERE u.username_lower = ?
-                AND u.confirmed = '3' GROUP BY u.id");
+                GROUP BY u.id");
             $row = db::o()->fetch_assoc($res);
             $group = &$row ['group'];
+
+            if ($row['confirmed'] != 3)
+                $group = $this->guest_group;
 
             if (!$row || $password != $this->passhash_real($row ["password"], $short_sess))
                 throw new EngineException;
