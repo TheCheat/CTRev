@@ -10,6 +10,20 @@ setInterval('chat_server_time++;', 1000);
 function chat_scroll() {
     jQuery('div.chat_box').scrollTop(jQuery('#chat_area').height());
 }
+
+/**
+ * Отображение загрузчика чата
+ * @param {bool} hide скрыть загрузчик?
+ * @returns {null}
+ */
+function chat_loader(hide) { 
+    if (hide) {        
+        jQuery('#chat_loader').hide();
+        return;
+    }
+    prehide_ls();  
+    jQuery('#chat_loader').show();
+}
 /**
  * Отправка сообщения в чате
  * @returns {null}
@@ -18,7 +32,8 @@ function chat_say() {
     var text = trim(jQuery('#chat_textarea').val());
     if (!text)
         return;
-    chat_clear();
+    chat_clear();  
+    chat_loader();
     jQuery.post('index.php' + fk_ajax + 'module=chat&from_ajax=1&act=save&id=' + cur_cedit, {
         'text': text
     }, function() {
@@ -43,8 +58,10 @@ function chat_clear(value) {
  * @returns {null}
  */
 function chat_truncate() {
+    chat_loader();
     jQuery.post('index.php' + fk_ajax + 'module=chat&from_ajax=1&act=truncate', function(data) {
         jQuery('#chat_area').empty().append(data);
+        chat_loader(true);
     });
     chat_lctime();
 }
@@ -64,7 +81,7 @@ function chat_prev() {
 /**
  * Интервал обновления чата
  * @param {int} time интервал
- * @param {bool} только очистить?
+ * @param {bool} clear только очистить?
  * @returns {null}
  */
 function chat_interval(time, clear) {
@@ -81,7 +98,7 @@ function chat_interval(time, clear) {
  * @returns {null}
  */
 function chat_lctime() {
-    jQuery('#chat_loader').hide();
+    chat_loader(true);
     jQuery('#chat_area a.profile_link').unbind('click');
     jQuery('#chat_area a.profile_link').bind('click', function(e) {
         e.preventDefault();
@@ -111,7 +128,7 @@ function chat_clear_nm() {
  * @returns {null}
  */
 function chat_update(scrollme) {
-    jQuery('#chat_loader').show();
+    chat_loader();
     if (!last_ctime)
         jQuery('#chat_area').empty();
     prehide_ls();
@@ -161,14 +178,14 @@ function chat_update(scrollme) {
  */
 function add_chat_event() {
     jQuery('.chat_message').unbind('mouseenter mouseleave').bind(
-            {
-                'mouseenter': function() {
-                    jQuery('span.chat_edit_row', this).removeClass('hidden');
-                },
-                'mouseleave': function() {
-                    jQuery('span.chat_edit_row', this).addClass('hidden');
-                }
-            });
+    {
+        'mouseenter': function() {
+            jQuery('span.chat_edit_row', this).removeClass('hidden');
+        },
+        'mouseleave': function() {
+            jQuery('span.chat_edit_row', this).addClass('hidden');
+        }
+    });
 }
 /**
  * Удаление сообщения чата
@@ -176,8 +193,10 @@ function add_chat_event() {
  * @returns {null}
  */
 function chat_delete(id) {
+    chat_loader();
     jQuery.post('index.php' + fk_ajax + 'module=chat&from_ajax=1&act=delete&id=' + id, function(data) {
         jQuery('#chat_mess' + id).remove();
+        chat_loader(true);
     });
 }
 /**
@@ -188,11 +207,13 @@ function chat_delete(id) {
 function chat_edit(id) {
     if (cur_cedit)
         jQuery('#chat_mess' + cur_cedit).removeClass('chat_message_editing');
+    chat_loader();
     jQuery.post('index.php?module=chat&from_ajax=1&act=text&id=' + id, function(data) {
         cur_cedit = id;
         jQuery('#chat_mess' + cur_cedit).addClass('chat_message_editing');
         chat_clear(html_decode(data));
         chat_interval(null, true);
+        chat_loader(true);
     });
 }
 
