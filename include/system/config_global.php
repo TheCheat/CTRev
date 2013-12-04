@@ -38,6 +38,11 @@ define('DEFAULT_SOCKET_TIMEOUT', 5);
  */
 define('MAX_SCRIPT_EXECUTION_TIME', 30);
 
+/**
+ * Временной пояс по-умолчанию
+ */
+define('DEFAULT_TIMEZONE', 'GMT+3');
+
 
 
 /**
