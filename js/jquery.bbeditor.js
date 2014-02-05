@@ -998,7 +998,7 @@ function decode_smilies(text) {
     for (var i in s) {
         var c = s[i];
         text = text.replace(new RegExp('(?:' + nbsp + '|\\s|^)' + regex_quote(replace_quotes(trim(c.code))) + '(?:' + nbsp + '|\\s|$)', "gi"),
-                "<img alt='" + c.code + "' src='" + smilies_src + c.image + "' title='" + c.name + "'>");
+                "<img alt='" + html_encode(c.code) + "' src='" + smilies_src + c.image + "' title='" + c.name + "'>");
     }
     return text;
 }

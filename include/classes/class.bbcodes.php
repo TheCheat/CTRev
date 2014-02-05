@@ -478,11 +478,11 @@ abstract class bbcode_formatter extends formatter_callbacks {
         foreach ($this->smilies as $smilies_pack) {
             if ($smilies_pack)
                 foreach ($smilies_pack as $smilie) {
-                    $code = $smilie ['code'];
+                    $code = display::o()->html_encode($smilie ['code']);
                     $image = $smilie ['image'];
                     $name = $smilie ['name'];
                     // preg_replace с модификатором i намного быстрее str_ireplace
-                    $input = preg_replace('/(\s|^)' . mpc($code) . '(\s|$)/i', " <img src=\"" . config::o()->v('smilies_folder') . "/" . $image . "\" 
+                    $input = preg_replace('/(\s|\&nbsp\;|^)' . mpc($code) . '(\s|\&nbsp\;|$)/siu', " <img src=\"" . config::o()->v('smilies_folder') . "/" . $image . "\" 
                                 alt=\"" . $name . "\" 
                                 title=\"" . $name . "\"> ", $input);
                 }
