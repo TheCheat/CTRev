@@ -66,7 +66,8 @@ class rating_manage {
      * @return null
      */
     protected function get($type, $toid) {
-        die($this->rating->change_type($type)->get_avg_rating($toid));
+        print($this->rating->change_type($type)->get_avg_rating($toid));
+        die();
     }
 
 }

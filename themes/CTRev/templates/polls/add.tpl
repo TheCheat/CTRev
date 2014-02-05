@@ -35,7 +35,7 @@
             //[*if !$from_ajax*]
 
             var id = '[*$poll_row.id|sl*]';
-            id = id ? id : data.substr(3);
+            id = id ? id : data.substr(ok_message.length);
             var url = "[*gen_link slashes=true module='polls' act='view' id='$1'*]".replace('$1', id);
             if (is_ok(data, true))
                 window.location = url;

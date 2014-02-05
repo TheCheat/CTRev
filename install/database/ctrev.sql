@@ -727,7 +727,7 @@ INSERT INTO `config` (`name`, `value`, `type`, `allowed`, `cat`, `sort`) VALUES
 ('site_online', '1', 'radio', '1;0', 'other', 4),
 ('use_blocks', '1', 'radio', '1;0', 'other', 5),
 ('plugins_on', '1', 'radio', '1;0', 'other', 6),
-('disabled_modules', 'attach_manage', 'other', '', 'other', 7),
+('disabled_modules', 'attach_manage;polls_manage', 'other', '', 'other', 7),
 ('mailer_on', '1', 'radio', '1;0', 'other', 8),
 ('site_autoon', '0', 'date', 'ymdhis', 'other', 9),
 ('siteoffline_reason', 'Технические работы.', 'text', '', 'other', 10),

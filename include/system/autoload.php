@@ -84,8 +84,10 @@ class EngineException extends Exception {
     public function defaultCatch($eajax = null) {
         $ajax = globals::g('ajax');
         $eajax = is_null($eajax) ? $ajax : $eajax;
-        if ($eajax)
-            die($this->getEMessage());
+        if ($eajax) {
+            print($this->getEMessage());
+            die();
+        }
         else
             n("message")->stype("error")->sdie()->info($this->getMessage(), $this->getVars());
     }

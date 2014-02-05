@@ -91,7 +91,8 @@ class polls_manage_ajax {
         check_formkey();
         $ret = $this->polls->save($data, 0, $poll_id);
         ok(true);
-        die($ret);
+        print($ret);
+        die();
     }
 
     /**
